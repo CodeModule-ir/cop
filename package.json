@@ -1,5 +1,5 @@
 {
-  "name": "tel-bot",
+  "name": "cmgcbot",
   "version": "1.0.0",
   "description": "A Telegram bot for managing Telegram groups",
   "main": "app.js",
@@ -8,18 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/m-mdy-m/tel-bot.git"
+    "url": "git+https://github.com/m-mdy-m/CMGCBOT.git"
   },
   "keywords": [
-    "tel-bot",
+    "CMGCBOT",
     "telegram-bot"
   ],
   "author": "mahdi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/m-mdy-m/tel-bot/issues"
+    "url": "https://github.com/m-mdy-m/CMGCBOT/issues"
   },
-  "homepage": "https://github.com/m-mdy-m/tel-bot#readme",
+  "homepage": "https://github.com/m-mdy-m/CMGCBOT#readme",
   "dependencies": {
     "axios": "^1.7.2",
     "express": "^4.19.2",
