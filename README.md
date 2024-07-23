@@ -2,16 +2,15 @@
 
 [![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/CMCOP)
 
-CMCOP is a powerful and flexible group management bot for Telegram, designed to help admins manage and moderate their groups efficiently. The bot offers a variety of features including auto-moderation, welcome messages, role management, automated responses, and more.
+CMCOP is a powerful and flexible group management bot for Telegram, designed to help admins manage and moderate their groups efficiently. The bot offers a variety of features including welcome messages, role management, automated responses, and more.
 
 ## Features
 
-- **Moderation Tools**: Auto-moderation, mute, kick, and ban users.
+- **Moderation Tools**:  mute and ban users.
 - **Welcome Messages**: Custom welcome messages for new members.
 - **Role Management**: Different roles for admins, moderators, and members.
 - **Automated Responses**: Set up responses to frequently asked questions.
 - **Logging and Analytics**: Track group activity and generate reports.
-- **Anti-spam**: CAPTCHA for new members and spam detection.
 - **Command Customization**: Allow admins to add or remove custom commands.
 
 ## Getting Started
