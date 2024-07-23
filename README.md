@@ -1,8 +1,8 @@
-# CMGCBOT - Telegram Group Management Bot
+# CMCOP - Telegram Group Management Bot
 
-[![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/CMGCBOT)
+[![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/CMCOP)
 
-CMGCBOT is a powerful and flexible group management bot for Telegram, designed to help admins manage and moderate their groups efficiently. The bot offers a variety of features including auto-moderation, welcome messages, role management, automated responses, and more.
+CMCOP is a powerful and flexible group management bot for Telegram, designed to help admins manage and moderate their groups efficiently. The bot offers a variety of features including auto-moderation, welcome messages, role management, automated responses, and more.
 
 ## Features
 
@@ -10,11 +10,9 @@ CMGCBOT is a powerful and flexible group management bot for Telegram, designed t
 - **Welcome Messages**: Custom welcome messages for new members.
 - **Role Management**: Different roles for admins, moderators, and members.
 - **Automated Responses**: Set up responses to frequently asked questions.
-- **Polls and Voting**: Create polls for group decisions.
 - **Logging and Analytics**: Track group activity and generate reports.
 - **Anti-spam**: CAPTCHA for new members and spam detection.
 - **Command Customization**: Allow admins to add or remove custom commands.
-- **Scheduled Messages**: Schedule messages to be sent at specific times.
 
 ## Getting Started
 
@@ -28,8 +26,8 @@ CMGCBOT is a powerful and flexible group management bot for Telegram, designed t
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/m-mdy-m/CMGCBOT.git
-    cd CMGCBOT
+    git clone https://github.com/m-mdy-m/CMCOP.git
+    cd cmcop
     ```
 
 2. Install dependencies:
@@ -60,8 +58,6 @@ CMGCBOT is a powerful and flexible group management bot for Telegram, designed t
 - **/mute [user] [time]**: Mute a user for a specified time.
 - **/kick [user]**: Kick a user from the group.
 - **/ban [user]**: Ban a user from the group.
-- **/poll [question] [options]**: Create a poll with multiple options.
-- **/schedule [time] [message]**: Schedule a message to be sent at a specific time.
 
 ### Example
 
@@ -69,12 +65,6 @@ To mute a user for 10 minutes, use:
 
 ```plaintext
 /mute @username 10m
-```
-
-To create a poll, use:
-
-```plaintext
-/poll "What is your favorite color?" "Red, Blue, Green, Yellow"
 ```
 
 ## Contributing
