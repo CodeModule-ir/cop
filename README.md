@@ -56,7 +56,6 @@ CMCOP is a powerful and flexible group management bot for Telegram, designed to 
 - **/help**: Get assistance and see the list of available commands.
 - **/warn [user]**: Issue a warning to a user.
 - **/mute [user] [time]**: Mute a user for a specified time.
-- **/kick [user]**: Kick a user from the group.
 - **/ban [user]**: Ban a user from the group.
 
 ### Example
