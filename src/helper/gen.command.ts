@@ -3,7 +3,7 @@ import { Command } from "../controller/command";
 import { CmdValidator } from "../middleware";
 export class GenerateCommand {
   private bot: Bot;
-  static LIST_COMMAND: string[] = ["start", "help", "me", "warn", "clear","admins"];
+  static LIST_COMMAND: string[] = ["start", "help", "me", "warn", "unWarn","admins"];
   constructor(bot: Bot) {
     this.bot = bot;
   }
@@ -23,10 +23,15 @@ export class GenerateCommand {
    */
   generate() {
     for (const command of GenerateCommand.LIST_COMMAND) {
-      if (["start", "help", "me", "admins"].includes(command)) {
-        this.create(command, (Command as any)[command]);
+      const commandNameLower = command.toLowerCase();
+
+      if (["start", "help", "me", "admins"].includes(commandNameLower)) {
+        // Register the command for both lowercase and uppercase variants
+        this.create(commandNameLower, (Command as any)[command]);
+        this.create(commandNameLower.toUpperCase(), (Command as any)[command]);
       } else {
-        this.create(command, (Command as any)[command], CmdValidator.run);
+        this.create(commandNameLower, (Command as any)[command], CmdValidator.run);
+        this.create(commandNameLower.toUpperCase(), (Command as any)[command], CmdValidator.run);
       }
     }
   }
