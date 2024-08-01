@@ -26,7 +26,6 @@
     "express": "^4.19.2",
     "grammy": "^1.27.0",
     "mysql2": "^3.11.0",
-    "redis": "^4.7.0",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
