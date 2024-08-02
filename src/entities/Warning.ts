@@ -1,19 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { User } from "./User";
 
 @Entity()
 export class Warning {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: "bigint" })
-  user_id!: number;
-
-  @Column()
-  username!: string;
-
-  @Column({ default: 1 })
-  warning_count!: number;
+  @ManyToOne(() => User, (user) => user.warnings)
+  user!: User;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  last_warned_at!: Date;
+  warned_at!: Date;
+
+  @Column({ type: "text", nullable: true })
+  reason!: string;
 }
