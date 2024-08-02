@@ -3,7 +3,7 @@ import { Command } from "../controller/command";
 import { CmdValidator } from "../middleware";
 export class GenerateCommand {
   private bot: Bot;
-  static LIST_COMMAND: string[] = ["start", "help", "me", "warn", "unWarn","admins"];
+  static COMMANDS: string[] = ["start", "help", "me", "warn", "unWarn","admins","mute","unMute"];
   constructor(bot: Bot) {
     this.bot = bot;
   }
@@ -19,19 +19,18 @@ export class GenerateCommand {
     }
   }
   /**
-   * Generates and registers all commands defined in LIST_COMMAND.
+   * Generates and registers all commands defined in COMMANDS.
    */
   generate() {
-    for (const command of GenerateCommand.LIST_COMMAND) {
-      const commandNameLower = command.toLowerCase();
-
-      if (["start", "help", "me", "admins"].includes(commandNameLower)) {
+    for (const command of GenerateCommand.COMMANDS) {
+      const nameLower = command.toLowerCase();
+      if (["start", "help", "me", "admins"].includes(nameLower)) {
         // Register the command for both lowercase and uppercase variants
-        this.create(commandNameLower, (Command as any)[command]);
-        this.create(commandNameLower.toUpperCase(), (Command as any)[command]);
+        this.create(nameLower, (Command as any)[command]);
+        this.create(nameLower.toUpperCase(), (Command as any)[command]);
       } else {
-        this.create(commandNameLower, (Command as any)[command], CmdValidator.run);
-        this.create(commandNameLower.toUpperCase(), (Command as any)[command], CmdValidator.run);
+        this.create(nameLower || command, (Command as any)[command], CmdValidator.run);
+        this.create(nameLower.toUpperCase(), (Command as any)[command], CmdValidator.run);
       }
     }
   }
