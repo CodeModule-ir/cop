@@ -1,9 +1,9 @@
 import { Context } from "grammy";
 import { MESSAGE } from "../helper/message";
 import { SafeExecution } from "../decorators/SafeExecution";
-import { listAdmins } from "../user-managemen/roles";
-import { AdminCommand } from "../user-managemen/AdminCommand";
-import { UserManagement } from "../user-managemen/UserManagement";
+import { listAdmins } from "../user-management/roles";
+import { AdminCommand } from "../user-management/AdminCommand";
+import { UserManagement } from "../user-management/UserManagement";
 export class Command {
   @SafeExecution()
   static start(ctx: Context) {
@@ -39,12 +39,22 @@ export class Command {
   }
 
   @SafeExecution()
-  static async clear(ctx: Context): Promise<void> {
+  static async unWarn(ctx: Context): Promise<void> {
     await AdminCommand.WarnClear(ctx);
   }
 
   @SafeExecution()
   static async me(ctx: Context): Promise<void> {
     await UserManagement.Info(ctx);
+  }
+
+  @SafeExecution()
+  static async mute(ctx: Context): Promise<void> {
+    await AdminCommand.mute(ctx);
+  }
+
+  @SafeExecution()
+  static async unMute(ctx: Context): Promise<void> {
+    await AdminCommand.MuteClear(ctx);
   }
 }
