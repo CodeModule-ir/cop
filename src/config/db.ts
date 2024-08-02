@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import { Warning } from "../entities/Warning";
 import { User } from "../entities/User";
 import { GroupSettings } from "../entities/GroupSettings";
+import { Mute } from "../entities/Mute";
 export const AppDataSource = new DataSource({
   type: "mariadb",
   host: process.env.DB_HOST,
@@ -9,6 +10,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User,Warning],
+  entities: [User, Warning,Mute, GroupSettings],
   synchronize: true,
 });
