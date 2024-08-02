@@ -2,7 +2,21 @@ import { User } from "grammy/types";
 import { RepliedMessage } from "../types/types";
 
 export class MESSAGE {
-  static USERINFO() {}
+  static MUTE_SET(user: any, expiration: Date | undefined) {
+    const expirationText = expiration
+      ? `until ${expiration.toLocaleString()}`
+      : "indefinitely";
+    return `@${user.username} (${user.first_name}) has been muted ${expirationText}.`;
+  }
+
+  static MUTE_CLEAR(user: User) {
+    return `The mute for @${user.username} (${user.first_name}) has been lifted.`;
+  }
+
+  static NO_MUTES() {
+    return "This user has no active mutes.";
+  }
+
   static WARN(msg: RepliedMessage) {
     return `@${msg.from?.username} (${msg.from?.first_name}) has been warned. They now have 1 warning.\nFor a detailed list of rules, use the command: /rules`;
   }
