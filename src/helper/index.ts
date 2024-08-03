@@ -1,4 +1,3 @@
-// Helper function to parse duration strings like "10m", "1h", etc.
 export function parseDuration(durationStr: string): number | null {
   const match = durationStr.match(/^(\d+)([smhd])$/);
 
