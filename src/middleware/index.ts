@@ -1,25 +1,18 @@
 import { Context, NextFunction } from "grammy";
-import { IsAdmin } from "./isAdmin";
-import { ValidateCommand } from "./validateCommand";
+import { ActionFilter } from "./ActionFilter"
+import { AdminChecker } from "./isAdmin";
 
-export class CmdValidator {
-  static async run(ctx: Context, next: NextFunction) {
-    const checkAdmin = new IsAdmin(ctx, async () => {
-      const validateCommand = new ValidateCommand(ctx, next);
-      await validateCommand.execute();
-    });
-
-    await checkAdmin.execute();
+export class CmdMid {
+  static async isReplied(ctx: Context, nxt: NextFunction) {
+    await new ActionFilter(ctx, nxt).isReplied();
   }
-  static async isAdmin(ctx: Context, nxt: NextFunction) {
-    const chatAdmins = await ctx.getChatAdministrators();
-    const isAdmin = chatAdmins.some((admin) => admin.user.id === ctx.from?.id);
-    if (!isAdmin) {
-      return await ctx.answerCallbackQuery({
-        text: "Only admins can remove warnings!",
-        show_alert: true,
-      });
-    }
-    nxt();
+  static async userInGroup(ctx: Context, nxt: NextFunction) {
+    await new ActionFilter(ctx, nxt).userInGroup();
+  }
+  static async adminCheckForRepliedUser(ctx: Context, nxt: NextFunction) {
+    await new ActionFilter(ctx, nxt).adminCheckForRepliedUser();
+  }
+  static async AdminStatus(ctx: Context, nxt: NextFunction) {
+    await new AdminChecker(ctx, nxt).checkAdminStatus();
   }
 }
