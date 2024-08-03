@@ -1,5 +1,5 @@
 import { Context, NextFunction } from "grammy";
-import { BotOverseer } from "../helper/BotOverseer";
+import { BotOverseer } from "../service/bot";
 export abstract class Middleware {
   protected ctx: Context;
   protected bot: BotOverseer;
