@@ -1,7 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Index } from "typeorm";
 import { Warning } from "./Warning";
-import { Mute } from "./Mute";
-// import { Ban } from "./Ban";
+import { GroupMembership } from "./GroupMembership";
 
 @Entity()
 export class User {
@@ -11,19 +10,12 @@ export class User {
   @Column({ type: "bigint", unique: true })
   telegram_id!: number;
 
-  @Column()
-  username!: string;
-
-  @Column()
-  first_name!: string;
-
-  @Column({ default: "member" })
+  @Column({ type: "enum", enum: ["member", "admin", "owner"], default: "member" })
   role!: string;
 
-  @OneToMany(() => Warning, (warning) => warning.user)
+  @OneToMany(() => Warning, (warning) => warning.user, { cascade: true, onDelete: "CASCADE" })
   warnings!: Warning[];
 
-  @OneToMany(() => Mute, (mute) => mute.user)
-  mutes!: Mute[];
-  
+  @OneToMany(() => GroupMembership, (membership) => membership.user, { cascade: true, onDelete: "CASCADE" })
+  memberships!: GroupMembership[];
 }
