@@ -50,7 +50,7 @@ export async function groupJoin(ctx: Context) {
       if (!user) {
         user = userRepo.create({
           telegram_id: from?.id!,
-          role: "admin", 
+          role: "admin",
         });
 
         await userRepo.save(user);
@@ -77,7 +77,6 @@ export async function groupJoin(ctx: Context) {
 
         await membershipRepo.save(membership);
       }
-
       await ctx.reply(MESSAGE.newGroupJoin(ctx, from?.username!));
     } catch (error: any) {
       logger.error("Failed to save group settings", error, "GROUP");
