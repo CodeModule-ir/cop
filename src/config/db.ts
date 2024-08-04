@@ -3,6 +3,7 @@ import { Warning } from "../entities/Warning";
 import { User } from "../entities/User";
 import { GroupSettings } from "../entities/GroupSettings";
 import { GroupMembership } from "../entities/GroupMembership";
+import { ApprovedUser } from "../entities/ApprovedUser";
 export const AppDataSource = new DataSource({
   type: "mariadb",
   host: process.env.DB_HOST,
@@ -10,6 +11,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, Warning, GroupSettings, GroupMembership],
+  entities: [User, Warning, GroupSettings, ApprovedUser, GroupMembership],
   synchronize: true,
 });

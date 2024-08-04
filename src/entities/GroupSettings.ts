@@ -1,11 +1,6 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  Index,
-} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { GroupMembership } from "./GroupMembership";
+import { ApprovedUser } from "./ApprovedUser";
 
 @Entity()
 export class GroupSettings {
@@ -44,4 +39,10 @@ export class GroupSettings {
     onDelete: "CASCADE",
   })
   members!: GroupMembership[];
+
+  @OneToMany(() => ApprovedUser, (approvedUser) => approvedUser.group, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  approvedUsers!: ApprovedUser[];
 }
