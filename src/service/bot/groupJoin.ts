@@ -5,6 +5,7 @@ import { GroupMembership } from "../../entities/GroupMembership";
 import { User } from "../../entities/User";
 import { logger } from "../../config/logging";
 import { MESSAGE } from "../../helper/message";
+import { BlacklistService } from "../command/blacklist";
 
 export async function groupJoin(ctx: Context) {
   const chat = ctx.chat!;
@@ -16,7 +17,6 @@ export async function groupJoin(ctx: Context) {
       let groupSettings = await groupRepo.findOne({
         where: { group_id: chat.id },
       });
-
       // Create or update the group settings
       if (!groupSettings) {
         groupSettings = groupRepo.create({
@@ -34,6 +34,9 @@ export async function groupJoin(ctx: Context) {
           `Bot added to group ${chat.title} by ${from?.username}`,
           "GROUP"
         );
+
+        // Initialize blacklist terms from BlackListJson
+        await BlacklistService.storeBlacklistTerms(groupSettings);
       } else {
         logger.info(
           `Bot re-added to existing group ${chat.title} by ${from?.username}`,
