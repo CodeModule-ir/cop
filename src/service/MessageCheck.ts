@@ -63,7 +63,6 @@ export class MessageCheck {
   }
 
   static preprocessText(text: string): string {
-    // Remove non-alphabetic characters and normalize the text
     return text.replace(/[^a-zA-Zآ-ی]/g, "").toLowerCase();
   }
 
