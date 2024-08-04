@@ -38,8 +38,11 @@ export class ActionFilter extends Middleware {
     }
 
     const chatMember = await this.ctx.getChatMember(userId);
-
-    if (chatMember.status === "left" || chatMember.status === "kicked") {
+    if (
+      chatMember.status === "left" ||
+      chatMember.status === "kicked" ||
+      (!chatMember as any).is_member
+    ) {
       await this.ctx.reply("The user is no longer a member of this group.", {
         reply_to_message_id: this.ctx.message?.message_id,
       });
@@ -62,7 +65,7 @@ export class ActionFilter extends Middleware {
     const isAdmin = chatAdmins!.some(
       (admin) => admin.user.id === repliedUserId
     );
-    const command = this.ctx.message?.text?.split("/")[1];
+    const command = this.ctx.message?.text?.split("/")[1].split(" ")[0];
 
     if (this.bot.getBotInfo()!.id === repliedUserId) {
       await this.ctx.reply(`Why should I ${command} myself?`, {
@@ -79,5 +82,16 @@ export class ActionFilter extends Middleware {
     }
 
     return this.nxt();
+  }
+  isSupergroupOrChannel() {
+    const chat = this.ctx.chat;
+
+    if (chat && (chat.type === "supergroup" || chat.type === "channel")) {
+      return this.nxt();
+    } else {
+      this.ctx.reply(
+        "This command can only be used in supergroups or channels."
+      );
+    }
   }
 }

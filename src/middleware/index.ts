@@ -15,4 +15,7 @@ export class CmdMid {
   static async AdminStatus(ctx: Context, nxt: NextFunction) {
     await new AdminChecker(ctx, nxt).checkAdminStatus();
   }
+  static async isSupergroupOrChannel(ctx: Context, nxt: NextFunction) {
+    await new ActionFilter(ctx, nxt).isSupergroupOrChannel();
+  }
 }
