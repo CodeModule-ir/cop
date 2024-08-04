@@ -55,16 +55,21 @@ export class DateCommand {
   }
 
   static convertToPersianDate(date: Date): string {
-    // Basic Persian calendar conversion logic
-    // Note: This implementation is a simplified version.
+    // Correct conversion using the Jalaali algorithm
+    const persianDate = this.toJalaali(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      date.getDate()
+    );
+
     const persianDays = [
+      "شنبه",
       "یکشنبه",
       "دوشنبه",
       "سه‌شنبه",
       "چهارشنبه",
       "پنج‌شنبه",
       "جمعه",
-      "شنبه",
     ];
 
     const persianMonths = [
@@ -82,65 +87,60 @@ export class DateCommand {
       "اسفند",
     ];
 
-    const dayOfMonth = this.getPersianDayOfMonth(date);
-    const month = this.getPersianMonth(date);
-    const year = this.getYear(date);
     const dayName = persianDays[date.getDay()];
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
 
-    return `${dayName} ${dayOfMonth} ${persianMonths[month]} ${year} ساعت: ${hours}:${minutes}`;
+    return `${dayName} ${persianDate.jd} ${persianMonths[persianDate.jm - 1]} ${
+      persianDate.jy
+    } ساعت: ${hours}:${minutes}`;
   }
 
-  // Determine the Persian day of the month
-  static getPersianDayOfMonth(date: Date): number {
-    const startOfPersianYear = this.getStartOfPersianYear(date.getFullYear());
-    const dayOfYear =
-      Math.floor(
-        (date.getTime() - startOfPersianYear.getTime()) / (1000 * 60 * 60 * 24)
-      ) + 1;
-    return dayOfYear % this.getDaysInPersianMonth(date);
-  }
-
-  // Determine the Persian month
-  static getPersianMonth(date: Date): number {
-    const dayOfYear =
-      Math.floor(
-        (date.getTime() -
-          this.getStartOfPersianYear(date.getFullYear()).getTime()) /
-          (1000 * 60 * 60 * 24)
-      ) + 1;
-    const monthsLengths = this.getPersianMonthLengths(date.getFullYear());
-    let month = 0;
-    let daysPassed = 0;
-    for (let i = 0; i < monthsLengths.length; i++) {
-      daysPassed += monthsLengths[i];
-      if (dayOfYear <= daysPassed) {
-        month = i;
-        break;
-      }
-    }
-    return month;
-  }
-
-  // Determine the Persian year
-  static getYear(date: Date): number {
-    return date.getFullYear();
-  }
-
-  // Get the starting date of the Persian year
-  static getStartOfPersianYear(year: number): Date {
-    return new Date(year, 2, 20); 
-  }
-
-  // Get lengths of months in Persian year
-  static getPersianMonthLengths(year: number): number[] {
-    return [31, 30, 30, 31, 31, 30, 31, 31, 30, 30, 30, 29]; // Last month may have 29 or 30 days
-  }
-  // Get the number of days in the current Persian month
-  static getDaysInPersianMonth(date: Date): number {
-    return this.getPersianMonthLengths(this.getYear(date))[
-      this.getPersianMonth(date)
+  static toJalaali(gy: number, gm: number, gd: number) {
+    // Convert Gregorian to Jalaali using an algorithm
+    const g_d_m = [
+      0,
+      31,
+      (gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0 ? 29 : 28,
+      31,
+      30,
+      31,
+      30,
+      31,
+      31,
+      30,
+      31,
+      30,
+      31,
     ];
+    let gy2 = gm > 2 ? gy + 1 : gy;
+    let days =
+      355666 +
+      365 * gy +
+      Math.floor((gy2 + 3) / 4) -
+      Math.floor((gy2 + 99) / 100) +
+      Math.floor((gy2 + 399) / 400) +
+      gd;
+
+    for (let i = 0; i < gm; ++i) days += g_d_m[i];
+
+    let jy = -1595 + 33 * Math.floor(days / 12053);
+    days %= 12053;
+
+    jy += 4 * Math.floor(days / 1461);
+    days %= 1461;
+
+    if (days > 365) {
+      jy += Math.floor((days - 1) / 365);
+      days = (days - 1) % 365;
+    }
+
+    const jm =
+      days < 186
+        ? 1 + Math.floor(days / 31)
+        : 7 + Math.floor((days - 186) / 30);
+    const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30);
+
+    return { jy, jm, jd };
   }
 }
