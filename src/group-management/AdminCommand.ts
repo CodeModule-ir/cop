@@ -9,6 +9,8 @@ import { BanService } from "../service/command/ban";
 import { BotOverseer } from "../service/bot";
 import { BlacklistService } from "../service/command/blacklist";
 import { DateCommand } from "../service/command/date";
+import { Rules } from '../service/command/rules';
+import { Approved } from "../service/command/approved";
 export class AdminCommand {
   @SafeExecution()
   static async Warn(ctx: Context): Promise<void> {
@@ -50,8 +52,9 @@ export class AdminCommand {
   static async mute(ctx: Context): Promise<void> {
     const bot = new BotOverseer(ctx);
     const userId = await bot.getRepliedUserId();
-    const durationStr = String(ctx.match as string).trim();
-
+    const durationStr = String(ctx.match as string)
+      .trim()
+      .split(" ")[1];
     let durationMs: number | null = null;
     if (durationStr) {
       durationMs = parseDuration(durationStr);
@@ -89,7 +92,7 @@ export class AdminCommand {
     const bot = new BotOverseer(ctx);
     const userId = await bot.getRepliedUserId();
     const responseMessage = await new BanService(ctx, userId!).unban();
-    await ctx.reply(responseMessage!, {
+    await ctx.reply(responseMessage, {
       reply_to_message_id: ctx.message?.message_id,
     });
   }
@@ -125,64 +128,12 @@ export class AdminCommand {
 
   @SafeExecution()
   static async approved(ctx: Context) {
-    const userId = ctx.message?.reply_to_message?.from?.id;
-
-    if (!userId) {
-      return ctx.reply("Please reply to the user you want to approve.");
-    }
-
-    // Restrict the user by removing the permissions
-    await ctx.restrictChatMember(userId, {
-      can_pin_messages: true,
-      can_send_other_messages: true,
-      can_send_polls: true,
-      can_send_messages: true,
-      can_send_photos: true,
-      can_invite_users: true,
-      can_send_documents: true,
-      can_change_info: false,
-      can_manage_topics: false,
-    });
-
-    // Send a confirmation message
-    await ctx.reply(
-      "The user has been approved and given full messaging permissions.",
-      {
-        reply_to_message_id: ctx.message?.message_id,
-      }
-    );
+    await Approved.add(ctx)
   }
 
   @SafeExecution()
   static async unApproved(ctx: Context) {
-    const userId = ctx.message?.reply_to_message?.from?.id;
-
-    if (!userId) {
-      return ctx.reply(
-        "Please reply to the user you want to remove approval from."
-      );
-    }
-
-    // Restrict the user by removing the permissions
-    await ctx.restrictChatMember(userId, {
-      can_pin_messages: false,
-      can_send_other_messages: true,
-      can_send_polls: false,
-      can_change_info: false,
-      can_send_messages: true,
-      can_manage_topics: false,
-      can_send_photos: true,
-      can_invite_users: false,
-      can_send_audios: true,
-    });
-
-    // Send a confirmation message
-    await ctx.reply(
-      "The user's approval has been removed, and their permissions have been restricted.",
-      {
-        reply_to_message_id: ctx.message?.message_id,
-      }
-    );
+    await Approved.remove(ctx)
   }
 
   @SafeExecution()
@@ -322,12 +273,17 @@ export class AdminCommand {
     await BlacklistService.BlackList(ctx);
   }
   @SafeExecution()
-  static async RemoveMessageBlackList(ctx:Context){
-    await BlacklistService.remove(ctx)
+  static async RemoveMessageBlackList(ctx: Context) {
+    await BlacklistService.remove(ctx);
   }
 
   @SafeExecution()
-  static async date(ctx:Context){
-    await DateCommand.date(ctx)
+  static async date(ctx: Context) {
+    await DateCommand.date(ctx);
+  }
+
+  @SafeExecution()
+  static async rules(ctx: Context) {
+    await Rules.rules(ctx)
   }
 }
