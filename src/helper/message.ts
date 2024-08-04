@@ -3,6 +3,9 @@ import { RepliedMessage } from "../types/types";
 import { Context } from "grammy";
 
 export class MESSAGE {
+  static BAN_USE_BLACKLIST_MSG(user: User) {
+    return `@${user.username} (${user.first_name}),\n\nYou have been banned from the group due to the use of inappropriate language. We strive to maintain a respectful environment for all members, and such behavior is not tolerated. If you believe this action was taken in error, please contact the group administrators for further clarification.\n\nThank you for your understanding.`;
+  }
   static BAN(user: User) {
     return `@${user.username} (${user.first_name}) has been banned from the group.`;
   }
@@ -12,8 +15,6 @@ export class MESSAGE {
   }
 
   static MUTE_SET(user: any, expiration: Date | undefined) {
-    console.log("user:", user);
-    
     const expirationText = expiration
       ? `until ${expiration.toLocaleString()}`
       : "indefinitely";
@@ -28,10 +29,10 @@ export class MESSAGE {
     return "This user has no active mutes.";
   }
 
-  static WARN(msg: RepliedMessage,count:number, reason: string) {
+  static WARN(msg: RepliedMessage, count: number, reason: string) {
     let message = `@${msg.from?.username} (${msg.from?.first_name}) has been warned. They now have ${count} warning.\nReason: ${reason}\nFor a detailed list of rules, use the command: /rules`;
-    if(!reason){
-      message =  `@${msg.from?.username} (${msg.from?.first_name}) has been warned. They now have ${count} warning.For a detailed list of rules, use the command: /rules`;
+    if (!reason) {
+      message = `@${msg.from?.username} (${msg.from?.first_name}) has been warned. They now have ${count} warning.For a detailed list of rules, use the command: /rules`;
     }
     return message;
   }
@@ -84,5 +85,6 @@ Use the /help command to explore my features and commands.`;
       Hello ${ctx.chat?.title}!
 First of all, thanks to @${inviterUsername} for inviting me to this awesome group!
 I'm here to help out and make sure everyone has a good time. Are you curious about what I can do? Just type the /help command.
-    `;}
+    `;
+  }
 }
