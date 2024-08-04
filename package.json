@@ -4,6 +4,7 @@
   "description": "A Telegram bot for managing Telegram groups",
   "main": "app.js",
   "scripts": {
+    "build":"tsc",
     "test": "mocha --config .mochar.json",
     "start": "node -r ts-node/register --env-file=.env src/app.ts"
   },
