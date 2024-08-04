@@ -1,8 +1,33 @@
 version: '3.8'
+
 services:
   bot:
     build: .
-    ports:
-      - "3000:3000"
+    container_name: cmcop-bot
     env_file:
       - .env
+    depends_on:
+      - db
+    networks:
+      - cmcop-net
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.5
+    container_name: cmcop-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - cmcop-net
+    restart: unless-stopped
+
+volumes:
+  db-data:
+
+networks:
+  cmcop-net:
