@@ -3,25 +3,28 @@ import { MESSAGE } from "../helper/message";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { AdminCommand } from "../group-management/AdminCommand";
 export class Command {
-   private static commandMap: { [key: string]: (ctx: Context) => Promise<any> } =  {
-    "start":Command.start,
-    "help":Command.help,
-    "warn": AdminCommand.Warn,
-    "rmWarn": AdminCommand.WarnClear,
-    "mute": AdminCommand.mute,
-    "unMute": AdminCommand.MuteClear,
-    "ban": AdminCommand.ban,
-    "unBan": AdminCommand.unBan,
-    "purge": AdminCommand.Purge,
-    "approved": AdminCommand.approved,
-    "unApproved": AdminCommand.unApproved,
-    "lock": AdminCommand.lock,
-    "unLock": AdminCommand.unLock,
-    "blacklist": AdminCommand.getBlackList,
-    "abl":AdminCommand.addBlackList,
-    "rmbl":AdminCommand.RemoveMessageBlackList,
-    "date": AdminCommand.date
-  };
+  private static commandMap: { [key: string]: (ctx: Context) => Promise<any> } =
+    {
+      start: Command.start,
+      help: Command.help,
+      warn: AdminCommand.Warn,
+      rmWarn: AdminCommand.WarnClear,
+      mute: AdminCommand.mute,
+      unMute: AdminCommand.MuteClear,
+      ban: AdminCommand.ban,
+      unBan: AdminCommand.unBan,
+      purge: AdminCommand.Purge,
+      approved: AdminCommand.approved,
+      unApproved: AdminCommand.unApproved,
+      lock: AdminCommand.lock,
+      unLock: AdminCommand.unLock,
+      blacklist: AdminCommand.getBlackList,
+      abl: AdminCommand.addBlackList,
+      rmbl: AdminCommand.RemoveMessageBlackList,
+      date: AdminCommand.date,
+      future: Command.future,
+      rules: AdminCommand.rules,
+    };
 
   @SafeExecution()
   static start(ctx: Context) {
@@ -46,6 +49,15 @@ export class Command {
       },
     });
   }
+
+  @SafeExecution()
+  static future(ctx: Context) {
+    return ctx.reply("We will go to ga", {
+      reply_parameters: {
+        message_id: ctx.message?.message_id!,
+      },
+    });
+  }
   @SafeExecution()
   static async handleCommand(ctx: Context): Promise<void> {
     /**
@@ -58,9 +70,7 @@ export class Command {
      *
      * This ensures that only the command itself is extracted, excluding any subsequent arguments.
      */
-const command = ctx.message?.text?.split("/")[1]?.split(/[\s@]/)[0];
-  console.log(command);
-
+    const command = ctx.message?.text?.split("/")[1]?.split(/[\s@]/)[0];
     if (command) {
       const commandFunction = Command.commandMap[command];
       if (commandFunction) {
