@@ -21,7 +21,9 @@ export class GenerateCommand {
     "blacklist",
     "abl",
     "rmbl",
-    "date"
+    "date",
+    "future",
+    "rules"
   ];
   constructor(bot: Bot) {
     this.bot = bot;
@@ -32,7 +34,7 @@ export class GenerateCommand {
   ) {
     const middleware = mids ? this.compose(mids) : undefined;
     if (middleware) {
-      this.bot.command(name,botIsAdmin, middleware, Command.handleCommand);
+      this.bot.command(name, botIsAdmin, middleware, Command.handleCommand);
     } else {
       this.bot.command(name, Command.handleCommand);
     }
@@ -68,14 +70,25 @@ export class GenerateCommand {
    */
   generate() {
     for (const command of GenerateCommand.COMMANDS) {
-      if (["start", "help","date"].includes(command)) {
+      if (["start", "help", "date","future","rules"].includes(command)) {
         this.create(command);
-      } else if (["lock", "blacklist", "abl", "unLock","rmbl"].includes(command)) {
-        this.create(command, [CmdMid.AdminStatus]);
+      } else if (
+        ["lock", "blacklist", "abl", "unLock", "rmbl"].includes(command)
+      ) {
+        this.create(command, [CmdMid.isSupergroupOrChannel,CmdMid.AdminStatus]);
       } else if (["purge"].includes(command)) {
-        this.create(command, [CmdMid.isReplied, CmdMid.AdminStatus]);
+        this.create(command, [CmdMid.isSupergroupOrChannel,CmdMid.isReplied, CmdMid.AdminStatus]);
+      } else if (["unBan"].includes(command)) {
+        this.create(command, [
+          CmdMid.isSupergroupOrChannel,
+          CmdMid.isReplied,
+          CmdMid.AdminStatus,
+          CmdMid.adminCheckForRepliedUser,
+        ]);
       } else {
         this.create(command, [
+          CmdMid.userInGroup,
+          CmdMid.isSupergroupOrChannel,
           CmdMid.isReplied,
           CmdMid.AdminStatus,
           CmdMid.adminCheckForRepliedUser,
