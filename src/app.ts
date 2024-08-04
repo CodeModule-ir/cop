@@ -4,7 +4,7 @@ import { logger } from "./config/logging";
 import { GenerateCommand } from "./service/command/generator";
 import { groupJoin } from "./service/bot/groupJoin";
 import { MessageCheck } from "./service/MessageCheck";
-import {Spam } from "./service/bot/spam";
+import { Spam } from "./service/bot/spam";
 
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
 new GenerateCommand(bot).generate();
@@ -17,14 +17,16 @@ bot.on("message", async (ctx) => {
   const todayKey = now.toISOString().split("T")[0]; // Get today's date as a key
   const chatId = ctx.chat.id;
   if (ctx.message?.new_chat_members?.length! > 0) {
-  const users = ctx.message?.new_chat_members!;
-  for (const user of users) {
-    if (user.id !== ctx.me?.id) { 
-      const username = user.username ? `@${user.username}` : user.first_name;
-      await ctx.reply(`Dear ${username}, welcome to ${ctx.chat.title} chat ❤️`);
+    const users = ctx.message?.new_chat_members!;
+    for (const user of users) {
+      if (user.id !== ctx.me?.id) {
+        const username = user.username ? `@${user.username}` : user.first_name;
+        await ctx.reply(
+          `Dear ${username}, welcome to ${ctx.chat.title} chat ❤️`
+        );
+      }
     }
   }
-}
   // Initialize if not already
   if (!messageFlags[chatId]) {
     messageFlags[chatId] = {};
@@ -42,8 +44,6 @@ bot.on("message", async (ctx) => {
       messageFlags[chatId][todayKey] = true;
     }
   }
-
-  
 });
 bot.on("my_chat_member", groupJoin);
 
@@ -55,6 +55,6 @@ bot.on("my_chat_member", groupJoin);
     logger.info("BOT STARTED", "APP");
   } catch (error: any) {
     logger.error("ERROR FROM START APP", error, "APP");
-    process.exit(1);
+    process.exit(1)
   }
 })();
