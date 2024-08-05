@@ -3,13 +3,22 @@
   "version": "1.0.0",
   "description": "A Telegram bot for managing Telegram groups",
   "main": "/src/app.js",
+  "files": [
+    "dist",
+    "src",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
-    "docker:remove":"docker-compose down",
-    "docker:build":"docker-compose build",
+    "docker:stop": "docker-compose stop",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
     "docker:run": "docker-compose up",
-    "docker:start":"docker-compose up --build",
+    "docker:start": "docker-compose up --build",
     "build": "tsc",
     "test": "mocha --config .mochar.json",
+    "clean": "rm -rf dist",
+    "main": "dist/app.js",
     "start": "node -r ts-node/register --env-file=.env src/app.ts"
   },
   "repository": {
@@ -24,6 +33,9 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/m-mdy-m/CMCOP/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "homepage": "https://github.com/m-mdy-m/CMCOP#readme",
   "dependencies": {
