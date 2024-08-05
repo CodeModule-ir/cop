@@ -35,13 +35,13 @@ jobs:
 
       - name: Tag Docker image
         run: |
-          docker tag cmcop-bot mahdi83/cmcop-bot:latest
-          docker tag cmcop-bot mahdi83/cmcop-bot:${{ github.sha }}
+          docker tag cmcop-bot ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:latest
+          docker tag cmcop-bot ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:${{ github.sha }}
 
       - name: Push Docker image
         run: |
-          docker push mahdi83/cmcop-bot:latest
-          docker push mahdi83/cmcop-bot:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:${{ github.sha }}
 
       - name: Clean up
         run: docker system prune -f
