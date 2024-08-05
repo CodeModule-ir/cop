@@ -51,38 +51,39 @@ Hello! I am your group admin bot, here to help you manage the group more effecti
 
 /help - Display this help message.
 
-/start - Sends a welcome message. If used in Piwi, it will provide a different message compared to the group.
+/start - Sends a welcome message. If used in Pv, it will provide a different message compared to the group.
 
 /warn <reason> - Issues a warning to the user. If the user accumulates three warnings, they will be automatically banned. Provide a reason for the warning after the command.
 
-/rmWarn <user> - Removes warnings from the specified user.
+/rmWarn - Removes warnings from the specified user.
 
 /mute <duration> - Mutes the user for a specified amount of time. If no duration is specified, the user will be muted indefinitely. Examples:
   /mute 1h -> mute for 1 hour
   /mute 30m -> mute for 30 minutes
   /mute -> mute indefinitely
 
-/unMute <user> - Unmutes a previously muted user.
+/unMute - Unmutes a previously muted user.
 
 /ban - Bans the user from the group. This command permanently removes the user from the group.
 
-/unBan <user> - Removes the user from the banned list, allowing them to rejoin the group.
+/unBan - Removes the user from the banned list, allowing them to rejoin the group.
 
 /purge - Deletes recent messages that have been replicated. Useful for cleaning up spam or inappropriate content.
 
 /approved - Grants or revokes special permissions for users. Approved users can use forbidden words, pin messages, and forward content in the group.
 
-/unApproved <user> - Revokes special permissions from the specified user.
+/unApproved - Revokes special permissions from the specified user.
 
 /lock [type] - Locks the group to prevent new messages. Can be used with additional options:
   /lock gif -> Lock GIFs
   /lock sticker -> Lock stickers
   /lock forward -> Lock forwarded messages
+  /lock -> lock group
 
 /unLock [type] - Unlocks the group for specific content. Options include:
-  /unlock gif -> Unlock GIFs
-  /unlock sticker -> Unlock stickers
-
+  /unLock gif -> Unlock GIFs
+  /unLock sticker -> Unlock stickers
+  /unLock -> unlock group
 /blacklist - Returns the current blacklist of words and phrases.
 
 /abl <word/phrase> - Adds a word or phrase to the blacklist. Example usage: /abl test
