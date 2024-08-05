@@ -4,7 +4,7 @@
 
 ### Added
 - **Features:**
-  - `start`: Sends a welcome message in Piwi and a different message in the group.
+  - `start`: Sends a welcome message in PV and a different message in the group.
   - `help`: Lists available commands.
   - `warn`: Issues a warning to users; removes users from the group after three warnings.
   - `rmWarn`: Removes warnings from users.
