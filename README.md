@@ -2,7 +2,7 @@
 
 [![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/CMCOP)
 
-CMCOP is a powerful and flexible group management bot for Telegram and a dedicated [CodeModule](https://t.me/CodeModule) bot designed to help admins manage and moderate their groups effectively. This bot offers various features including welcome messages, role management, auto replies and more.
+CMCOP is a powerful and flexible group management bot for Telegram and a dedicated [CodeModule](https://t.me/CodeModule) bot designed to help admins manage and moderate their groups effectively. This bot offers various features including welcome messages, role management, auto replies, and more.
 
 ## Features
 
@@ -21,6 +21,8 @@ CMCOP is a powerful and flexible group management bot for Telegram and a dedicat
 - npm (v6.x or higher)
 
 ### Installation
+
+#### From Source
 
 1. Clone the repository:
 
@@ -63,6 +65,31 @@ CMCOP is a powerful and flexible group management bot for Telegram and a dedicat
     ```bash
     npm start
     ```
+
+#### Docker Installation
+
+You can also run CMCOP using Docker. This method allows you to quickly deploy the bot without needing to manually set up dependencies.
+
+1. **Pull the Docker Image**
+
+   To pull the latest Docker image from Docker Hub:
+
+    ```bash
+    docker pull mahdi83/cmcop-bot
+    ```
+
+2. **Run the Docker Container**
+
+   Run the container with the required environment variables. You can use a `.env` file to pass these variables:
+
+    ```bash
+    docker run -d \
+      --name cmcop-bot \
+      --env-file .env \
+      mahdi83/cmcop-bot
+    ```
+
+   If you need to link the container to a database container, you can use Docker Compose or specify additional environment variables directly in the `docker run` command.
 
 ## Usage
 
