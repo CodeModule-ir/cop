@@ -19,7 +19,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Install dependencies
         run: npm install
@@ -27,14 +30,21 @@ jobs:
       - name: Build Docker image
         run: docker build -t cmcop-bot .
 
-      - name: Run Docker container
-        run: docker run --rm --env-file .env cmcop-bot
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Tag Docker image
         run: |
           docker tag cmcop-bot mahdi83/cmcop-bot:latest
-          docker push mahdi83/cmcop-bot:latest
+          docker tag cmcop-bot mahdi83/cmcop-bot:${{ github.sha }}
 
-      - name: Cleanup Docker images
+      - name: Push Docker image
+        run: |
+          docker push mahdi83/cmcop-bot:latest
+          docker push mahdi83/cmcop-bot:${{ github.sha }}
+
+      - name: Clean up
         run: docker system prune -f
