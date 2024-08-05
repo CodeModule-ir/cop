@@ -1,3 +1,10 @@
 node_modules
 dist
 *.log
+*.env
+Dockerfile
+*.md
+tests
+__tests__
+.git
+.gitignore
