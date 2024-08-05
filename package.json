@@ -2,9 +2,13 @@
   "name": "cmcop",
   "version": "1.0.0",
   "description": "A Telegram bot for managing Telegram groups",
-  "main": "app.js",
+  "main": "/src/app.js",
   "scripts": {
-    "build":"tsc",
+    "docker:remove":"docker-compose down",
+    "docker:build":"docker-compose build",
+    "docker:run": "docker-compose up",
+    "docker:start":"docker-compose up --build",
+    "build": "tsc",
     "test": "mocha --config .mochar.json",
     "start": "node -r ts-node/register --env-file=.env src/app.ts"
   },
