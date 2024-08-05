@@ -75,7 +75,7 @@ You can also run CMCOP using Docker. This method allows you to quickly deploy th
    To pull the latest Docker image from Docker Hub:
 
     ```bash
-    docker pull mahdi83/cmcop-bot
+    docker pull codemodule/cmcop-bot
     ```
 
 2. **Run the Docker Container**
@@ -86,7 +86,7 @@ You can also run CMCOP using Docker. This method allows you to quickly deploy th
     docker run -d \
       --name cmcop-bot \
       --env-file .env \
-      mahdi83/cmcop-bot
+      codemodule/cmcop-bot
     ```
 
    If you need to link the container to a database container, you can use Docker Compose or specify additional environment variables directly in the `docker run` command.
