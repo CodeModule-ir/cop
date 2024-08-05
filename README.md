@@ -2,13 +2,13 @@
 
 [![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/CMCOP)
 
-CMCOP is a powerful and flexible group management bot for Telegram, designed to help admins manage and moderate their groups efficiently. The bot offers a variety of features including welcome messages, role management, automated responses, and more.
+CMCOP is a powerful and flexible group management bot for Telegram and a dedicated [CodeModule](https://t.me/CodeModule) bot designed to help admins manage and moderate their groups effectively. This bot offers various features including welcome messages, role management, auto replies and more.
 
 ## Features
 
-- **Moderation Tools**:  mute and ban users.
+- **Moderation Tools**: Mute and ban users with automated handling of warnings.
 - **Welcome Messages**: Custom welcome messages for new members.
-- **Role Management**: Different roles for admins, moderators, and members.
+- **Role Management**: Manage roles for admins, moderators, and members.
 - **Automated Responses**: Set up responses to frequently asked questions.
 - **Logging and Analytics**: Track group activity and generate reports.
 - **Command Customization**: Allow admins to add or remove custom commands.
@@ -17,7 +17,7 @@ CMCOP is a powerful and flexible group management bot for Telegram, designed to 
 
 ### Prerequisites
 
-- Node.js (v14.x or higher)
+- Node.js (v20.x or higher)
 - npm (v6.x or higher)
 
 ### Installation
@@ -35,13 +35,30 @@ CMCOP is a powerful and flexible group management bot for Telegram, designed to 
     npm install
     ```
 
-3. Set up environment variables. Create a `.env` file in the root directory and add your bot token:
+3. **Set Up Environment Variables**
+
+   The bot requires specific environment variables to run correctly. These are stored in a `.env` file in the root directory of your project. This file should not be committed to version control, so ensure it is listed in your `.gitignore`.
+
+   Create a `.env` file in the root of your project directory with the following content:
 
     ```env
-    BOT_TOKEN=your_bot_token_here
+    TELEGRAM_BOT_TOKEN=your_bot_token_here
+    DB_HOST=db
+    DB_PORT=3306
+    DB_USERNAME=your_db_username
+    DB_PASSWORD=your_db_password
+    DB_NAME=your_db_name
     ```
+   - **TELEGRAM_BOT_TOKEN**: Your Telegram bot token. You can obtain this by creating a bot on Telegram and getting the token from BotFather.
+   - **DB_HOST**: The hostname of your database server. If you are running the database locally, this is often `localhost`. In containerized setups, this might be a service name like `db`.
+   - **DB_PORT**: The port on which your database server is listening. For MySQL, this is typically `3306`.
+   - **DB_USERNAME**: The username used to access your database.
+   - **DB_PASSWORD**: The password associated with the database username.
+   - **DB_NAME**: The name of the database that the bot will use.
 
-4. Start the bot:
+4. **Start the Bot**
+
+   With the environment variables set, you can start the bot:
 
     ```bash
     npm start
@@ -53,27 +70,23 @@ CMCOP is a powerful and flexible group management bot for Telegram, designed to 
 
 - **/start**: Start interacting with the bot and receive a welcome message.
 - **/help**: Get assistance and see the list of available commands.
-- **/warn [user]**: Issue a warning to a user.
-- **/mute [user] [time]**: Mute a user for a specified time.
-- **/ban [user]**: Ban a user from the group.
+- **/warn [reason]**: Issue a warning to a user. If a user accumulates three warnings, they will be automatically banned.
+- **/mute [time]**: Mute a user for a specified duration. Time can be specified in minutes (m), hours (h), or indefinitely.
+- **/ban**: Ban a user from the group permanently.
 
 ### Example
 
 To mute a user for 10 minutes, use:
 
 ```plaintext
-/mute @username 10m
+/mute 10m  (You must reply to the user.)
 ```
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on GitHub.
+We welcome contributions from the community! To help us maintain the quality and consistency of the project, please follow these guidelines:
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
+**Read the Contributing Guidelines**: Before you start, please read our [CONTRIBUTING.md](./docs/CONTRIBUTING.md) file. It contains important information about how to contribute, including coding standards, how to set up your development environment, and the process for submitting changes.
 
 ## License
 
