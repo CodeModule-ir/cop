@@ -19,7 +19,22 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' 
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
+
+      - name: Build Docker image
+        run: docker build -t cmcop-bot .
+
+      - name: Run Docker container
+        run: docker run --rm --env-file .env cmcop-bot
+
+      - name: Push Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker tag cmcop-bot mahdi83/cmcop-bot:latest
+          docker push mahdi83/cmcop-bot:latest
+
+      - name: Cleanup Docker images
+        run: docker system prune -f
