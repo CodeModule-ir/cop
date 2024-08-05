@@ -47,28 +47,55 @@ export class MESSAGE {
   }
   static HELP() {
     return `
-Hello! I am a group admin bot! You can use these commands to manage the group better:
+Hello! I am your group admin bot, here to help you manage the group more effectively. You can use the following commands:
 
 /help - Display this help message.
 
-/warn <reason> - adds a warning to the user. If the user reaches three warnings, he will be automatically banned. Enter the reason for the warning after the command.
+/start - Sends a welcome message. If used in Piwi, it will provide a different message compared to the group.
 
-/mute <duration> - mutes the user for a specified amount of time. If you do not specify a duration, the user will be muted indefinitely. Examples:
- /mute 1h -> mute for 1 hour
- /mute 30m -> Mute for 30 minutes
- /mute -> mute indefinitely
+/warn <reason> - Issues a warning to the user. If the user accumulates three warnings, they will be automatically banned. Provide a reason for the warning after the command.
+
+/rmWarn <user> - Removes warnings from the specified user.
+
+/mute <duration> - Mutes the user for a specified amount of time. If no duration is specified, the user will be muted indefinitely. Examples:
+  /mute 1h -> mute for 1 hour
+  /mute 30m -> mute for 30 minutes
+  /mute -> mute indefinitely
+
+/unMute <user> - Unmutes a previously muted user.
 
 /ban - Bans the user from the group. This command permanently removes the user from the group.
 
-/purge - Clears recent messages in the group. It is usually used to delete inappropriate or spam messages.
+/unBan <user> - Removes the user from the banned list, allowing them to rejoin the group.
 
-/approved - Manages approved users. With this command, you can view or manage the list of approved users.
+/purge - Deletes recent messages that have been replicated. Useful for cleaning up spam or inappropriate content.
 
-/lock []- Lock the group to prevent new messages from being sent. This command is useful when you need to relax in a group.
+/approved - Grants or revokes special permissions for users. Approved users can use forbidden words, pin messages, and forward content in the group.
 
-/blacklist <word/phrase> - Adds specific words or phrases to the blacklist. If a user uses these words in their messages, they will be automatically warned or muted.
+/unApproved <user> - Revokes special permissions from the specified user.
 
-I am always ready to help you manage the group better. If you have any questions or need more help, just use the commands above!
+/lock [type] - Locks the group to prevent new messages. Can be used with additional options:
+  /lock gif -> Lock GIFs
+  /lock sticker -> Lock stickers
+  /lock forward -> Lock forwarded messages
+
+/unLock [type] - Unlocks the group for specific content. Options include:
+  /unlock gif -> Unlock GIFs
+  /unlock sticker -> Unlock stickers
+
+/blacklist - Returns the current blacklist of words and phrases.
+
+/abl <word/phrase> - Adds a word or phrase to the blacklist. Example usage: /abl test
+
+/rmbl <word/phrase> - Removes a word or phrase from the blacklist. Example usage: /rmbl test
+
+/date - Provides today’s date in both Gregorian and solar calendars.
+
+/future - Sends a predefined message about future plans. The message is: "We will go to ga"
+
+/rules - Returns the current rules of the group. You can also add new rules with /rules <rule> or delete all rules with /rules r
+
+I am here to assist you in managing the group. If you have any questions or need further assistance, just use the commands listed above!
 `;
   }
   static PV_START() {
