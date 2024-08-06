@@ -1,6 +1,5 @@
 import { Context } from "grammy";
-import { handleError } from "../helper/errorHandler";
-
+import { handleError } from "../helper";
 export function SafeExecution() {
   return function (
     target: any,
