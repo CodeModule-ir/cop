@@ -36,7 +36,7 @@ This Code of Conduct applies within all project spaces, and it also applies when
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at [bitsgenix@gmail.com](mailto:bitsgenix@gmail.com). All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of any incident.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at [codemoduletm@gmail.com](mailto:codemoduletm@gmail.com). All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of any incident.
 
 ## Attribution
 
