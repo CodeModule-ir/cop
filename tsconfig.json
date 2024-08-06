@@ -8,10 +8,11 @@
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
     "outDir": "./dist",
-    "sourceMap": true ,
+    "sourceMap": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "rootDir": "src"
   },
   "exclude": ["node_modules"],
-  "include": ["src/**/*.ts", "tests/**/*.spec.ts"]
+  "include": ["src/**/*.ts"]
 }

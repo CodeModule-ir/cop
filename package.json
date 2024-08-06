@@ -18,7 +18,7 @@
     "build": "tsc",
     "test": "mocha --config .mochar.json",
     "clean": "rm -rf dist",
-    "main": "dist/app.js",
+    "main": "node dist/app.js",
     "start": "node -r ts-node/register --env-file=.env src/app.ts"
   },
   "repository": {
