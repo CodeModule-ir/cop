@@ -3,18 +3,18 @@ version: '3.8'
 services:
   bot:
     build: .
-    container_name: cmcop-bot
+    container_name: cop
     env_file:
       - .env
     depends_on:
       - db
     networks:
-      - cmcop-net
+      - cop-net
     restart: unless-stopped
 
   db:
     image: mariadb:10.5
-    container_name: cmcop-db
+    container_name: cop-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -23,11 +23,11 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     networks:
-      - cmcop-net
+      - cop-net
     restart: unless-stopped
 
 volumes:
   db-data:
 
 networks:
-  cmcop-net:
+  cop-net:

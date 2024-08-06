@@ -25,23 +25,23 @@ jobs:
         run: npm install
 
       - name: Build Docker image
-        run: docker build -t cmcop-bot .
+        run: docker build -t cop .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Tag Docker image
         run: |
-          docker tag cmcop-bot ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:latest
-          docker tag cmcop-bot ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:${{ github.sha }}
+          docker tag cop ${{ secrets.DOCKER_USERNAME }}/cop:latest
+          docker tag cop ${{ secrets.DOCKER_USERNAME }}/cop:${{ github.sha }}
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/cmcop-bot:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/cop:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/cop:${{ github.sha }}
 
       - name: Clean up
         run: docker system prune -f

@@ -1,8 +1,8 @@
-# CMCOP - Telegram Group Management Bot
+# Code Module Cop - Telegram Group Management Bot
 
-[![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/CMCOP)
+[![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/cmcopbot)
 
-CMCOP is a powerful and flexible group management bot for Telegram and a dedicated [CodeModule](https://t.me/CodeModule) bot designed to help admins manage and moderate their groups effectively. This bot offers various features including welcome messages, role management, auto replies, and more.
+Code Module Cop is a powerful and flexible group management bot for Telegram and a dedicated [CodeModule](https://t.me/CodeModule) bot designed to help admins manage and moderate their groups effectively. This bot offers various features including welcome messages, role management, auto replies, and more.
 
 ## Features
 
@@ -27,7 +27,7 @@ CMCOP is a powerful and flexible group management bot for Telegram and a dedicat
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/m-mdy-m/CMCOP.git
+    git clone https://github.com/CodeModule-ir/cop.git
     cd cmcop
     ```
 

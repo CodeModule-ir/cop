@@ -1,5 +1,5 @@
 {
-  "name": "cmcop",
+  "name": "cop",
   "version": "1.0.0",
   "description": "A Telegram bot for managing Telegram groups",
   "main": "/src/app.js",
@@ -23,21 +23,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/m-mdy-m/CMCOP.git"
+    "url": "git+https://github.com/CodeModule-ir/cop.git"
   },
   "keywords": [
-    "CMCOP",
+    "CodeModule",
+    "Bot",
     "telegram-bot"
   ],
   "author": "mahdi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/m-mdy-m/CMCOP/issues"
+    "url": "https://github.com/CodeModule-ir/cop/issues"
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "homepage": "https://github.com/m-mdy-m/CMCOP#readme",
+  "homepage": "https://github.com/CodeModule-ir/cop#readme",
   "dependencies": {
     "grammy": "^1.27.0",
     "mysql2": "^3.11.0",
