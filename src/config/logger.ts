@@ -79,7 +79,7 @@ export class Logger {
   private externalLogStream?: (message: string) => void;
   private customFormatter?: (logObject: any) => string;
 
-  private constructor(options: LoggerOptions = defaultOpts) {
+  constructor(options: LoggerOptions = defaultOpts) {
     this.level = options.level || defaultOpts.level!;
     this.jsonFormat = options.jsonFormat ?? defaultOpts.jsonFormat!;
     this.timestampFormat =
@@ -249,7 +249,7 @@ export class Logger {
     this.log(errorMessage, "error", category, meta);
   }
 
-  public debug(message: string, category?: string, meta?: any): void {
+  public debug(message: any, category?: string, meta?: any): void {
     this.log(message, "debug", category, meta);
   }
 
