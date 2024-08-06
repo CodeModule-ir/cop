@@ -17,7 +17,7 @@ Thank you for your interest in contributing to the [CodeModule](https://t.me/Cod
 1. **Fork the Repository:** Click the "Fork" button at the top right corner of the repository page on GitHub to create a personal copy of the repository.
 2. **Clone Your Fork:** Clone the repository to your local machine using the following command:
    ```sh
-   git clone https://github.com/m-mdy-m/CMCOP.git
+   git clone https://github.com/CodeModule-ir/cop.git
    ```
 3. **Set Up Your Environment:**
    - Ensure you have [Node.js](https://nodejs.org/) installed.
