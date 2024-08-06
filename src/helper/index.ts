@@ -1,7 +1,7 @@
 import { Context } from "grammy";
 import { BotOverseer } from "../service/bot";
 import { Logger } from "../config/logger";
-const logger = new Logger({ file: "error.log", level: "error" });
+const logger = new Logger({ file: "error.log", level: "error",timestampFormat:'locale' });
 
 export async function handleError(
   ctx: Context,
@@ -61,12 +61,10 @@ export const COMMANDS: string[] = [
   "date",
   "future",
   "rules",
+  "approvedList",
+  "shahin",
 ];
-export async function executeService(
-  ctx: Context,
-  service: any,
-  method: string
-) {
+export async function executeService(ctx: Context,service: any,method: string) {
   if (service[method]) {
     (await service[method](ctx)) || (await new service(ctx)[method]);
   } else {
@@ -91,8 +89,5 @@ export async function executeServiceAdmin(
     }
   } else {
     logger.error(`Action ${action} not found on service ${ServiceClass.name}`);
-    await ctx.reply("There was an error processing your command.", {
-      reply_to_message_id: ctx.message?.message_id,
-    });
   }
 }
