@@ -20,8 +20,6 @@ Code Module Cop is a powerful and flexible group management bot for Telegram and
 
 ### Installation
 
-#### From Source
-
 1. Clone the repository:
 
     ```bash
@@ -63,31 +61,7 @@ Code Module Cop is a powerful and flexible group management bot for Telegram and
     ```bash
     npm start
     ```
-
-#### Docker Installation
-
-You can also run CMCOP using Docker. This method allows you to quickly deploy the bot without needing to manually set up dependencies.
-
-1. **Pull the Docker Image**
-
-   To pull the latest Docker image from Docker Hub:
-
-    ```bash
-    docker pull codemodule/cop
-    ```
-
-2. **Run the Docker Container**
-
-   Run the container with the required environment variables. You can use a `.env` file to pass these variables:
-
-    ```bash
-    docker run -d \
-      --name cop \
-      --env-file .env \
-      codemodule/cop
-    ```
-
-   If you need to link the container to a database container, you can use Docker Compose or specify additional environment variables directly in the `docker run` command.
+For detailed installation instructions, see the [INSTALLATION.md](./docs/INSTALLATION.md) file.
 
 ## Usage
 
@@ -99,6 +73,8 @@ You can also run CMCOP using Docker. This method allows you to quickly deploy th
 - **/mute [time]**: Mute a user for a specified duration. Time can be specified in minutes (m), hours (h), or indefinitely.
 - **/ban**: Ban a user from the group permanently.
 
+For detailed usage instructions, see the [USAGE.md](./docs/USAGE.md) file.
+
 ### Example
 
 To mute a user for 10 minutes, use:
@@ -108,8 +84,6 @@ To mute a user for 10 minutes, use:
 ```
 
 ## Contributing
-
-We welcome contributions from the community! To help us maintain the quality and consistency of the project, please follow these guidelines:
 
 **Read the Contributing Guidelines**: Before you start, please read our [CONTRIBUTING.md](./docs/CONTRIBUTING.md) file. It contains important information about how to contribute, including coding standards, how to set up your development environment, and the process for submitting changes.
 
