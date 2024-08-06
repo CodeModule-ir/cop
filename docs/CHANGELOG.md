@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2024-08-05
+## [1.0.0] - 2024-08-06
 
 ### Added
 - **Features:**
@@ -31,13 +31,16 @@
 - **Containerization:** Docker
 
 ### Scripts
-- `docker:remove`: Stops and removes Docker containers.
+- `docker:stop`: Stops Docker containers.
+- `docker:down`: Down Docker containers.
 - `docker:build`: Builds Docker images.
 - `docker:run`: Starts Docker containers.
 - `docker:start`: Builds and starts Docker containers.
 - `build`: Compiles TypeScript code.
 - `test`: Runs tests using Mocha (configuration in `.mochar.json`).
 - `start`: Starts the application with `ts-node`.
+- `clear`: Remove dist directory
+- `main`: Run node app if compiles TypeScript code
 
 ### Known Issues
 - Test functionality is not yet implemented but will be included in the next version.
