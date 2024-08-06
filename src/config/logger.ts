@@ -73,7 +73,6 @@ export class Logger {
   private jsonFormat: boolean;
   private logFilePath: string = "/";
   private timestampFormat: "iso" | "locale";
-  private lastCategory?: string;
   private rotation: { enabled: boolean; maxSize: number; maxFiles: number };
   private errorHandling: { file: string; console: boolean };
   private externalLogStream?: (message: string) => void;
@@ -208,12 +207,7 @@ export class Logger {
     meta?: any
   ): void {
     if (this.shouldLog(level)) {
-      const formattedMessage = this.formatMessage(
-        message,
-        level,
-        category,
-        meta
-      );
+      const formattedMessage = this.formatMessage( message, level, category, meta );
 
       if (this.externalLogStream) {
         this.externalLogStream(formattedMessage);
