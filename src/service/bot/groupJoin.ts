@@ -3,9 +3,10 @@ import { AppDataSource } from "../../config/db";
 import { GroupSettings } from "../../entities/GroupSettings";
 import { GroupMembership } from "../../entities/GroupMembership";
 import { User } from "../../entities/User";
-import { logger } from "../../config/logging";
+import { Logger } from "../../config/logger";
 import { MESSAGE } from "../../helper/message";
 import { BlacklistService } from "../command/blacklist";
+const logger = new Logger({ file: "join_group.log", level: "info" });
 
 export async function groupJoin(ctx: Context) {
   const chat = ctx.chat!;
@@ -23,6 +24,7 @@ export async function groupJoin(ctx: Context) {
           group_id: chat.id,
           group_name: chat.title,
           welcome_message: "",
+          chat_permissions: (await ctx.api.getChat(chat.id)).permissions,
           rules: "",
           description: "",
           black_list: [],
