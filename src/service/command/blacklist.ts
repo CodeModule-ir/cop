@@ -1,11 +1,12 @@
 import { Repository } from "typeorm";
 import { SafeExecution } from "../../decorators/SafeExecution";
 import { GroupSettings } from "../../entities/GroupSettings";
-import { AppDataSource } from "../../config/db";
 import * as BlackListJson from "../../helper/black_list.json";
 import { Context } from "grammy";
+import { GroupSettingsService } from "../db/group";
 
 export class BlacklistService {
+  private static GroupSettings = new GroupSettingsService()
   // Store JSON terms into the database
   @SafeExecution()
   static async storeBlacklistTerms(groupSettings: GroupSettings) {
@@ -19,7 +20,7 @@ export class BlacklistService {
     const updatedBlacklist = [...new Set([...existingBlacklist, ...newTerms])];
 
     groupSettings.black_list = updatedBlacklist;
-    await AppDataSource.getRepository(GroupSettings).save(groupSettings);
+    await BlacklistService.GroupSettings.save(groupSettings);
     return updatedBlacklist;
   }
 
@@ -30,32 +31,16 @@ export class BlacklistService {
     if (!groupId) {
       return ctx.reply("Could not retrieve chat information.");
     }
+    const repo = BlacklistService.GroupSettings;
+    const groupSettings = await repo.getByGroupId(groupId!);
 
-    const groupRepo: Repository<GroupSettings> =
-      AppDataSource.getRepository(GroupSettings);
-    let groupSettings = await groupRepo.findOne({
-      where: { group_id: groupId },
-    });
-
-    if (!groupSettings) {
-      groupSettings = groupRepo.create({
-        group_id: groupId,
-        group_name: ctx.chat?.title || "",
-        black_list: [],
-        rules: "",
-        description: "",
-        welcome_message: "",
-      });
-      await groupRepo.save(groupSettings);
-    }
-
-    if (!groupSettings.black_list || groupSettings.black_list.length === 0) {
+    if (!groupSettings!.black_list || groupSettings!.black_list.length === 0) {
       // Initialize blacklist from BlackListJson and save
-      await this.storeBlacklistTerms(groupSettings);
+      await this.storeBlacklistTerms(groupSettings!);
     }
 
     // Format the blacklist nicely
-    const formattedList = groupSettings.black_list
+    const formattedList = groupSettings!.black_list
       .map((term, index) => `${index + 1}. ${term}`)
       .join("\n");
 
@@ -75,57 +60,29 @@ export class BlacklistService {
       return ctx.reply("Please provide a term to add to the blacklist.");
     }
 
-    const groupRepo: Repository<GroupSettings> =
-      AppDataSource.getRepository(GroupSettings);
-    let groupSettings = await groupRepo.findOne({
-      where: { group_id: groupId },
-    });
-
-    if (!groupSettings) {
-      groupSettings = groupRepo.create({
-        group_id: groupId,
-        group_name: ctx.chat?.title || "",
-        black_list: [],
-        rules: "",
-        description: "",
-        welcome_message: "",
-      });
-    }
-
-    const blacklist = groupSettings.black_list || [];
+    const repo = BlacklistService.GroupSettings;
+    const groupSettings = await repo.getByGroupId(groupId);
+    const blacklist = groupSettings!.black_list || [];
     if (blacklist.includes(blacklistInput.toLowerCase())) {
       return ctx.reply(`"${blacklistInput}" is already in the blacklist.`);
     }
 
     blacklist.push(blacklistInput.toLowerCase());
-    groupSettings.black_list = blacklist;
-    await groupRepo.save(groupSettings);
+    groupSettings!.black_list = blacklist;
+    await repo.save(groupSettings!);
 
     return ctx.reply(`"${blacklistInput}" has been added to the blacklist.`);
   }
 
   @SafeExecution()
   static async remove(ctx: Context) {
-    const groupId = ctx.chat?.id;
-    if (!groupId) {
-      return ctx.reply("Could not retrieve chat information.");
-    }
-
-    const termToRemove = ctx.message?.text?.split(" ")[1];
-    if (!termToRemove) {
-      return ctx.reply("Please provide a term to remove from the blacklist.");
-    }
-
-    const groupRepo: Repository<GroupSettings> =
-      AppDataSource.getRepository(GroupSettings);
-    const groupSettings = await groupRepo.findOne({
-      where: { group_id: groupId },
-    });
-
+    const groupId = ctx.chat?.id!;
+    const termToRemove = String(ctx.match);
+    const repo = BlacklistService.GroupSettings;
+    const groupSettings = await repo.getByGroupId(groupId)
     if (!groupSettings || !groupSettings.black_list) {
       return ctx.reply("The blacklist is currently empty.");
     }
-
     const blacklist = groupSettings.black_list;
     const termIndex = blacklist.indexOf(termToRemove.toLowerCase());
 
@@ -136,7 +93,7 @@ export class BlacklistService {
     // Remove the term
     blacklist.splice(termIndex, 1);
     groupSettings.black_list = blacklist;
-    await groupRepo.save(groupSettings);
+    await repo.save(groupSettings);
 
     return ctx.reply("The desired word was removed from the blacklist");
   }
