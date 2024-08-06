@@ -10,7 +10,7 @@ export class User {
   @Column({ type: "bigint", unique: true })
   telegram_id!: number;
 
-  @Column({ type: "enum", enum: ["member", "admin", "owner"], default: "member" })
+  @Column({ type: "enum", enum: ["member", "admin", "owner",'restricted'], default: "member" })
   role!: string;
 
   @OneToMany(() => Warning, (warning) => warning.user, { cascade: true, onDelete: "CASCADE" })
