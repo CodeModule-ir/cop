@@ -2,7 +2,7 @@ import { Context } from "grammy";
 import { ChatMemberAdministrator, ChatMemberOwner, User } from "grammy/types";
 import { SafeExecution } from "../../decorators/SafeExecution";
 import { BotInfo, RepliedMessage } from "../../types/types";
-import { logger } from "../../config/logging";
+import { logger } from "../../config/logger";
 export class BotOverseer {
   private ctx: Context;
 
@@ -22,7 +22,11 @@ export class BotOverseer {
 
     const chatMember = await this.ctx.getChatMember(botInfo.id);
     if (!chatMember) {
-      logger.error("Failed to fetch chat member info for the bot.", undefined, "isBotAdmin");
+      logger.error(
+        "Failed to fetch chat member info for the bot.",
+        undefined,
+        "isBotAdmin"
+      );
       return false;
     }
     return ["administrator", "creator"].includes(chatMember.status);
