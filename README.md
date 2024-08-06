@@ -9,9 +9,7 @@ Code Module Cop is a powerful and flexible group management bot for Telegram and
 - **Moderation Tools**: Mute and ban users with automated handling of warnings.
 - **Welcome Messages**: Custom welcome messages for new members.
 - **Role Management**: Manage roles for admins, moderators, and members.
-- **Automated Responses**: Set up responses to frequently asked questions.
 - **Logging and Analytics**: Track group activity and generate reports.
-- **Command Customization**: Allow admins to add or remove custom commands.
 
 ## Getting Started
 
@@ -75,7 +73,7 @@ You can also run CMCOP using Docker. This method allows you to quickly deploy th
    To pull the latest Docker image from Docker Hub:
 
     ```bash
-    docker pull codemodule/cmcop-bot
+    docker pull codemodule/cop
     ```
 
 2. **Run the Docker Container**
@@ -84,9 +82,9 @@ You can also run CMCOP using Docker. This method allows you to quickly deploy th
 
     ```bash
     docker run -d \
-      --name cmcop-bot \
+      --name cop \
       --env-file .env \
-      codemodule/cmcop-bot
+      codemodule/cop
     ```
 
    If you need to link the container to a database container, you can use Docker Compose or specify additional environment variables directly in the `docker run` command.
