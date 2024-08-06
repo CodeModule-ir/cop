@@ -2,11 +2,15 @@ import { Context } from "grammy";
 import { WarnService } from "../command/warn";
 import { SafeExecution } from "../../decorators/SafeExecution";
 import { MessageCheck } from "../MessageCheck";
+
 export class Spam {
   static MessageCounts: Map<
     number,
     { count: number; lastMessageTime: number }
   > = new Map();
+
+  static messageFlags: { [groupId: number]: { [date: string]: boolean } } = {};
+
   @SafeExecution()
   static isWithinTimeRange(current: Date, start: string, end: string): boolean {
     const [startHour, startMinute] = start.split(":").map(Number);
@@ -19,15 +23,16 @@ export class Spam {
     endTime.setHours(endHour, endMinute, 0, 0);
     return current >= startTime && current <= endTime;
   }
+
   @SafeExecution()
   static isExactTime(current: Date): boolean {
-    // Get a random time (either 1:00 AM or 1:05 AM)
     const randomTime = Spam.getRandomTime();
     const [targetHour, targetMinute] = randomTime.split(":").map(Number);
     return (
       current.getHours() === targetHour && current.getMinutes() === targetMinute
     );
   }
+
   private static getRandomTime(): string {
     const times = ["01:00", "01:05"];
     return times[Math.floor(Math.random() * times.length)];
@@ -35,6 +40,23 @@ export class Spam {
 
   @SafeExecution()
   static async WarnSpam(ctx: Context) {
+    const chatId = ctx.chat!.id;
+    const now = new Date();
+    const todayKey = now.toISOString().split("T")[0];
+
+    // Check if within the specified time range
+    if (!Spam.messageFlags[chatId]) {
+      Spam.messageFlags[chatId] = {};
+    }
+
+    if (!Spam.messageFlags[chatId][todayKey]) {
+      if (await Spam.isWithinTimeRange(now, "00:45", "00:59")) {
+        await ctx.reply("بوی اسپم تایم میاد 😋");
+        Spam.messageFlags[chatId][todayKey] = true;
+      }
+    }
+
+    // Existing spam check logic
     if (ctx.message?.sticker || ctx.message?.animation) {
       const userId = ctx.message.from.id;
       const currentTime = Date.now();
@@ -45,13 +67,13 @@ export class Spam {
           // 10 seconds window
           userData.count += 1;
           if (userData.count >= 5) {
-            const isAdmin = await MessageCheck.isAdmin(ctx,userId)
+            const isAdmin = await MessageCheck.isAdmin(ctx, userId);
             if (isAdmin) {
               return;
             }
             await Spam.WarnUser(ctx, userId);
-            Spam.MessageCounts.delete(userId); 
-            return; 
+            Spam.MessageCounts.delete(userId);
+            return;
           }
         } else {
           userData.count = 1; // Reset count if outside the time window
