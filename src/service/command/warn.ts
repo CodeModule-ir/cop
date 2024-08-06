@@ -1,39 +1,33 @@
-import { Repository } from "typeorm";
 import { Context } from "grammy";
 import { BanService } from "./ban";
-import { UserService } from "./user";
-import { Warning } from "../../entities/Warning";
-import { AppDataSource } from "../../config/db";
-import { User } from "../../entities/User";
 import { MESSAGE } from "../../helper/message";
+import { UserService } from "../db/user";
+import { WarningServiceDb } from "../db/user/warning";
 
 export class WarnService {
   private userId: number;
   private ctx: Context;
-  private userRepo: Repository<User>;
-  private warnRepo: Repository<Warning>;
+  private userRepo: UserService;
+  private warnRepo: WarningServiceDb;
 
   constructor(ctx: Context, userId: number) {
     this.userId = userId;
     this.ctx = ctx;
-    this.userRepo = AppDataSource.getRepository(User);
-    this.warnRepo = AppDataSource.getRepository(Warning);
+    this.userRepo = new UserService();
+    this.warnRepo = new WarningServiceDb();
   }
 
   /**
    * Adds a warning to a user.
    */
-  async warn(reason: string="unknown") {
-    let user = await this.userRepo.findOne({
-      where: { telegram_id: this.userId },
-      relations: ["warnings"],
-    });
+  async warn(reason: string = "unknown") {
+    let user = await this.userRepo.findByRelations(this.userId, "warning");
 
     if (!user) {
-      user = await new UserService().createUser(this.ctx, this.userId);
+      user = await this.userRepo.createUser(this.ctx, this.userId);
     }
     // Create and save the new warning
-    const warning = this.warnRepo.create({
+    const warning = await this.warnRepo.create({
       user,
       reason,
     });
@@ -44,10 +38,10 @@ export class WarnService {
     await this.userRepo.save(user);
 
     // Check warning count
-    const warningCount = await this.warnRepo.count({ where: { user } });
+    const warningCount = await this.warnRepo.count(user)
     if (warningCount >= 3) {
       const msg: string = await new BanService(this.ctx, this.userId).ban();
-      await this.warnRepo.delete({ user });
+      await this.warnRepo.clear({ user });
       return { warning, banned: true, message: msg };
     }
     return { warning, banned: false, count: warningCount };
@@ -57,15 +51,12 @@ export class WarnService {
    * Clears all warnings for a user.
    */
   async clear() {
-    const user = await this.userRepo.findOne({
-      where: { telegram_id: this.userId },
-      relations: ["warnings"],
-    });
+    const user = await this.userRepo.findByRelations(this.userId, "warnings");
     if (!user) {
       return MESSAGE.NO_WARNINGS();
     }
 
-    await this.warnRepo.remove(user.warnings);
+    await this.warnRepo.clear(user.warnings!);
     user.warnings = [];
     await this.userRepo.save(user);
 
@@ -76,10 +67,7 @@ export class WarnService {
    * Counts the number of warnings for a user.
    */
   async count(): Promise<number> {
-    const user = await this.userRepo.findOne({
-      where: { telegram_id: this.userId },
-      relations: ["warnings"],
-    });
+    const user = await this.userRepo.findByRelations(this.userId, "warnings");
 
     if (!user) {
       return 0;

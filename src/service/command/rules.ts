@@ -1,7 +1,5 @@
 import { Context } from "grammy";
-import { AppDataSource } from "../../config/db";
-import { Repository } from "typeorm";
-import { GroupSettings } from "../../entities/GroupSettings";
+import { GroupSettingsService } from "../db/group";
 
 export class Rules {
   static async rules(ctx: Context) {
@@ -12,12 +10,9 @@ export class Rules {
     }
 
     const rulesInput = String(ctx.match).trim();
-    const groupRepo: Repository<GroupSettings> =
-      AppDataSource.getRepository(GroupSettings);
+    const groupRepo: GroupSettingsService = new GroupSettingsService();
 
-    let groupSettings = await groupRepo.findOne({
-      where: { group_id: groupId },
-    });
+    let groupSettings = await groupRepo.getByGroupId(groupId)
 
     // Check if the admin wants to delete all rules
     if (rulesInput.toLowerCase() === "r") {
@@ -34,25 +29,10 @@ export class Rules {
 
     // If the user provides new rules input, update the rules
     if (rulesInput) {
-      if (!groupSettings) {
-        // Create new group settings if it doesn't exist
-        groupSettings = groupRepo.create({
-          group_id: groupId,
-          group_name: ctx.chat?.title || "",
-          rules: rulesInput,
-          welcome_message: "",
-          description: "",
-          black_list: [],
-          added_by_id: ctx.message?.from?.id,
-        });
-      } else {
-        // Update the existing rules
-        groupSettings.rules = rulesInput;
-      }
-
-      await groupRepo.save(groupSettings);
+      groupSettings!.rules = rulesInput;
+      await groupRepo.save(groupSettings!);
       return ctx.reply(
-        `Group rules have been updated:\n${groupSettings.rules}`
+        `Group rules have been updated:\n${groupSettings!.rules}`
       );
     } else {
       // If no rules input, display the existing rules

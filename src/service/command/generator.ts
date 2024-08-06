@@ -2,36 +2,13 @@ import { Bot, Context, NextFunction } from "grammy";
 import { Command } from "../../controller/command";
 import { CmdMid } from "../../middleware";
 import { botIsAdmin } from "../../middleware/isAdmin";
+import { COMMANDS } from "../../helper";
 export class GenerateCommand {
   private bot: Bot;
-  static COMMANDS: string[] = [
-    "start",
-    "help",
-    "warn",
-    "rmWarn",
-    "mute",
-    "unMute",
-    "ban",
-    "unBan",
-    "purge",
-    "approved",
-    "unApproved",
-    "lock",
-    "unLock",
-    "blacklist",
-    "abl",
-    "rmbl",
-    "date",
-    "future",
-    "rules"
-  ];
   constructor(bot: Bot) {
     this.bot = bot;
   }
-  private create(
-    name: string,
-    mids?: ((ctx: Context, next: NextFunction) => Promise<void>)[]
-  ) {
+  private create(name: string, mids?: ((ctx: Context, next: NextFunction) => Promise<void>)[]) {
     const middleware = mids ? this.compose(mids) : undefined;
     if (middleware) {
       this.bot.command(name, botIsAdmin, middleware, Command.handleCommand);
@@ -69,7 +46,7 @@ export class GenerateCommand {
    * Generates and registers all commands defined in COMMANDS.
    */
   generate() {
-    for (const command of GenerateCommand.COMMANDS) {
+    for (const command of COMMANDS) {
       if (["start", "help", "date","future","rules"].includes(command)) {
         this.create(command);
       } else if (

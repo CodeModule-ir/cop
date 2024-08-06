@@ -14,7 +14,8 @@ export class DateCommand {
 
     // Reply with both date formats
     await ctx.reply(
-      `Gregorian Date: **${gregorianDate}**\nPersian Date: **${persianDate}**`,
+      `Gregorian Date: **${gregorianDate}**\n
+Persian Date: **${persianDate}**`,
       { parse_mode: "MarkdownV2" }
     );
   }
