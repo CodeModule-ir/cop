@@ -74,16 +74,18 @@ Hello! I am your group admin bot, here to help you manage the group more effecti
 
 /unApproved - Revokes special permissions from the specified user.
 
+/approvedList - Return list Approved Users
+
 /lock [type] - Locks the group to prevent new messages. Can be used with additional options:
   /lock gif -> Lock GIFs
-  /lock sticker -> Lock stickers
-  /lock forward -> Lock forwarded messages
+  /lock poll -> Lock Poll
   /lock -> lock group
 
 /unLock [type] - Unlocks the group for specific content. Options include:
   /unLock gif -> Unlock GIFs
-  /unLock sticker -> Unlock stickers
+  /unLock poll -> Unlock Poll
   /unLock -> unlock group
+
 /blacklist - Returns the current blacklist of words and phrases.
 
 /abl <word/phrase> - Adds a word or phrase to the blacklist. Example usage: /abl test
