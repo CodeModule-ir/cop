@@ -3,6 +3,7 @@
   { "term": "خارکصه", "action": "Ban" },
   { "term": "خارکصته", "action": "Ban" },
   { "term": "گاییدم", "action": "mute 1d" },
+  { "term": "کسکش", "action": "mute 1h" },
   { "term": "مادرجنده", "action": "Ban" },
   { "term": "کص ننت", "action": "Ban" },
   { "term": "کوصوشعر", "action": "mute 1h" },
