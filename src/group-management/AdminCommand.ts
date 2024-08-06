@@ -2,18 +2,18 @@ import { Context } from "grammy";
 import { MESSAGE } from "../helper/message";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { MuteService } from "../service/command/mute";
-import { parseDuration } from "../helper";
-import { ChatPermissions } from "grammy/types";
+import { executeService, executeServiceAdmin, parseDuration } from "../helper";
 import { WarnService } from "../service/command/warn";
 import { BanService } from "../service/command/ban";
 import { BotOverseer } from "../service/bot";
 import { BlacklistService } from "../service/command/blacklist";
 import { DateCommand } from "../service/command/date";
-import { Rules } from '../service/command/rules';
+import { Rules } from "../service/command/rules";
 import { Approved } from "../service/command/approved";
+import { Permissions } from "../service/command/Permissions";
 export class AdminCommand {
   @SafeExecution()
-  static async Warn(ctx: Context): Promise<void> {
+  static async warn(ctx: Context): Promise<void> {
     const bot = new BotOverseer(ctx);
     const [repliedMessage, repliedUserId] = await Promise.all([
       bot.getReplyMessage(),
@@ -39,16 +39,6 @@ export class AdminCommand {
   }
 
   @SafeExecution()
-  static async WarnClear(ctx: Context): Promise<void> {
-    const bot = new BotOverseer(ctx);
-    const userId = await bot.getRepliedUserId();
-    const responseMessage = await new WarnService(ctx, userId!).clear();
-    await ctx.reply(responseMessage, {
-      reply_to_message_id: ctx.message?.message_id,
-    });
-  }
-
-  @SafeExecution()
   static async mute(ctx: Context): Promise<void> {
     const bot = new BotOverseer(ctx);
     const userId = await bot.getRepliedUserId();
@@ -68,36 +58,9 @@ export class AdminCommand {
       reply_to_message_id: ctx.message?.message_id,
     });
   }
-  @SafeExecution()
-  static async MuteClear(ctx: Context): Promise<void> {
-    const bot = new BotOverseer(ctx);
-    const userId = await bot.getRepliedUserId();
-    const responseMessage = await new MuteService(ctx, userId!).unmute();
-    await ctx.reply(responseMessage!, {
-      reply_to_message_id: ctx.message?.message_id,
-    });
-  }
 
   @SafeExecution()
-  static async ban(ctx: Context): Promise<void> {
-    const bot = new BotOverseer(ctx);
-    const userId = await bot.getRepliedUserId();
-    const responseMessage = await new BanService(ctx, userId!).ban();
-    await ctx.reply(responseMessage, {
-      reply_to_message_id: ctx.message?.message_id,
-    });
-  }
-  @SafeExecution()
-  static async unBan(ctx: Context): Promise<void> {
-    const bot = new BotOverseer(ctx);
-    const userId = await bot.getRepliedUserId();
-    const responseMessage = await new BanService(ctx, userId!).unban();
-    await ctx.reply(responseMessage, {
-      reply_to_message_id: ctx.message?.message_id,
-    });
-  }
-  @SafeExecution()
-  static async Purge(ctx: Context): Promise<any> {
+  static async purge(ctx: Context): Promise<any> {
     const chatId = ctx.chat?.id;
     const replyToMessageId = ctx.message?.reply_to_message?.message_id;
     if (!chatId || !replyToMessageId) {
@@ -127,163 +90,68 @@ export class AdminCommand {
   }
 
   @SafeExecution()
-  static async approved(ctx: Context) {
-    await Approved.add(ctx)
-  }
-
-  @SafeExecution()
-  static async unApproved(ctx: Context) {
-    await Approved.remove(ctx)
-  }
-
-  @SafeExecution()
   static async lock(ctx: Context) {
-    const bot = new BotOverseer(ctx);
-    const userId = (await bot.getUser()).id;
-
-    // Check if the user is an admin
-    if (!(await bot.isUserAdmin(userId))) {
-      return ctx.reply("Only admins can use the /lock command.", {
-        reply_to_message_id: ctx.message?.message_id,
-      });
-    }
-
-    const chatId = ctx.chat?.id;
-    const lockType = ctx.message?.text?.split(" ")[1];
-
-    if (!chatId) {
-      return ctx.reply("Could not retrieve chat information.");
-    }
-
-    // Fetch current chat permissions
-    const currentPermissions: ChatPermissions | undefined = await ctx.api
-      .getChat(chatId!)
-      .then((chat) => chat.permissions);
-
-    let updatedPermissions: ChatPermissions;
-
-    // Determine the type of lock
-    if (!lockType) {
-      // Lock all permissions if no specific type is provided
-      updatedPermissions = {
-        can_send_messages: false,
-        can_send_polls: false,
-        can_send_other_messages: false,
-        can_add_web_page_previews: false,
-        can_change_info: false,
-        can_invite_users: false,
-        can_pin_messages: false,
-        can_send_photos: false,
-        can_send_documents: false,
-        can_manage_topics: false,
-      };
-      await ctx.reply("Locked all permissions for all members.");
-    } else {
-      // Lock specific types based on the provided lockType
-      updatedPermissions = { ...currentPermissions };
-
-      switch (lockType.toLowerCase()) {
-        case "sticker":
-          updatedPermissions.can_send_other_messages = false;
-          break;
-        case "forward":
-          updatedPermissions.can_send_other_messages = false;
-          break;
-        case "poll":
-          updatedPermissions.can_send_polls = false;
-          break;
-        default:
-          return ctx.reply(
-            "Invalid lock type. Available options are: gif, msg, sticker, forward, poll."
-          );
-      }
-      await ctx.reply(`Locked ${lockType} for all members.`);
-    }
-
-    await ctx.api.setChatPermissions(chatId, updatedPermissions);
+    const type = String(ctx.match);
+    await Permissions.modify(ctx, "lock", type);
   }
+
   @SafeExecution()
   static async unLock(ctx: Context) {
-    const bot = new BotOverseer(ctx);
-    const userId = (await bot.getUser()).id;
-
-    // Check if the user is an admin
-    if (!(await bot.isUserAdmin(userId))) {
-      return ctx.reply("Only admins can use the /unlock command.", {
-        reply_to_message_id: ctx.message?.message_id,
-      });
-    }
-
-    const chatId = ctx.chat?.id;
-    const unlockType = ctx.message?.text?.split(" ")[1];
-
-    if (!chatId) {
-      return ctx.reply("Could not retrieve chat information.");
-    }
-
-    // Fetch current chat permissions
-    const currentPermissions: ChatPermissions | undefined = await ctx.api
-      .getChat(chatId!)
-      .then((chat) => chat.permissions);
-
-    let updatedPermissions: ChatPermissions = { ...currentPermissions };
-
-    // Determine the type of unlock
-    if (!unlockType) {
-      // Unlock all permissions if no specific type is provided
-      updatedPermissions = {
-        can_send_messages: true,
-        can_invite_users: true,
-        can_send_photos: true,
-      };
-      await ctx.reply("Unlocked all permissions for all members.");
-    } else {
-      // Unlock specific types based on the provided unlockType
-      switch (unlockType.toLowerCase()) {
-        case "sticker":
-          updatedPermissions.can_send_other_messages = true;
-          break;
-        case "gif":
-          updatedPermissions.can_send_other_messages = true;
-          break;
-        case "forward":
-          updatedPermissions.can_send_other_messages = true;
-          break;
-        case "poll":
-          updatedPermissions.can_send_polls = true;
-          break;
-        default:
-          return ctx.reply(
-            "Invalid unlock type. Available options are: gif, msg, sticker, forward, poll."
-          );
-      }
-      await ctx.reply(`Unlocked ${unlockType} for all members.`);
-    }
-
-    // Apply the updated permissions
-    await ctx.api.setChatPermissions(chatId, updatedPermissions);
+    const type = String(ctx.match);
+    await Permissions.modify(ctx, "unlock", type);
   }
   @SafeExecution()
-  static async addBlackList(ctx: Context) {
-    await BlacklistService.addBlackList(ctx);
+  static async rmWarn(ctx: Context) {
+    await executeServiceAdmin(ctx, WarnService, "clear");
   }
 
   @SafeExecution()
-  static async getBlackList(ctx: Context) {
-    await BlacklistService.BlackList(ctx);
+  static async unMute(ctx: Context) {
+    await executeServiceAdmin(ctx, MuteService, "unmute");
   }
+
   @SafeExecution()
-  static async RemoveMessageBlackList(ctx: Context) {
-    await BlacklistService.remove(ctx);
+  static async ban(ctx: Context) {
+    await executeServiceAdmin(ctx, BanService, "ban");
+  }
+
+  @SafeExecution()
+  static async unBan(ctx: Context) {
+    await executeServiceAdmin(ctx, BanService, "unban");
+  }
+
+  @SafeExecution()
+  static async abl(ctx: Context) {
+    await executeService(ctx, BlacklistService, "addBlackList");
+  }
+
+  @SafeExecution()
+  static async blacklist(ctx: Context) {
+    await executeService(ctx, BlacklistService, "BlackList");
+  }
+
+  @SafeExecution()
+  static async rmbl(ctx: Context) {
+    await executeService(ctx, BlacklistService, "remove");
   }
 
   @SafeExecution()
   static async date(ctx: Context) {
-    await DateCommand.date(ctx);
+    await executeService(ctx, DateCommand, "date");
   }
 
   @SafeExecution()
   static async rules(ctx: Context) {
-    await Rules.rules(ctx)
+    await executeService(ctx, Rules, "rules");
+  }
+
+  @SafeExecution()
+  static async approved(ctx: Context) {
+    await executeService(ctx, Approved, "add");
+  }
+
+  @SafeExecution()
+  static async unApproved(ctx: Context) {
+    await executeService(ctx, Approved, "remove");
   }
 }
