@@ -21,7 +21,7 @@ export class WarnService {
    * Adds a warning to a user.
    */
   async warn(reason: string = "unknown") {
-    let user = await this.userRepo.findByRelations(this.userId, "warning");
+    let user = await this.userRepo.findByRelations(this.userId, "warnings");
 
     if (!user) {
       user = await this.userRepo.createUser(this.ctx, this.userId);
