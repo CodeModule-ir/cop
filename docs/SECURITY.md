@@ -7,9 +7,9 @@ As maintainers of the [CodeModule](https://t.me/CodeModule) Bot Project, we prio
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability, please report it to us in a responsible manner. Here are the steps to follow:
-
+codemoduletm@gmail.com
 1. **Do Not Post Publicly:** Do not disclose the vulnerability in public forums or platforms. This could lead to exploitation before a fix is available.
-2. **Email the Team:** Send an email to our security team at [bitsgenix@gmail.com](mailto:bitsgenix@gmail.com) with detailed information about the vulnerability, including steps to reproduce and potential impacts.
+2. **Email the Team:** Send an email to our security team at [codemoduletm@gmail.com](mailto:codemoduletm@gmail.com) with detailed information about the vulnerability, including steps to reproduce and potential impacts.
 3. **Confidentiality:** We will keep your report confidential and will work with you to address the issue.
 
 ## Security Characteristics
