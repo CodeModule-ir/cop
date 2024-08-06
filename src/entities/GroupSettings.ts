@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { GroupMembership } from "./GroupMembership";
 import { ApprovedUser } from "./ApprovedUser";
+import { ChatPermissions } from "grammy/types";
 
 @Entity()
 export class GroupSettings {
@@ -27,6 +28,9 @@ export class GroupSettings {
 
   @Column({ type: "simple-array", nullable: true })
   black_list!: string[];
+
+  @Column({ type: "json", nullable: true })
+  chat_permissions!: ChatPermissions; 
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   updated_at!: Date;
