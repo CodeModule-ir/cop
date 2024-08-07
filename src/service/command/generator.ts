@@ -47,10 +47,10 @@ export class GenerateCommand {
    */
   generate() {
     for (const command of COMMANDS) {
-      if (["start", "help", "date","future","rules"].includes(command)) {
+      if (["start", "help", "date","future","rules","shahin"].includes(command)) {
         this.create(command);
       } else if (
-        ["lock", "blacklist", "abl", "unLock", "rmbl"].includes(command)
+        ["lock", "blacklist", "abl", "unLock", "rmbl","approvedList"].includes(command)
       ) {
         this.create(command, [CmdMid.isSupergroupOrChannel,CmdMid.AdminStatus]);
       } else if (["purge"].includes(command)) {
