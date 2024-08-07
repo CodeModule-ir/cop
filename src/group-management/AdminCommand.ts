@@ -76,7 +76,6 @@ export class AdminCommand {
     const userId = await bot.getRepliedUserId();
     const durationStr = String(ctx.match as string)
       .trim()
-      .split(" ")[1];
     let durationMs: number | null = null;
     if (durationStr) {
       durationMs = parseDuration(durationStr);
