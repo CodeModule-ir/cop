@@ -1,5 +1,6 @@
 import { Context } from "grammy";
 import { MESSAGE } from "../../helper/message";
+import { initGroupSetting } from "../../decorators/db";
 
 export class MuteService {
   private userId: number;
@@ -13,10 +14,11 @@ export class MuteService {
   /**
    * Mutes a user with an optional expiration time.
    */
+  @initGroupSetting()
   async mute(expiration?: Date | null) {
     await this.isMute(false, expiration!);
     return MESSAGE.MUTE_SET(
-      (this.ctx.message?.reply_to_message?.from!) || (this.ctx.message?.from!),
+      this.ctx.message?.reply_to_message?.from! || this.ctx.message?.from!,
       expiration!
     );
   }
@@ -43,6 +45,7 @@ export class MuteService {
   /**
    * Lifts the mute restrictions.
    */
+  @initGroupSetting()
   async unmute() {
     await this.isMute(true);
     return MESSAGE.MUTE_CLEAR(this.ctx.message?.reply_to_message?.from!);

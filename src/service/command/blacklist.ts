@@ -4,11 +4,13 @@ import { GroupSettings } from "../../entities/GroupSettings";
 import * as BlackListJson from "../../helper/black_list.json";
 import { Context } from "grammy";
 import { GroupSettingsService } from "../db/group";
+import { initGroupSetting } from "../../decorators/db";
 
 export class BlacklistService {
-  private static GroupSettings = new GroupSettingsService()
+  private static GroupSettings = new GroupSettingsService();
   // Store JSON terms into the database
   @SafeExecution()
+  @initGroupSetting()
   static async storeBlacklistTerms(groupSettings: GroupSettings) {
     const newTerms = BlackListJson.map((item: { term: string }) =>
       item.term.toLowerCase()
@@ -26,6 +28,7 @@ export class BlacklistService {
 
   // Display the blacklist in a formatted manner
   @SafeExecution()
+  @initGroupSetting()
   static async BlackList(ctx: Context) {
     const groupId = ctx.chat?.id;
     if (!groupId) {
@@ -49,6 +52,7 @@ export class BlacklistService {
 
   // Add new term to the blacklist
   @SafeExecution()
+  @initGroupSetting()
   static async addBlackList(ctx: Context) {
     const groupId = ctx.chat?.id;
     if (!groupId) {
@@ -75,11 +79,12 @@ export class BlacklistService {
   }
 
   @SafeExecution()
+  @initGroupSetting()
   static async remove(ctx: Context) {
     const groupId = ctx.chat?.id!;
     const termToRemove = String(ctx.match);
     const repo = BlacklistService.GroupSettings;
-    const groupSettings = await repo.getByGroupId(groupId)
+    const groupSettings = await repo.getByGroupId(groupId);
     if (!groupSettings || !groupSettings.black_list) {
       return ctx.reply("The blacklist is currently empty.");
     }
