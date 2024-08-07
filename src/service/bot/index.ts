@@ -88,9 +88,7 @@ export class BotOverseer {
     return user!;
   }
   @SafeExecution()
-  async userInGroup(
-    msg: string = "The user is no longer a member of this group."
-  ): Promise<boolean | undefined> {
+  async userInGroup(msg: string = "The user is no longer a member of this group."): Promise<boolean | undefined> {
     const id = await this.getRepliedUserId();
     if (!id) {
       await this.ctx.reply(

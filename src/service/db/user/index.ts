@@ -28,16 +28,14 @@ export class UserService extends DatabaseService {
     const chatMember = await ctx.getChatMember(telegram_id);
     const role = chatMember.status;
     let user = await this.getByTelegramId(telegram_id);
-
     if (!user) {
-      user = await this.userRepo.create({
+      user = this.userRepo.create({
         telegram_id,
         role,
         warnings: [],
       });
       await this.userRepo.save(user);
     }
-
     return user;
   }
 }
