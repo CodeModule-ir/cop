@@ -7,6 +7,13 @@ import { MuteService } from "./command/mute";
 import { BanService } from "./command/ban";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { ApprovedUser } from "../entities/ApprovedUser";
+import { GroupSettingsService } from "./db/group";
+import { Logger } from "../config/logger";
+import { BlacklistService } from "./command/blacklist";
+import { UserService } from "./db/user";
+import { GroupMembershipService } from "./db/group/Membership";
+import { MESSAGE } from "../helper/message";
+const logger = new Logger({ file: "join_group.log", level: "info" });
 
 export class MessageCheck {
   @SafeExecution()
@@ -31,10 +38,14 @@ export class MessageCheck {
       return;
     }
     const blacklist = groupSettings.black_list;
-    const approvedUserRepo: Repository<ApprovedUser> = AppDataSource.getRepository(ApprovedUser);
-    const [isApprovedUser,isAdmin] =await Promise.all([approvedUserRepo.findOne({
-      where: { user_id: userId, group: { group_id: groupId } },
-    }), this.isAdmin(ctx, userId)])
+    const approvedUserRepo: Repository<ApprovedUser> =
+      AppDataSource.getRepository(ApprovedUser);
+    const [isApprovedUser, isAdmin] = await Promise.all([
+      approvedUserRepo.findOne({
+        where: { user_id: userId, group: { group_id: groupId } },
+      }),
+      this.isAdmin(ctx, userId),
+    ]);
     if (isApprovedUser || isAdmin) {
       return;
     }
@@ -79,7 +90,10 @@ export class MessageCheck {
     username: string,
     messageId: number
   ) {
-    const [muteService,banService ] = [new MuteService(ctx, userId), new BanService(ctx, userId)]
+    const [muteService, banService] = [
+      new MuteService(ctx, userId),
+      new BanService(ctx, userId),
+    ];
 
     const [command, duration] = action.split(" ");
     switch (command.toLowerCase()) {
@@ -126,5 +140,70 @@ export class MessageCheck {
     }
 
     return now;
+  }
+  static async initialGroup(ctx: Context) {
+    const chat = ctx.chat!;
+    const from = ctx.from;
+    try {
+      const groupRepo = new GroupSettingsService();
+      let groupSettings = await groupRepo.getByGroupId(chat.id);
+      if (groupSettings) {
+        return;
+      }
+
+      if (!groupSettings) {
+        groupSettings = await groupRepo.init(ctx);
+        logger.info(
+          `Bot added to group ${chat.title} by ${from?.username}`,
+          "GROUP"
+        );
+        // Initialize blacklist terms from BlackListJson
+        await BlacklistService.storeBlacklistTerms(groupSettings);
+      } else {
+        logger.info(
+          `Bot re-added to existing group ${chat.title} by ${from?.username}`,
+          "GROUP"
+        );
+      }
+
+      // Add the user who added the bot to the group as an admin
+      const userRepo = new UserService();
+      let user = await userRepo.getByTelegramId(from?.id!);
+
+      if (!user) {
+        user = await userRepo.create({
+          telegram_id: from?.id!,
+          role: "admin",
+        });
+
+        await userRepo.save(user);
+      } else {
+        // Update user role if needed
+        if (user.role !== "admin") {
+          user.role = "admin";
+          await userRepo.save(user);
+        }
+      }
+
+      // Create a GroupMembership record
+      const membershipRepo = new GroupMembershipService();
+      let membership = await membershipRepo.getGroupAndUserId(
+        groupSettings.id,
+        user.id
+      );
+
+      if (!membership) {
+        membership = await membershipRepo.create({
+          group: groupSettings,
+          user: user,
+          is_admin: true,
+        });
+
+        await membershipRepo.save(membership);
+      }
+      await ctx.reply(MESSAGE.newGroupJoin(ctx, from?.username!));
+    } catch (error: any) {
+      logger.error("Failed to save group settings", error, "GROUP");
+    }
   }
 }
