@@ -1,3 +1,4 @@
+import { Context } from "grammy";
 import { DatabaseService } from "..";
 import { GroupSettings } from "../../../entities/GroupSettings";
 
@@ -18,5 +19,21 @@ export class GroupSettingsService extends DatabaseService {
 
   async remove(id: number) {
     return this.groupSettingsRepo.delete({ id });
+  }
+  async init(ctx: Context) {
+    const chat = ctx.chat!;
+    const from = ctx.from;
+    return await this.save(
+      await this.create({
+        group_id: chat.id,
+        group_name: chat.title,
+        welcome_message: "",
+        chat_permissions: (await ctx.api.getChat(chat.id)).permissions,
+        rules: "",
+        description: "",
+        black_list: [],
+        added_by_id: from?.id,
+      })
+    );
   }
 }

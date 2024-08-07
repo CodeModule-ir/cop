@@ -15,12 +15,8 @@ export class DatabaseService {
   }
 
   async initialize() {
-    try {
       await this.db.initialize();
       logger.info("Database connection initialized", "DATABASE");
-    } catch (error: any) {
-      logger.error("Error initializing database connection", error, "DATABASE");
-    }
   }
 
   async close() {
