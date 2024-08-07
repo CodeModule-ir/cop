@@ -1,6 +1,7 @@
+import { Logger } from "../config/logger";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { Middleware } from "./mid";
-
+const logger = new Logger({file:"ActionFilter.log",level:'info',timestampFormat:'locale'})
 export class ActionFilter extends Middleware {
   @SafeExecution()
   /**
@@ -28,7 +29,7 @@ export class ActionFilter extends Middleware {
    */
   async userInGroup(): Promise<void> {
     const userId = this.ctx.message?.reply_to_message?.from?.id;
-
+    
     if (!userId) {
       await this.ctx.reply(
         "Unable to determine the user ID. Please ensure you are replying to a valid user.",
