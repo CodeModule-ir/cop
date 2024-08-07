@@ -3,7 +3,9 @@ import { BanService } from "./ban";
 import { MESSAGE } from "../../helper/message";
 import { UserService } from "../db/user";
 import { WarningServiceDb } from "../db/user/warning";
-
+import { Logger } from "../../config/logger";
+import { SafeExecution } from "../../decorators/SafeExecution";
+const logger = new Logger({file:"warnService.log",level:'debug',timestampFormat:'locale',})
 export class WarnService {
   private userId: number;
   private ctx: Context;
@@ -20,10 +22,11 @@ export class WarnService {
   /**
    * Adds a warning to a user.
    */
+  // @SafeExecution()
   async warn(reason: string = "unknown") {
     let user = await this.userRepo.findByRelations(this.userId, "warnings");
-
     if (!user) {
+      logger.info('User not found, creating new user', 'WARN_SERVICE', { userId: this.userId });
       user = await this.userRepo.createUser(this.ctx, this.userId);
     }
     // Create and save the new warning
@@ -32,16 +35,19 @@ export class WarnService {
       reason,
     });
     await this.warnRepo.save(warning);
-
+    logger.info('Warning added to user', 'WARN_SERVICE', { userId: this.userId, warningId: warning.id });
     // Update user warnings list
     user.warnings.push(warning);
     await this.userRepo.save(user);
+    logger.debug('User warnings updated', 'WARN_SERVICE', { userId: this.userId, warningCount: user.warnings.length });
 
     // Check warning count
-    const warningCount = await this.warnRepo.count(user)
+    const warningCount = await this.warnRepo.count(user);
     if (warningCount >= 3) {
+      logger.warn('User has reached warning limit', 'WARN_SERVICE', { userId: this.userId, warningCount });
       const msg: string = await new BanService(this.ctx, this.userId).ban();
-      await this.warnRepo.clear({ user });
+      await this.warnRepo.clear(user.id);
+      logger.info('User banned and warnings cleared', 'WARN_SERVICE', { userId: this.userId, message: msg });
       return { warning, banned: true, message: msg };
     }
     return { warning, banned: false, count: warningCount };
@@ -50,15 +56,19 @@ export class WarnService {
   /**
    * Clears all warnings for a user.
    */
+  @SafeExecution()
   async clear() {
+    logger.debug('Attempting to clear warnings for user', 'WARN_SERVICE', { userId: this.userId });
     const user = await this.userRepo.findByRelations(this.userId, "warnings");
     if (!user) {
+      logger.info('No warnings found for user', 'WARN_SERVICE', { userId: this.userId });
       return MESSAGE.NO_WARNINGS();
     }
 
-    await this.warnRepo.clear(user.warnings!);
+    await this.warnRepo.clear(user.id);
     user.warnings = [];
     await this.userRepo.save(user);
+    logger.info('All warnings cleared for user', 'WARN_SERVICE', { userId: this.userId });
 
     return MESSAGE.WARN_CLEAR();
   }
@@ -66,13 +76,19 @@ export class WarnService {
   /**
    * Counts the number of warnings for a user.
    */
+  @SafeExecution()
   async count(): Promise<number> {
-    const user = await this.userRepo.findByRelations(this.userId, "warnings");
+    logger.debug('Counting warnings for user', 'WARN_SERVICE', { userId: this.userId });
 
+    const user = await this.userRepo.findByRelations(this.userId, "warnings");
     if (!user) {
+      logger.info('No user found for warning count', 'WARN_SERVICE', { userId: this.userId });
       return 0;
     }
 
-    return user.warnings.length;
+    const warningCount = user.warnings.length;
+    logger.debug('Warning count for user', 'WARN_SERVICE', { userId: this.userId, warningCount });
+
+    return warningCount;
   }
 }
