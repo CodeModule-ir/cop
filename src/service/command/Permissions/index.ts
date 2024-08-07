@@ -167,7 +167,7 @@ export class Permissions {
           break;
         default:
           return ctx.reply(
-            `Invalid ${action} type. Available options are: sticker, gif, forward, poll.`
+            `Invalid ${action} type. Available options are: gif, poll.`
           );
       }
       await ctx.reply(
