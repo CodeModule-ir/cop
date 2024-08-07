@@ -55,3 +55,28 @@
 
 ### License
 - This project is licensed under the MIT License.
+
+## [2.0.0] - 2024-08-07
+
+### Added
+- **Features:**
+  - `approvedList`: Returns the list of approved users.
+  - `RATE LIMIT`: Introduced rate limiting for commands to prevent abuse.
+  - `Decorator Group Initial`: Added a decorator for initializing the group in case of database deletion, ensuring normal operation.
+
+### Fixed
+- **Bug Fixes:**
+  - `rmWarn`: Fixed the bug that prevented warnings from being removed correctly.
+  - `unApproved`: Fixed the bug where users were not removed from the approved list as expected.
+  - `rules`: Fixed the bug where adding a new rule caused the previous rules to be deleted.
+  - `purge`: Fixed the bug that limited message deletion to fewer than 200 messages; now supports deleting more messages in a short time.
+  
+### Enhancements
+- **Logging:**
+  - Added loggers to improve the ability to analyze program behavior and track issues.
+
+### Contribution
+- Contributions are welcome. Please follow the guidelines provided in the `CONTRIBUTING.md` file for more details on how to contribute.
+
+### License
+- This project is licensed under the MIT License.

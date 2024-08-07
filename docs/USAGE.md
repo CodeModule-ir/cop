@@ -16,6 +16,7 @@ This document provides detailed instructions on how to use the Code Module Cop b
 ## Role Management Commands
 - /approved: Grants users special permissions, such as using forbidden words and pinning messages.
 - /unApproved: Revokes special permissions from users.
+- /approvedList: Return All Approved user
 ### Group Management Commands
 - /lock: Locks the group with additional options to lock gifs, stickers, or forwards.
 - /unLock: Unlocks the group with additional options to unlock gifs or stickers.
