@@ -14,7 +14,7 @@ import { UserService } from "./db/user";
 import { GroupMembershipService } from "./db/group/Membership";
 import { MESSAGE } from "../helper/message";
 import { RateLimiter } from "../helper/RateLimiter";
-const logger = new Logger({ file: "join_group.log", level: "info" });
+const logger = new Logger({ file: "join_group.log", level: "info" ,timestampFormat:'locale'});
 
 export class MessageCheck {
   @SafeExecution()
