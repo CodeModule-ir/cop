@@ -13,6 +13,7 @@ import { BlacklistService } from "./command/blacklist";
 import { UserService } from "./db/user";
 import { GroupMembershipService } from "./db/group/Membership";
 import { MESSAGE } from "../helper/message";
+import { RateLimiter } from "../helper/RateLimiter";
 const logger = new Logger({ file: "join_group.log", level: "info" });
 
 export class MessageCheck {
@@ -78,6 +79,11 @@ export class MessageCheck {
   }
 
   static async isAdmin(ctx: Context, userId: number): Promise<boolean> {
+    if (!RateLimiter.limit(ctx.chat!.id)) {
+    // If rate limit exceeded, you might want to log or handle it accordingly
+    logger.warn('Rate limit exceeded for getChatAdministrators.');
+    return false;
+  }
     const chatAdmins = await ctx.getChatAdministrators();
     return chatAdmins.some((admin) => admin.user.id === userId);
   }
