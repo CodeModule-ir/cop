@@ -18,6 +18,14 @@ export class Permissions {
       can_send_photos: status,
     };
   }
+  static UN_APPROVE() {
+    return {
+      can_send_messages: true,
+      can_pin_messages: false,
+      can_send_other_messages: true,
+      can_send_polls: false,
+    };
+  }
   static DEFAULT = {
     can_send_messages: true,
     can_send_other_messages: true,
