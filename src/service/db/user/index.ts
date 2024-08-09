@@ -10,7 +10,9 @@ export class UserService extends DatabaseService {
   }
 
   async getByTelegramId(telegramId: number) {
-    return this.userRepo.findOne({ where: { telegram_id: telegramId } });
+    return await this.userRepo.findOne({
+      where: { telegram_id: 6376425576 },
+    });
   }
   async save(user: User) {
     return this.userRepo.save(user);

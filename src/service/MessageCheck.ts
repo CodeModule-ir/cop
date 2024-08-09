@@ -163,8 +163,6 @@ export class MessageCheck {
           `Bot added to group ${chat.title} by ${from?.username}`,
           "GROUP"
         );
-        // Initialize blacklist terms from BlackListJson
-        await BlacklistService.storeBlacklistTerms(groupSettings);
       } else {
         logger.info(
           `Bot re-added to existing group ${chat.title} by ${from?.username}`,

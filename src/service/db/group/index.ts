@@ -1,6 +1,7 @@
 import { Context } from "grammy";
 import { DatabaseService } from "..";
 import { GroupSettings } from "../../../entities/GroupSettings";
+import * as BlackListJson from "../../../helper/black_list.json";
 
 export class GroupSettingsService extends DatabaseService {
   private groupSettingsRepo = this.getRepo(GroupSettings);
@@ -23,17 +24,21 @@ export class GroupSettingsService extends DatabaseService {
   async init(ctx: Context) {
     const chat = ctx.chat!;
     const from = ctx.from;
-    return await this.save(
-      await this.create({
-        group_id: chat.id,
-        group_name: chat.title,
-        welcome_message: "",
-        chat_permissions: (await ctx.api.getChat(chat.id)).permissions,
-        rules: "",
-        description: "",
-        black_list: [],
-        added_by_id: from?.id,
-      })
+    const bl = BlackListJson.map((item: { term: string }) =>
+      item.term.toLowerCase()
     );
+    const group = await this.create({
+      group_id: chat.id,
+      group_name: chat.title,
+      welcome_message: "",
+      chat_permissions: (await ctx.api.getChat(chat.id)).permissions,
+      rules: "",
+      description: "",
+      black_list: bl,
+      added_by_id: from?.id,
+      approvedUsers: [],
+      members: [],
+    });
+    return await this.groupSettingsRepo.save(group);
   }
 }
