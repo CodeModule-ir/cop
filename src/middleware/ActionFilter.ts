@@ -1,7 +1,11 @@
 import { Logger } from "../config/logger";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { Middleware } from "./mid";
-const logger = new Logger({file:"ActionFilter.log",level:'info',timestampFormat:'locale'})
+const logger = new Logger({
+  file: "ActionFilter.log",
+  level: "info",
+  timestampFormat: "locale",
+});
 export class ActionFilter extends Middleware {
   @SafeExecution()
   /**
@@ -29,7 +33,7 @@ export class ActionFilter extends Middleware {
    */
   async userInGroup(): Promise<void> {
     const userId = this.ctx.message?.reply_to_message?.from?.id;
-    
+
     if (!userId) {
       await this.ctx.reply(
         "Unable to determine the user ID. Please ensure you are replying to a valid user.",
@@ -84,15 +88,20 @@ export class ActionFilter extends Middleware {
 
     return this.nxt();
   }
-  isSupergroupOrChannel() {
+  isValidChatType() {
     const chat = this.ctx.chat;
+    console.log("chat:", chat);
 
-    if (chat && (chat.type === "supergroup" || chat.type === "channel")) {
-      return this.nxt();
-    } else {
-      this.ctx.reply(
-        "This command can only be used in supergroups or channels."
-      );
+    if (chat) {
+      if (chat.type === "supergroup" || chat.type === "channel") {
+        return this.nxt();
+      } else if (chat.type === "private") {
+        this.ctx.reply(
+          "This command can only be used in supergroups or channels."
+        );
+      } else {
+        this.ctx.reply("This command is not allowed in this type of chat.");
+      }
     }
   }
 }
