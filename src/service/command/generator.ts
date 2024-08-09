@@ -3,6 +3,7 @@ import { Command } from "../../controller/command";
 import { CmdMid } from "../../middleware";
 import { botIsAdmin } from "../../middleware/isAdmin";
 import { COMMANDS } from "../../helper";
+import { Logger } from "../../config/logger";
 export class GenerateCommand {
   private bot: Bot;
   constructor(bot: Bot) {
@@ -11,7 +12,7 @@ export class GenerateCommand {
   private create(name: string, mids?: ((ctx: Context, next: NextFunction) => Promise<void>)[]) {
     const middleware = mids ? this.compose(mids) : undefined;
     if (middleware) {
-      this.bot.command(name, botIsAdmin, middleware, Command.handleCommand);
+      this.bot.command(name, middleware, botIsAdmin, Command.handleCommand);
     } else {
       this.bot.command(name, Command.handleCommand);
     }
@@ -47,30 +48,31 @@ export class GenerateCommand {
    */
   generate() {
     for (const command of COMMANDS) {
-      if (["start", "help", "date","future","rules","shahin"].includes(command)) {
-        this.create(command);
-      } else if (
-        ["lock", "blacklist", "abl", "unLock", "rmbl","approvedList"].includes(command)
-      ) {
-        this.create(command, [CmdMid.isSupergroupOrChannel,CmdMid.AdminStatus]);
-      } else if (["purge"].includes(command)) {
-        this.create(command, [CmdMid.isSupergroupOrChannel,CmdMid.isReplied, CmdMid.AdminStatus]);
-      } else if (["unBan"].includes(command)) {
-        this.create(command, [
-          CmdMid.isSupergroupOrChannel,
-          CmdMid.isReplied,
-          CmdMid.AdminStatus,
-          CmdMid.adminCheckForRepliedUser,
-        ]);
-      } else {
-        this.create(command, [
-          CmdMid.userInGroup,
-          CmdMid.isSupergroupOrChannel,
-          CmdMid.isReplied,
-          CmdMid.AdminStatus,
-          CmdMid.adminCheckForRepliedUser,
-        ]);
-      }
+        if (["start", "help", "date", "future"].includes(command)) {
+            this.create(command);
+        } else if (["rules", "shahin"].includes(command)) {
+            this.create(command, [CmdMid.isValidChatType]);
+        } else if (["lock", "blacklist", "abl", "unLock", "rmbl", "approvedList"].includes(command)) {
+            this.create(command, [CmdMid.isValidChatType, CmdMid.AdminStatus]);
+        } else if (["purge"].includes(command)) {
+            this.create(command, [CmdMid.isValidChatType, CmdMid.isReplied, CmdMid.AdminStatus]);
+        } else if (["unBan"].includes(command)) {
+            this.create(command, [
+                CmdMid.isValidChatType,
+                CmdMid.isReplied,
+                CmdMid.AdminStatus,
+                CmdMid.adminCheckForRepliedUser,
+            ]);
+        } else {
+            this.create(command, [
+                CmdMid.userInGroup,
+                CmdMid.isValidChatType,
+                CmdMid.isReplied,
+                CmdMid.AdminStatus,
+                CmdMid.adminCheckForRepliedUser,
+            ]);
+        }
     }
-  }
+}
+
 }

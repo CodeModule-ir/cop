@@ -1,4 +1,3 @@
-import { Repository } from "typeorm";
 import { SafeExecution } from "../../decorators/SafeExecution";
 import { GroupSettings } from "../../entities/GroupSettings";
 import * as BlackListJson from "../../helper/black_list.json";
@@ -12,20 +11,21 @@ export class BlacklistService {
   @SafeExecution()
   @initGroupSetting()
   static async storeBlacklistTerms(groupSettings: GroupSettings) {
-    const newTerms = BlackListJson.map((item: { term: string }) =>
-      item.term.toLowerCase()
-    );
-
+    const bl = this.getBlackList()
     const existingBlacklist = groupSettings.black_list || [];
 
     // Add only new terms
-    const updatedBlacklist = [...new Set([...existingBlacklist, ...newTerms])];
+    const updatedBlacklist = [...new Set([...existingBlacklist, ...bl])];
 
     groupSettings.black_list = updatedBlacklist;
     await BlacklistService.GroupSettings.save(groupSettings);
     return updatedBlacklist;
   }
-
+  static getBlackList() {
+    return BlackListJson.map((item: { term: string }) =>
+      item.term.toLowerCase()
+    );
+  }
   // Display the blacklist in a formatted manner
   @SafeExecution()
   @initGroupSetting()
