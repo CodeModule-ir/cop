@@ -11,11 +11,10 @@ export function initGroupSetting() {
     descriptor.value = async function (...args: any[]) {
       const ctx: Context = (this as any)?.ctx || args[0];
       const groupSettingsRepo = new GroupSettingsService();
-      const groupSettings = await groupSettingsRepo.getByGroupId(ctx.chat?.id!);
+      let groupSettings = await groupSettingsRepo.getByGroupId(ctx.chat?.id!);
       if (!groupSettings) {
-        await groupSettingsRepo.init(ctx);
+        groupSettings = await groupSettingsRepo.init(ctx);
       }
-
       return originalMethod.apply(this, args);
     };
 
