@@ -30,7 +30,7 @@ export class GroupSettings {
   black_list!: string[];
 
   @Column({ type: "json", nullable: true })
-  chat_permissions!: ChatPermissions; 
+  chat_permissions!: ChatPermissions;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   updated_at!: Date;
@@ -42,7 +42,7 @@ export class GroupSettings {
     cascade: true,
     onDelete: "CASCADE",
   })
-  members!: GroupMembership[];
+  members!: GroupMembership[]
 
   @OneToMany(() => ApprovedUser, (approvedUser) => approvedUser.group, {
     cascade: true,
