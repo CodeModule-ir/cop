@@ -5,6 +5,7 @@ import { COMMANDS } from "../helper";
 import { AdminCommand } from "../group-management/AdminCommand";
 import { Logger } from "../config/logger";
 import { RateLimiter } from "../helper/RateLimiter";
+import { initGroupSetting } from "../decorators/db";
 const logger = new Logger({
   file: "command.log",
   level: "debug",
@@ -52,6 +53,7 @@ export class Command {
   }
 
   @SafeExecution()
+  @initGroupSetting()
   static async handleCommand(ctx: Context): Promise<void> {
     const userId = ctx.from?.id;
     if (!userId) return;
