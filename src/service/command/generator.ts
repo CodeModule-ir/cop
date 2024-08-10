@@ -49,9 +49,9 @@ export class GenerateCommand {
     for (const command of COMMANDS) {
         if (["start", "help", "date", "future",].includes(command)) {
             this.create(command);
-        } else if (["rules", "shahin","aran"].includes(command)) {
+        } else if (["rules", "shahin","aran","codeTime"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType]);
-        } else if (["lock", "blacklist", "abl", "unLock", "rmbl", "approvedList","codeTime"].includes(command)) {
+        } else if (["lock", "blacklist", "abl", "unLock", "rmbl", "approvedList"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType, CmdMid.AdminStatus]);
         } else if (["purge"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType, CmdMid.isReplied, CmdMid.AdminStatus]);

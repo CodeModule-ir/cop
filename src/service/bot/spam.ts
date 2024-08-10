@@ -32,7 +32,7 @@ export class Spam {
        if (toggle && !groupSettings.isSpamTime) {
          groupSettings.isSpamTime = toggle;
          await groupRepo.save(groupSettings);
-         await ctx.reply("Spam time has started! 🎉");
+         await ctx.reply("بوی اسپم تایم میاد 😋");
        } else if (!toggle && groupSettings.isSpamTime) {
          groupSettings.isSpamTime = toggle;
          await groupRepo.save(groupSettings);
@@ -45,7 +45,7 @@ export class Spam {
     const now = new Date();
 
     // Check if it's within spam time (12:45 AM to 1:00 AM)
-    if (await Spam.isWithinTimeRange(now, "00:45", "13:00")) {
+    if (await Spam.isWithinTimeRange(now, "00:45", "01:00")) {
       await Spam.toggleSpamTime(ctx, true);
     } else {
       await Spam.toggleSpamTime(ctx, false);
