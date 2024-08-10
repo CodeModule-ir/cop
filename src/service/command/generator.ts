@@ -3,7 +3,6 @@ import { Command } from "../../controller/command";
 import { CmdMid } from "../../middleware";
 import { botIsAdmin } from "../../middleware/isAdmin";
 import { COMMANDS } from "../../helper";
-import { Logger } from "../../config/logger";
 export class GenerateCommand {
   private bot: Bot;
   constructor(bot: Bot) {
@@ -48,11 +47,11 @@ export class GenerateCommand {
    */
   generate() {
     for (const command of COMMANDS) {
-        if (["start", "help", "date", "future"].includes(command)) {
+        if (["start", "help", "date", "future",].includes(command)) {
             this.create(command);
-        } else if (["rules", "shahin"].includes(command)) {
+        } else if (["rules", "shahin","aran"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType]);
-        } else if (["lock", "blacklist", "abl", "unLock", "rmbl", "approvedList"].includes(command)) {
+        } else if (["lock", "blacklist", "abl", "unLock", "rmbl", "approvedList","codeTime"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType, CmdMid.AdminStatus]);
         } else if (["purge"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType, CmdMid.isReplied, CmdMid.AdminStatus]);
@@ -65,8 +64,8 @@ export class GenerateCommand {
             ]);
         } else {
             this.create(command, [
-                CmdMid.userInGroup,
                 CmdMid.isValidChatType,
+                CmdMid.userInGroup,
                 CmdMid.isReplied,
                 CmdMid.AdminStatus,
                 CmdMid.adminCheckForRepliedUser,
