@@ -110,24 +110,15 @@ export class MessageCheck {
       return;
     }
 
-    const groupRepo: Repository<GroupSettings> =
-      AppDataSource.getRepository(GroupSettings);
-    const groupSettings = await groupRepo.findOne({
-      where: { group_id: groupId },
-    });
-
+    const groupRepo: Repository<GroupSettings> =  AppDataSource.getRepository(GroupSettings);
+    const groupSettings = await groupRepo.findOne({ where: { group_id: groupId }, });
     if (!groupSettings || !groupSettings.black_list) {
       return;
     }
     const blacklist = groupSettings.black_list;
-    const approvedUserRepo: Repository<ApprovedUser> =
-      AppDataSource.getRepository(ApprovedUser);
-    const [isApprovedUser, isAdmin] = await Promise.all([
-      approvedUserRepo.findOne({
-        where: { user_id: userId, group: { group_id: groupId } },
-      }),
-      this.isAdmin(ctx, userId),
-    ]);
+    const approvedUserRepo: Repository<ApprovedUser> = AppDataSource.getRepository(ApprovedUser);
+    const [isApprovedUser, isAdmin] = await Promise.all([ approvedUserRepo.findOne({ where: { user_id: userId, group: { group_id: groupId } },}),
+      this.isAdmin(ctx, userId),]);
     if (isApprovedUser || isAdmin) {
       return;
     }

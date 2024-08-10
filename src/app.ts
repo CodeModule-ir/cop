@@ -25,6 +25,7 @@ bot.on("message", async (ctx) => {
      return;
    }
   await MessageCheck.isCode(ctx);
+  await MessageCheck.CheckBlackList(ctx);
   await Spam.WarnSpam(ctx);
   await MessageCheck.isNewUser(ctx);
   await MessageCheck.leftGroup(ctx);
