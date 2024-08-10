@@ -21,19 +21,14 @@ const logger = new Logger({
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
 new GenerateCommand(bot).generate();
 bot.on("message", async (ctx) => {
-  await MessageCheck.CheckBlackList(ctx);
+   if (!ctx.chat) {
+     return;
+   }
+  await MessageCheck.isCode(ctx);
   await Spam.WarnSpam(ctx);
-  if (ctx.message?.new_chat_members?.length! > 0) {
-    const users = ctx.message?.new_chat_members!;
-    for (const user of users) {
-      if (user.id !== ctx.me?.id) {
-        const username = user.username ? `@${user.username}` : user.first_name;
-        await ctx.reply(
-          `Dear ${username}, welcome to ${ctx.chat.title} chat ❤️`
-        );
-      }
-    }
-  }
+  await MessageCheck.isNewUser(ctx);
+  await MessageCheck.leftGroup(ctx);
+  
 });
 bot.on("my_chat_member", MessageCheck.initialGroup);
 (async () => {
