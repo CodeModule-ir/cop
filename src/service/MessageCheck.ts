@@ -1,7 +1,7 @@
 import { Context } from "grammy";
 import { AppDataSource } from "../config/db";
 import { GroupSettings } from "../entities/GroupSettings";
-import { Repository } from "typeorm";
+import { Repository } from 'typeorm';
 import * as BlackListJson from "../helper/black_list.json";
 import { MuteService } from "./command/mute";
 import { BanService } from "./command/ban";
@@ -9,17 +9,98 @@ import { SafeExecution } from "../decorators/SafeExecution";
 import { ApprovedUser } from "../entities/ApprovedUser";
 import { GroupSettingsService } from "./db/group";
 import { Logger } from "../config/logger";
-import { BlacklistService } from "./command/blacklist";
 import { UserService } from "./db/user";
-import { GroupMembershipService } from "./db/group/Membership";
 import { MESSAGE } from "../helper/message";
 import { RateLimiter } from "../helper/RateLimiter";
-const logger = new Logger({ file: "join_group.log", level: "info" ,timestampFormat:'locale'});
+const logger = new Logger({
+  file: "join_group.log",
+  level: "info",
+  timestampFormat: "locale",
+});
 
 export class MessageCheck {
   @SafeExecution()
+  private static async getEntities(ctx: Context) {
+    if (!ctx.chat) {
+      console.error("No ctx.chat found, skipping isNewUser check.");
+      return { groupSettings: null, group: null };
+    }
+    const groupSettings = new GroupSettingsService();
+    const groupId = ctx.chat!.id;
+
+    // Fetch the group settings for the current chat
+    let group = await groupSettings.getByGroupId(groupId);
+
+    if (!group) {
+      await groupSettings.init(ctx);
+    }
+    return { groupSettings, group };
+  }
+
+  @SafeExecution()
+  static async isNewUser(ctx: Context) {
+    const entity = await MessageCheck.getEntities(ctx);
+    const { group, groupSettings } = entity || {};
+    if (!group || !groupSettings) {
+      return;
+    }
+    if (ctx.message?.new_chat_members?.length! > 0) {
+      const users = ctx.message!.new_chat_members!;
+
+      for (const user of users) {
+        if (user.id !== ctx.me?.id) {
+          const username = user.username
+            ? `@${user.username}`
+            : user.first_name;
+          if (!group!.members) {
+            group!.members = [];
+          }
+          if (!group!.members.includes(user.id.toString())) {
+            group!.members.push(user.id.toString());
+          }
+
+          await ctx.reply(
+            `Dear ${username}, welcome to ${ctx.chat!.title} chat ❤️`
+          );
+        }
+      }
+
+      // Save the updated group settings
+      await groupSettings.save(group!);
+    }
+  }
+  @SafeExecution()
+  static async leftGroup(ctx: Context) {
+    const entity = await MessageCheck.getEntities(ctx);
+    const { group, groupSettings } = entity || {};
+    if (!group || !groupSettings) {
+      return;
+    }
+    if (ctx.message?.left_chat_member) {
+      const user = ctx.message.left_chat_member!;
+
+      if (user.id !== ctx.me?.id) {
+        // Remove the user from the members array
+        if (group!.members) {
+          group!.members = group!.members.filter(
+            (memberId) => memberId !== user.id.toString()
+          );
+        }
+        // Notify the group about the member leaving
+        const username = user.username ? `@${user.username}` : user.first_name;
+        await ctx.reply(`${username} has left the chat.`);
+
+        await groupSettings.save(group!);
+      }
+    }
+  }
+
+  @SafeExecution()
   static async CheckBlackList(ctx: Context) {
     const groupId = ctx.chat?.id;
+    if (!groupId) {
+      return;
+    }
     const messageText = ctx.message?.text;
     const username = ctx.message?.from?.username || "User";
     const messageId = ctx.message?.message_id;
@@ -78,12 +159,12 @@ export class MessageCheck {
     return text.replace(/[^a-zA-Zآ-ی]/g, "").toLowerCase();
   }
 
+  @SafeExecution()
   static async isAdmin(ctx: Context, userId: number): Promise<boolean> {
     if (!RateLimiter.limit(ctx.chat!.id)) {
-    // If rate limit exceeded, you might want to log or handle it accordingly
-    logger.warn('Rate limit exceeded for getChatAdministrators.');
-    return false;
-  }
+      logger.warn("Rate limit exceeded for getChatAdministrators.");
+      return false;
+    }
     const chatAdmins = await ctx.getChatAdministrators();
     return chatAdmins.some((admin) => admin.user.id === userId);
   }
@@ -124,7 +205,7 @@ export class MessageCheck {
         break;
     }
   }
-
+  @SafeExecution()
   static calculateMuteDuration(duration: string): Date {
     const now = new Date();
     const time = parseInt(duration.slice(0, -1), 10);
@@ -147,8 +228,15 @@ export class MessageCheck {
 
     return now;
   }
+  @SafeExecution()
   static async initialGroup(ctx: Context) {
+    if (!ctx.chat) {
+      return;
+    }
     const chat = ctx.chat!;
+    if (!chat) {
+      return;
+    }
     const from = ctx.from;
     try {
       const groupRepo = new GroupSettingsService();
@@ -175,12 +263,7 @@ export class MessageCheck {
       let user = await userRepo.getByTelegramId(from?.id!);
 
       if (!user) {
-        user = await userRepo.create({
-          telegram_id: from?.id!,
-          role: "admin",
-        });
-
-        await userRepo.save(user);
+        user = await userRepo.createUser(ctx, from?.id!);
       } else {
         // Update user role if needed
         if (user.role !== "admin") {
@@ -188,26 +271,19 @@ export class MessageCheck {
           await userRepo.save(user);
         }
       }
-
-      // Create a GroupMembership record
-      const membershipRepo = new GroupMembershipService();
-      let membership = await membershipRepo.getGroupAndUserId(
-        groupSettings.id,
-        user.id
-      );
-
-      if (!membership) {
-        membership = await membershipRepo.create({
-          group: groupSettings,
-          user: user,
-          is_admin: true,
-        });
-
-        await membershipRepo.save(membership);
-      }
       await ctx.reply(MESSAGE.newGroupJoin(ctx, from?.username!));
     } catch (error: any) {
       logger.error("Failed to save group settings", error, "GROUP");
     }
+  }
+  static async isCode(ctx: Context) {
+    const entities = ctx.message!.entities;
+    entities?.forEach((e) => {
+      if (e.type === "pre" && e.language) {
+        ctx.reply(`Your code is garbage.\n\n- Linus Torvalds`, {
+          reply_to_message_id: ctx.message?.message_id,
+        });
+      }
+    });
   }
 }
