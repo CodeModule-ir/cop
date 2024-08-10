@@ -1,8 +1,7 @@
 import { Context } from "grammy";
 import { ChatMemberAdministrator, ChatMemberOwner, User } from "grammy/types";
 import { SafeExecution } from "../../decorators/SafeExecution";
-import { BotInfo, RepliedMessage } from "../../types/types";
-import { logger } from "../../config/logger";
+import { BotInfo, RepliedMessage } from "../../types/index";
 export class BotOverseer {
   private ctx: Context;
 
@@ -16,17 +15,11 @@ export class BotOverseer {
   async isBotAdmin(): Promise<boolean> {
     const botInfo = await this.getBotInfo();
     if (!botInfo) {
-      logger.error("Bot info is not available.", undefined, "isBotAdmin");
       return false;
     }
 
     const chatMember = await this.ctx.getChatMember(botInfo.id);
     if (!chatMember) {
-      logger.error(
-        "Failed to fetch chat member info for the bot.",
-        undefined,
-        "isBotAdmin"
-      );
       return false;
     }
     return ["administrator", "creator"].includes(chatMember.status);
@@ -75,20 +68,12 @@ export class BotOverseer {
   @SafeExecution()
   async getUser(): Promise<User> {
     const user = await this.ctx.message?.from;
-    if (!user) {
-      logger.error(
-        "User information is not available in the context in getUser",
-        undefined,
-        "BotOverseer Class",
-        {
-          context: this.ctx,
-        }
-      );
-    }
     return user!;
   }
   @SafeExecution()
-  async userInGroup(msg: string = "The user is no longer a member of this group."): Promise<boolean | undefined> {
+  async userInGroup(
+    msg: string = "The user is no longer a member of this group."
+  ): Promise<boolean | undefined> {
     const id = await this.getRepliedUserId();
     if (!id) {
       await this.ctx.reply(

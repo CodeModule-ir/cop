@@ -2,14 +2,13 @@ import { Context } from "grammy";
 import { WarnService } from "../command/warn";
 import { SafeExecution } from "../../decorators/SafeExecution";
 import { MessageCheck } from "../MessageCheck";
+import { GroupSettingsService } from "../db/group";
 
 export class Spam {
   static MessageCounts: Map<
     number,
     { count: number; lastMessageTime: number }
   > = new Map();
-
-  static messageFlags: { [groupId: number]: { [date: string]: boolean } } = {};
 
   @SafeExecution()
   static isWithinTimeRange(current: Date, start: string, end: string): boolean {
@@ -25,36 +24,37 @@ export class Spam {
   }
 
   @SafeExecution()
-  static isExactTime(current: Date): boolean {
-    const randomTime = Spam.getRandomTime();
-    const [targetHour, targetMinute] = randomTime.split(":").map(Number);
-    return (
-      current.getHours() === targetHour && current.getMinutes() === targetMinute
-    );
+  static async toggleSpamTime(ctx: Context, toggle: boolean) {
+     const groupId = ctx.chat!.id;
+     const groupRepo = new GroupSettingsService();
+     const groupSettings = await groupRepo.getByGroupId(groupId);
+     if (groupSettings) {
+       if (toggle && !groupSettings.isSpamTime) {
+         groupSettings.isSpamTime = toggle;
+         await groupRepo.save(groupSettings);
+         await ctx.reply("Spam time has started! 🎉");
+       } else if (!toggle && groupSettings.isSpamTime) {
+         groupSettings.isSpamTime = toggle;
+         await groupRepo.save(groupSettings);
+       }
+     }
   }
 
-  private static getRandomTime(): string {
-    const times = ["01:00", "01:05"];
-    return times[Math.floor(Math.random() * times.length)];
+  @SafeExecution()
+  static async checkAndToggleSpamTime(ctx: Context) {
+    const now = new Date();
+
+    // Check if it's within spam time (12:45 AM to 1:00 AM)
+    if (await Spam.isWithinTimeRange(now, "00:45", "13:00")) {
+      await Spam.toggleSpamTime(ctx, true);
+    } else {
+      await Spam.toggleSpamTime(ctx, false);
+    }
   }
 
   @SafeExecution()
   static async WarnSpam(ctx: Context) {
-    const chatId = ctx.chat!.id;
-    const now = new Date();
-    const todayKey = now.toISOString().split("T")[0];
-
-    // Check if within the specified time range
-    if (!Spam.messageFlags[chatId]) {
-      Spam.messageFlags[chatId] = {};
-    }
-
-    if (!Spam.messageFlags[chatId][todayKey]) {
-      if (await Spam.isWithinTimeRange(now, "00:45", "00:59")) {
-        await ctx.reply("بوی اسپم تایم میاد 😋");
-        Spam.messageFlags[chatId][todayKey] = true;
-      }
-    }
+    await Spam.checkAndToggleSpamTime(ctx);
 
     // Existing spam check logic
     if (ctx.message?.sticker || ctx.message?.animation) {
@@ -76,7 +76,7 @@ export class Spam {
             return;
           }
         } else {
-          userData.count = 1; // Reset count if outside the time window
+          userData.count = 1; 
         }
         userData.lastMessageTime = currentTime;
         Spam.MessageCounts.set(userId, userData);
