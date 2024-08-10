@@ -1,31 +1,15 @@
 import { Context } from "grammy";
 import { SafeExecution } from "../../decorators/SafeExecution";
-import { Logger } from "../../config/logger";
-const logger = new Logger({
-  file: "date-command.log",
-  level: "info",
-  timestampFormat: "locale",
-  jsonFormat: true,
-});
-
 export class DateCommand {
   @SafeExecution()
   static async date(ctx: Context) {
-    logger.info("Date command invoked.", "Date", {
-      chatId: ctx.chat?.id!,
-      userId: ctx.from?.id!,
-    });
 
     const now = new Date();
 
     // Format Gregorian Date
     const gregorianDate = this.formatGregorianDate(now);
-    logger.info("Gregorian date formatted.", "Date", { gregorianDate });
-
     // Convert to Persian Date
     const persianDate = this.convertToPersianDate(now);
-    logger.info("Persian date converted.", "Date", { persianDate });
-
     // Reply with both date formats
     await ctx.reply(
       `Gregorian Date: **${gregorianDate}**\n
@@ -35,8 +19,6 @@ Persian Date: **${persianDate}**`,
   }
 
   static formatGregorianDate(date: Date): string {
-    logger.debug("Formatting Gregorian date.", "Date", { date });
-
     const days = [
       "Sunday",
       "Monday",
@@ -75,15 +57,11 @@ Persian Date: **${persianDate}**`,
     // Gy: Gregorian year
     // Gm: Gregorian month (1-12)
     // Gd: Gregorian day of the month (1-31)
-
-    logger.debug("Converting to Persian date.", "Date", { date });
     const persianDate = this.toJalaali(
       date.getFullYear(),
       date.getMonth() + 1,
       date.getDate()
     );
-    logger.debug("Persian date calculated.", "Date", { persianDate });
-
     const persianDays = [
       "شنبه",
       "یکشنبه",
@@ -108,8 +86,7 @@ Persian Date: **${persianDate}**`,
       "بهمن",
       "اسفند",
     ];
-
-    const dayName = persianDays[date.getDay()+1];
+    const dayName = Number(date.getDay() + 1) >= 7?persianDays[date.getDay() - 6] :  persianDays[date.getDay()+1];
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
     
@@ -117,11 +94,6 @@ Persian Date: **${persianDate}**`,
   }
 
   static toJalaali(gy: number, gm: number, gd: number) {
-    logger.debug("Converting Gregorian date to Jalaali.", "Date", {
-      gy,
-      gm,
-      gd,
-    });
 
     const g_d_m = [
       0,
@@ -165,15 +137,6 @@ Persian Date: **${persianDate}**`,
 
     // Day Calculation
     const jd = (days < 186) ? (days % 31) : ((days - 186) % 30);
-
-    console.log("jm", jm);
-    console.log("jd", jd);
-
-    logger.debug("Jalaali date converted.", "Date", {
-      jy,
-      jm,
-      jd,
-    });
     return { jy, jm, jd };
   }
 }
