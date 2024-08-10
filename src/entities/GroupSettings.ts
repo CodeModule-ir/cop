@@ -35,6 +35,7 @@ export class GroupSettings {
   @OneToMany(() => ApprovedUser, (approvedUser) => approvedUser.group, {
     cascade: true,
     onDelete: "CASCADE",
+    eager: true,
   })
   approvedUsers!: ApprovedUser[];
 

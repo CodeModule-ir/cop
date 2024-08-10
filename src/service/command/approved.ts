@@ -34,6 +34,12 @@ export class Approved {
   @initGroupSetting()
   static async add(ctx: Context) {
     const { user, group } = await this.getEntities(ctx);
+    // Check if the user is a bot
+    if (ctx.message?.reply_to_message?.from?.is_bot) {
+      return ctx.reply("Why should I approve a robot?", {
+        reply_to_message_id: ctx.message?.message_id,
+      });
+    }
     // Check if the user is already approved
     const existingApproval = await this.approvedUserRepo.getByUserIdAndGroup(
       user.id,
@@ -107,8 +113,9 @@ export class Approved {
       return;
     }
     // Format the list of approved users
-    const userList = approvedUsers.map((user) => {
-       const username = user.username ? `@${user.username}` : "No username";
+    const userList = approvedUsers
+      .map((user) => {
+        const username = user.username ? `@${user.username}` : "No username";
         return `- ${username}`;
       })
       .join("\n");

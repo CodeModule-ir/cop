@@ -132,7 +132,7 @@ export class Command {
       : targetUser.first_name;
     const message = getRandomMessage("replyToUser").replace("{username}", username).replace("{hours}", hours.toString());
     await ctx.reply(message, {
-      reply_to_message_id: ctx.message?.message_id,
+      reply_to_message_id: ctx.message?.reply_to_message?.message_id,
     });
   } else {
     const hours = randomHours(1, 7); 

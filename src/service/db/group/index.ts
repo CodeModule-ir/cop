@@ -15,7 +15,7 @@ export class GroupSettingsService extends DatabaseService {
   }
 
   async save(settings: GroupSettings) {
-    return this.groupSettingsRepo.save(settings);
+    return  await this.groupSettingsRepo.save(settings);
   }
 
   async remove(id: number) {
