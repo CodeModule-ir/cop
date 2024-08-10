@@ -115,7 +115,7 @@ export class Approved {
     // Format the list of approved users
     const userList = approvedUsers
       .map((user) => {
-        const username = user.username ? `@${user.username}` : "No username";
+        const username = user.username ? `${user.username}` : "No username";
         return `- ${username}`;
       })
       .join("\n");
