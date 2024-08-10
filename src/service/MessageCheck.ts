@@ -1,7 +1,7 @@
 import { Context } from "grammy";
 import { AppDataSource } from "../config/db";
 import { GroupSettings } from "../entities/GroupSettings";
-import { Repository } from 'typeorm';
+import { Repository } from "typeorm";
 import * as BlackListJson from "../helper/black_list.json";
 import { MuteService } from "./command/mute";
 import { BanService } from "./command/ban";
@@ -110,15 +110,23 @@ export class MessageCheck {
       return;
     }
 
-    const groupRepo: Repository<GroupSettings> =  AppDataSource.getRepository(GroupSettings);
-    const groupSettings = await groupRepo.findOne({ where: { group_id: groupId }, });
+    const groupRepo: Repository<GroupSettings> =
+      AppDataSource.getRepository(GroupSettings);
+    const groupSettings = await groupRepo.findOne({
+      where: { group_id: groupId },
+    });
     if (!groupSettings || !groupSettings.black_list) {
       return;
     }
     const blacklist = groupSettings.black_list;
-    const approvedUserRepo: Repository<ApprovedUser> = AppDataSource.getRepository(ApprovedUser);
-    const [isApprovedUser, isAdmin] = await Promise.all([ approvedUserRepo.findOne({ where: { user_id: userId, group: { group_id: groupId } },}),
-      this.isAdmin(ctx, userId),]);
+    const approvedUserRepo: Repository<ApprovedUser> =
+      AppDataSource.getRepository(ApprovedUser);
+    const [isApprovedUser, isAdmin] = await Promise.all([
+      approvedUserRepo.findOne({
+        where: { user_id: userId, group: { group_id: groupId } },
+      }),
+      this.isAdmin(ctx, userId),
+    ]);
     if (isApprovedUser || isAdmin) {
       return;
     }
@@ -174,6 +182,7 @@ export class MessageCheck {
     ];
 
     const [command, duration] = action.split(" ");
+    console.log("command:", command);
     switch (command.toLowerCase()) {
       case "ban":
         await banService.ban(false);
@@ -183,13 +192,15 @@ export class MessageCheck {
         );
         break;
       case "mute":
-        const expirationDate = this.calculateMuteDuration(duration);
+        const expirationDate = await this.calculateMuteDuration(duration);
         await muteService.mute(expirationDate);
         await ctx.api.deleteMessage(ctx.chat?.id!, messageId);
         await ctx.reply(`The user @${username} was muted for ${duration}.`);
         break;
       default:
-        const defaultExpiration = this.calculateMuteDuration("1h");
+        const defaultExpiration = await this.calculateMuteDuration("1h");
+        console.log(defaultExpiration);
+
         await muteService.mute(defaultExpiration);
         await ctx.api.deleteMessage(ctx.chat?.id!, messageId);
         await ctx.reply(`The user @${username} was muted for 1 hour.`);
@@ -197,7 +208,7 @@ export class MessageCheck {
     }
   }
   @SafeExecution()
-  static calculateMuteDuration(duration: string): Date {
+  static async calculateMuteDuration(duration: string): Promise<Date> {
     const now = new Date();
     const time = parseInt(duration.slice(0, -1), 10);
     const unit = duration.slice(-1);
