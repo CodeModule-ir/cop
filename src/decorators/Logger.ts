@@ -1,6 +1,5 @@
-import { Logger } from "../config/logger"; // Adjust the import path as necessary
+import { Logger } from "../config/logger"; 
 
-// Initialize the logger
 const logger = new Logger({
   file: "application.log",
   level: "info",
