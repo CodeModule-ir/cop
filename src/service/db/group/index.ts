@@ -30,14 +30,13 @@ export class GroupSettingsService extends DatabaseService {
     const group = await this.create({
       group_id: chat.id,
       group_name: chat.title,
-      welcome_message: "",
       chat_permissions: (await ctx.api.getChat(chat.id)).permissions,
       rules: "",
-      description: "",
       black_list: bl,
       added_by_id: from?.id,
       approvedUsers: [],
-      members: [],
+      isSpamTime:false,
+      warnings:[]
     });
     return await this.groupSettingsRepo.save(group);
   }
