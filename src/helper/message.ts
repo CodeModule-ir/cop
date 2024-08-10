@@ -1,5 +1,5 @@
 import { User } from "grammy/types";
-import { RepliedMessage } from "../types/types";
+import { RepliedMessage } from "../types/index";
 import { Context } from "grammy";
 
 export class MESSAGE {
