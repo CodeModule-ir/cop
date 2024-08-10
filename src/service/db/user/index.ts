@@ -11,7 +11,7 @@ export class UserService extends DatabaseService {
 
   async getByTelegramId(telegramId: number) {
     return await this.userRepo.findOne({
-      where: { telegram_id: 6376425576 },
+      where: { telegram_id: telegramId },
     });
   }
   async save(user: User) {
@@ -28,13 +28,21 @@ export class UserService extends DatabaseService {
   }
   async createUser(ctx: Context, telegram_id: number) {
     const chatMember = await ctx.getChatMember(telegram_id);
-    const role = chatMember.status;
+    let role: string;
+    if (chatMember.status === "creator") {
+      role = "owner";
+    } else if (chatMember.status === "administrator") {
+      role = "admin";
+    } else {
+      role = chatMember.status;
+    }
     let user = await this.getByTelegramId(telegram_id);
     if (!user) {
       user = this.userRepo.create({
         telegram_id,
         role,
         warnings: [],
+        username:ctx.from?.username
       });
       await this.userRepo.save(user);
     }
