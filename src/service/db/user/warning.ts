@@ -5,9 +5,8 @@ import { Warning } from "../../../entities/Warning";
 export class WarningServiceDb extends DatabaseService {
   private warningRepo = this.getRepo(Warning);
 
-  async create(warning: Partial<Warning>): Promise<Warning> {
-    const newWarning = this.warningRepo.create(warning);
-    return this.warningRepo.save(newWarning);
+  create(warning: Partial<Warning>): Warning {
+   return this.warningRepo.create(warning);
   }
 
   async save(warning: Warning) {
@@ -27,6 +26,6 @@ export class WarningServiceDb extends DatabaseService {
   }
 
   async count(user: User) {
-    return await this.warningRepo.count({ where: { user } });
+    return await this.warningRepo.count({ where: { user: { id: user.id } } });
   }
 }
