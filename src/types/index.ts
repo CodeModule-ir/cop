@@ -30,3 +30,8 @@ export interface BotInfo {
   can_connect_to_business?: boolean; 
   has_main_web_app?: boolean; 
 }
+export interface RoastMessages {
+  replyToUser: string[];
+  notReplyingToAnyone: string[];
+  replyToBot: string[];
+}
