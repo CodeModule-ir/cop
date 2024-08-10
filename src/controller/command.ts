@@ -6,6 +6,9 @@ import { AdminCommand } from "../group-management/AdminCommand";
 import { Logger } from "../config/logger";
 import { RateLimiter } from "../helper/RateLimiter";
 import { initGroupSetting } from "../decorators/db";
+import * as roastMessages from "../helper/roast.json";
+import { RoastMessages } from "../types";
+
 const logger = new Logger({
   file: "command.log",
   level: "debug",
@@ -13,6 +16,8 @@ const logger = new Logger({
 });
 
 export class Command {
+  private static aranState: Map<number, number> = new Map();
+
   @SafeExecution()
   static start(ctx: Context) {
     if (ctx.chat?.type === "private") {
@@ -41,7 +46,7 @@ export class Command {
     await ctx.reply("دوستان.");
     setTimeout(() => {
       return ctx.reply("بحث تخصصی.");
-    }, 2500);
+    }, 2000);
   }
   @SafeExecution()
   static future(ctx: Context) {
@@ -72,7 +77,69 @@ export class Command {
       });
     }
   }
+  @SafeExecution()
+  static async aran(ctx: Context) {
+    const userId = ctx.from?.id;
+    if (!userId) return;
 
+    const currentState = Command.aranState.get(userId) || 0;
+
+    switch (currentState) {
+      case 0:
+        await ctx.reply("Aran mode: Activated.");
+        Command.aranState.set(userId, 1);
+        break;
+      case 1:
+        await ctx.reply("رفرنس بده.");
+        Command.aranState.set(userId, 2);
+        break;
+      case 2:
+        await ctx.reply("Aran mode: deActivated.");
+        Command.aranState.set(userId, 0);
+        break;
+      default:
+        Command.aranState.set(userId, 0);
+        break;
+    }
+  }
+  @SafeExecution()
+  static async codeTime(ctx: Context) {
+    const user = ctx.from;
+    if (!user) return;
+
+    const targetUser = ctx.message?.reply_to_message?.from;
+    
+    const randomHours = (min: number, max: number) => {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+    // Function to get a random message from the appropriate category
+    const getRandomMessage = (category: keyof RoastMessages) => {
+      const messages = roastMessages[category];
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      return messages[randomIndex];
+    };
+    if (targetUser?.id === ctx.me?.id) {
+      const hours = randomHours(7, 10); 
+      const message = getRandomMessage("replyToBot").replace("{hours}", hours.toString());
+      return await ctx.reply(message, {
+        reply_to_message_id: ctx.message?.message_id,
+      });
+    }
+     if (targetUser) {
+    const hours = randomHours(3, 10); 
+    const username = targetUser.username
+      ? `@${targetUser.username}`
+      : targetUser.first_name;
+    const message = getRandomMessage("replyToUser").replace("{username}", username).replace("{hours}", hours.toString());
+    await ctx.reply(message, {
+      reply_to_message_id: ctx.message?.message_id,
+    });
+  } else {
+    const hours = randomHours(1, 7); 
+    const message = getRandomMessage("notReplyingToAnyone").replace("{hours}", hours.toString());
+    await ctx.reply(message);
+  }
+  }
   // This method is now called only once, during initialization
   static generate() {
     for (const command of COMMANDS) {

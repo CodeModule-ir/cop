@@ -63,6 +63,8 @@ export const COMMANDS: string[] = [
   "rules",
   "approvedList",
   "shahin",
+  "aran",
+  "codeTime"
 ];
 export async function executeService(ctx: Context,service: any,method: string) {
   if (service[method]) {
