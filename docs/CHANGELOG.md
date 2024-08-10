@@ -80,3 +80,45 @@
 
 ### License
 - This project is licensed under the MIT License.
+
+## [3.0.0] - 2024-08-10
+
+### Added
+- **Features:**
+  - `aran`: New command with a multi-step process:
+    1. "Aran mode: Activated"
+    2. "رفرنس بده."
+    3. "Aran mode: DeActivated"
+  - `codeTime`: New command that provides sarcastic and insulting messages encouraging users to code or telling everyone to code if not replying to anyone.
+  - `GroupSettings`: Added `isSpamTime` to show a message during spam time: "بوی اسپم تایم میاد 😋".
+  - `Pv Robot`: Added a new message for commands sent to the Pv Robot.
+
+### Fixed
+- **Bug Fixes:**
+  - `warn`: Fixed issues related to warning functionalities.
+  - `approved`: Fixed the bug related to the `approved` command.
+  - `unApproved`: Fixed the bug where users were not removed from the approved list as expected.
+  - `approvedList`: Fixed bugs related to the `approvedList` command.
+  - `/date`: Fixed the bug where the Persian days were not displayed correctly.
+
+### Removed
+- **Database Changes:**
+  - Removed the `groupMembership` table and its associated code.
+
+### Refactored
+- **Code Updates:**
+  - `GroupSettings`: Updated to include new fields and methods related to spam time and other settings.
+  - `service/db/user`: Updated methods to use dynamic `telegramId` and fixed various issues.
+  - `service/command`: Added and updated methods for new commands; cleaned up unnecessary logging.
+  - `middleware`: Removed unnecessary logger imports and updated methods.
+  - `entities`: Updated `User`, `GroupSettings`, and `Warning` entities; removed `GroupMembership` entity.
+  - `command`: Refactored commands to include new functionalities and clean up logic.
+
+### Known Issues
+- Some bugs related to deprecated functionalities may still persist but are being actively addressed.
+
+### Future Plans
+- Continue improving bot functionalities based on user feedback and addressing remaining bugs.
+
+### License
+- This project is licensed under the MIT License.
