@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { User } from "./User";
+import { GroupSettings } from "./GroupSettings";
 
 @Entity()
 export class Warning {
@@ -8,6 +9,9 @@ export class Warning {
 
   @ManyToOne(() => User, (user) => user.warnings)
   user!: User;
+
+  @ManyToOne(() => GroupSettings, (group) => group.warnings)
+  group!: GroupSettings;
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   warned_at!: Date;

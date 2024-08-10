@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { GroupMembership } from "./GroupMembership";
 import { ApprovedUser } from "./ApprovedUser";
 import { ChatPermissions } from "grammy/types";
+import { Warning } from "./Warning";
 
 @Entity()
 export class GroupSettings {
@@ -15,13 +15,7 @@ export class GroupSettings {
   group_name!: string;
 
   @Column({ type: "text", nullable: true })
-  welcome_message!: string;
-
-  @Column({ type: "text", nullable: true })
   rules!: string;
-
-  @Column({ type: "text", nullable: true })
-  description!: string;
 
   @Column({ type: "bigint", nullable: true })
   added_by_id!: number;
@@ -38,15 +32,21 @@ export class GroupSettings {
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created_at!: Date;
 
-  @OneToMany(() => GroupMembership, (membership) => membership.group, {
-    cascade: true,
-    onDelete: "CASCADE",
-  })
-  members!: GroupMembership[]
-
   @OneToMany(() => ApprovedUser, (approvedUser) => approvedUser.group, {
     cascade: true,
     onDelete: "CASCADE",
   })
   approvedUsers!: ApprovedUser[];
+
+  @OneToMany(() => Warning, (warning) => warning.group, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  warnings!: Warning[];
+
+  @Column({ type: "boolean" })
+  isSpamTime: boolean = false;
+
+  @Column({ type: "simple-array", nullable: true })
+  members!: string[];
 }
