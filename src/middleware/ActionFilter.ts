@@ -1,11 +1,5 @@
-import { Logger } from "../config/logger";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { Middleware } from "./mid";
-const logger = new Logger({
-  file: "ActionFilter.log",
-  level: "info",
-  timestampFormat: "locale",
-});
 export class ActionFilter extends Middleware {
   @SafeExecution()
   /**
@@ -90,8 +84,6 @@ export class ActionFilter extends Middleware {
   }
   isValidChatType() {
     const chat = this.ctx.chat;
-    console.log("chat:", chat);
-
     if (chat) {
       if (chat.type === "supergroup" || chat.type === "channel") {
         return this.nxt();
