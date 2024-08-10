@@ -17,7 +17,7 @@ export class Approved {
     const userId = ctx.message?.reply_to_message?.from?.id!;
     const chatId = ctx.chat?.id!;
 
-    const groupSettings = await this.groupSettingsRepo.getByGroupId(chatId);
+    const group = await this.groupSettingsRepo.getByGroupId(chatId);
 
     let user = await this.userRepo.getByTelegramId(userId);
     if (!user) {
@@ -28,16 +28,16 @@ export class Approved {
       });
       await this.userRepo.save(user);
     }
-    return { user, groupSettings };
+    return { user, group };
   }
 
   @initGroupSetting()
   static async add(ctx: Context) {
-    const { user, groupSettings } = await this.getEntities(ctx);
+    const { user, group } = await this.getEntities(ctx);
     // Check if the user is already approved
     const existingApproval = await this.approvedUserRepo.getByUserIdAndGroup(
       user.id,
-      groupSettings!.id!
+      group!.id!
     );
     if (existingApproval) {
       return ctx.reply("This user is already approved.");
@@ -45,17 +45,17 @@ export class Approved {
 
     // Add user to the approved list
     const approvedUser = await this.approvedUserRepo.create({
-      group: groupSettings!,
+      group: group!,
       user_id: user.telegram_id,
       username: user.username!,
       user: user,
     });
     await this.approvedUserRepo.save(approvedUser);
-    if (!groupSettings!.approvedUsers) {
-      groupSettings!.approvedUsers = [];
+    if (!group!.approvedUsers) {
+      group!.approvedUsers = [];
     }
-    groupSettings!.approvedUsers.push(approvedUser);
-    await this.groupSettingsRepo.save(groupSettings!);
+    group!.approvedUsers.push(approvedUser);
+    await this.groupSettingsRepo.save(group!);
     user.role = "approved";
     await this.userRepo.save(user);
     // Grant full permissions
@@ -72,12 +72,12 @@ export class Approved {
 
   @initGroupSetting()
   static async remove(ctx: Context) {
-    const { user, groupSettings } = await this.getEntities(ctx);
+    const { user, group } = await this.getEntities(ctx);
 
     // Remove user from the approved list
     const approvedUser = await this.approvedUserRepo.getByUserIdAndGroup(
       user.id,
-      groupSettings!.id!
+      group!.id!
     );
     if (approvedUser) {
       await this.approvedUserRepo.remove(approvedUser.id);
@@ -99,19 +99,16 @@ export class Approved {
   @initGroupSetting()
   static async list(ctx: Context) {
     const chatId = ctx.chat?.id!;
-    const groupSettings = await this.groupSettingsRepo.getByGroupId(chatId);
-    const approvedUsers = await this.approvedUserRepo.getByGroup(
-      groupSettings!
-    );
+    const group = await this.groupSettingsRepo.getByGroupId(chatId);
+    const approvedUsers = await this.approvedUserRepo.getByGroup(group!);
 
     if (!approvedUsers || approvedUsers.length === 0) {
       await ctx.reply("There are no approved users in this group.");
       return;
     }
     // Format the list of approved users
-    const userList = approvedUsers
-      .map((user) => {
-        const username = user.username ? `@${user.username}` : "No username";
+    const userList = approvedUsers.map((user) => {
+       const username = user.username ? `@${user.username}` : "No username";
         return `- ${username}`;
       })
       .join("\n");
