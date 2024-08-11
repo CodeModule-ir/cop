@@ -1,6 +1,7 @@
 import { Context } from "grammy";
 import { GroupSettingsService } from "../db/group";
 import { initGroupSetting } from "../../decorators/db";
+import { BotOverseer } from "../bot";
 
 export class Rules {
   @initGroupSetting()
@@ -10,14 +11,23 @@ export class Rules {
     if (!groupId) {
       return ctx.reply("Could not retrieve chat information.");
     }
-
+    const bot = new BotOverseer(ctx);
+    const userId = (await bot.getUser()).id;
+    const isAdmin = await bot.isUserAdmin(userId);
+    
     const rulesInput = String(ctx.match).trim();
     const groupRepo: GroupSettingsService = new GroupSettingsService();
-
     let groupSettings = await groupRepo.getByGroupId(groupId);
 
     // Check if the admin wants to delete all rules
     if (rulesInput.toLowerCase() === "r") {
+      if (!isAdmin) {
+        await ctx.reply(
+          "Sorry, but you need to be an admin to use this command!",
+          { reply_to_message_id: ctx.message?.message_id }
+        );
+        return;
+      }
       if (!groupSettings || !groupSettings.rules) {
         return ctx.reply("There are no rules to delete for this group.");
       }
@@ -31,6 +41,13 @@ export class Rules {
 
     // If the user provides new rules input, update the rules
     if (rulesInput) {
+      if (!isAdmin) {
+        await ctx.reply(
+          "Sorry, but you need to be an admin to use this command!",
+          { reply_to_message_id: ctx.message?.message_id }
+        );
+        return;
+      }
       groupSettings!.rules +="\n"+ rulesInput;
       await groupRepo.save(groupSettings!);
       return ctx.reply(
