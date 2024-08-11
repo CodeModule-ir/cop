@@ -130,9 +130,8 @@ export class MessageCheck {
     if (isApprovedUser || isAdmin) {
       return;
     }
-    const preprocessedMessageText = this.preprocessText(messageText);
     for (const blacklistedTerm of blacklist) {
-      if (preprocessedMessageText.includes(blacklistedTerm.toLowerCase())) {
+      if (messageText.includes(blacklistedTerm.toLowerCase())) {
         const blacklistEntry = BlackListJson.find(
           (entry: { term: string; action: string }) =>
             entry.term.toLowerCase() === blacklistedTerm.toLowerCase()
@@ -152,10 +151,6 @@ export class MessageCheck {
         break;
       }
     }
-  }
-
-  static preprocessText(text: string): string {
-    return text.replace(/[^a-zA-Zآ-ی]/g, "").toLowerCase();
   }
 
   @SafeExecution()
