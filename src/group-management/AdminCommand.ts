@@ -2,7 +2,7 @@ import { Context } from "grammy";
 import { MESSAGE } from "../helper/message";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { MuteService } from "../service/command/mute";
-import { executeService, executeServiceAdmin, parseDuration } from "../helper";
+import { executeService, executeServiceAdmin, parseDuration, tehranZone } from "../helper";
 import { WarnService } from "../service/command/warn";
 import { BanService } from "../service/command/ban";
 import { BotOverseer } from "../service/bot";
@@ -80,8 +80,11 @@ export class AdminCommand {
     if (durationStr) {
       durationMs = parseDuration(durationStr);
     }
+    // Get the current time and adjust for Tehran's timezone
+  const tehranNow = tehranZone();
 
-    const expiration = durationMs ? new Date(Date.now() + durationMs) : null;
+  // Calculate expiration time in Tehran's timezone
+  const expiration = durationMs ? new Date(tehranNow.getTime() + durationMs) : null;
 
     logger.info(
       `mute command triggered by ${ctx.from?.id} in chat ${ctx.chat?.id} with duration ${durationStr}`,
