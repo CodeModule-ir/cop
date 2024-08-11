@@ -1,23 +1,26 @@
 import { Context } from "grammy";
 import { SafeExecution } from "../../decorators/SafeExecution";
+import { tehranZone } from '../../helper/index';
 export class DateCommand {
   @SafeExecution()
   static async date(ctx: Context) {
-
-    const now = new Date();
-
+    const tehranTime= tehranZone()
     // Format Gregorian Date
-    const gregorianDate = this.formatGregorianDate(now);
+    const gregorianDate = this.formatGregorianDate(tehranTime);
     // Convert to Persian Date
-    const persianDate = this.convertToPersianDate(now);
+    const persianDate = this.convertToPersianDate(tehranTime);
     // Reply with both date formats
     await ctx.reply(
-      `Gregorian Date: **${gregorianDate}**\n
-Persian Date: **${persianDate}**`,
+      `Gregorian Date: **${gregorianDate}**\n\nPersian Date: **${persianDate}**`,
       { parse_mode: "MarkdownV2" }
     );
   }
-
+  static convertToTehranDate(date: Date): Date {
+    // Create a new Date object in the Tehran time zone
+    const tehranOffset = 3.5 * 60; // Tehran is UTC+3:30
+    const utcDate = new Date(date.getTime() + (tehranOffset - date.getTimezoneOffset()) * 60000);
+    return utcDate;
+  }
   static formatGregorianDate(date: Date): string {
     const days = [
       "Sunday",
@@ -86,15 +89,19 @@ Persian Date: **${persianDate}**`,
       "بهمن",
       "اسفند",
     ];
-    const dayName = Number(date.getDay() + 1) >= 7?persianDays[date.getDay() - 6] :  persianDays[date.getDay()+1];
+    const dayName =
+      Number(date.getDay() + 1) >= 7
+        ? persianDays[date.getDay() - 6]
+        : persianDays[date.getDay() + 1];
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
-    
-    return `${dayName} ${persianDate.jd} ${persianMonths[persianDate.jm - 1]} ${ persianDate.jy } ساعت: ${hours}:${minutes}`;
+
+    return `${dayName} ${persianDate.jd} ${persianMonths[persianDate.jm - 1]} ${
+      persianDate.jy
+    } ساعت: ${hours}:${minutes}`;
   }
 
   static toJalaali(gy: number, gm: number, gd: number) {
-
     const g_d_m = [
       0,
       31,
@@ -132,11 +139,14 @@ Persian Date: **${persianDate}**`,
       days = (days - 1) % 365;
     }
 
-     // Month Calculation
-    const jm = days < 186 ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30);
+    // Month Calculation
+    const jm =
+      days < 186
+        ? 1 + Math.floor(days / 31)
+        : 7 + Math.floor((days - 186) / 30);
 
     // Day Calculation
-    const jd = (days < 186) ? (days % 31) : ((days - 186) % 30);
+    const jd = days < 186 ? days % 31 : (days - 186) % 30;
     return { jy, jm, jd };
   }
 }

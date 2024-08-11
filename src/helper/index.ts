@@ -1,7 +1,11 @@
 import { Context } from "grammy";
 import { BotOverseer } from "../service/bot";
 import { Logger } from "../config/logger";
-const logger = new Logger({ file: "error.log", level: "error",timestampFormat:'locale' });
+const logger = new Logger({
+  file: "error.log",
+  level: "error",
+  timestampFormat: "locale",
+});
 
 export async function handleError(
   ctx: Context,
@@ -64,9 +68,13 @@ export const COMMANDS: string[] = [
   "approvedList",
   "shahin",
   "aran",
-  "codeTime"
+  "codeTime",
 ];
-export async function executeService(ctx: Context,service: any,method: string) {
+export async function executeService(
+  ctx: Context,
+  service: any,
+  method: string
+) {
   if (service[method]) {
     (await service[method](ctx)) || (await new service(ctx)[method]);
   } else {
@@ -92,4 +100,15 @@ export async function executeServiceAdmin(
   } else {
     logger.error(`Action ${action} not found on service ${ServiceClass.name}`);
   }
+}
+export function tehranZone() {
+  // Get current date and adjust to Tehran time zone
+  const now = new Date();
+  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+
+  // Tehran timezone offset in minutes (UTC+3:30)
+  const tehranOffset = 3.5 * 60;
+
+  // Adjust time to Tehran timezone without considering DST
+  return new Date(utcTime + tehranOffset * 60000);
 }
