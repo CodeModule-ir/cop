@@ -10,6 +10,9 @@ export function initGroupSetting() {
 
     descriptor.value = async function (...args: any[]) {
       const ctx: Context = (this as any)?.ctx || args[0];
+      if (ctx.chat?.type === "private") {
+        return originalMethod.apply(this, args);
+      }
       const groupSettingsRepo = new GroupSettingsService();
       let groupSettings = await groupSettingsRepo.getByGroupId(ctx.chat?.id!);
       if (!groupSettings) {
