@@ -12,6 +12,7 @@ import { Logger } from "../config/logger";
 import { UserService } from "./db/user";
 import { MESSAGE } from "../helper/message";
 import { RateLimiter } from "../helper/RateLimiter";
+import { ReplyBuilder } from "../helper";
 const logger = new Logger({
   file: "join_group.log",
   level: "info",
@@ -36,7 +37,20 @@ export class MessageCheck {
     }
     return { groupSettings, group };
   }
-
+  @SafeExecution()
+  static async Message(ctx: Context) {
+    if (!ctx.message?.reply_to_message && !ctx.me) {
+      return ;
+    }
+    const msg = ctx.message?.text!;
+    const user = ctx.message?.reply_to_message?.from;
+    const reply = new ReplyBuilder(ctx);
+    if (msg.toLowerCase() === "ask" && user) {
+      const name = user.username ? `@${user.username}` : user.first_name;
+      const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
+      await ctx.reply(responseMessage, reply.withRepliedMessageId());
+    }
+  }
   @SafeExecution()
   static async isNewUser(ctx: Context) {
     const entity = await MessageCheck.getEntities(ctx);
@@ -59,9 +73,7 @@ export class MessageCheck {
             group!.members.push(user.id.toString());
           }
 
-          await ctx.reply(
-            `Dear ${username}, welcome to ${ctx.chat!.title} chat ❤️`
-          );
+          await ctx.reply(`Dear ${username}, welcome to ${ctx.chat!.title} ❤️`);
         }
       }
 
