@@ -39,17 +39,27 @@ export class MessageCheck {
   }
   @SafeExecution()
   static async Message(ctx: Context) {
-    if (!ctx.message?.reply_to_message && !ctx.me) {
-      return ;
-    }
-    const msg = ctx.message?.text!;
-    const user = ctx.message?.reply_to_message?.from;
-    const reply = new ReplyBuilder(ctx);
-    if (msg.toLowerCase() === "ask" && user) {
-      const name = user.username ? `@${user.username}` : user.first_name;
-      const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
-      await ctx.reply(responseMessage, reply.withRepliedMessageId());
-    }
+   // Ensure that the message is a reply to someone
+  if (!ctx.message?.reply_to_message) {
+    return;
+  }
+
+  // Extract the message and user details
+  const msg = ctx.message?.text!;
+  const user = ctx.message.reply_to_message.from;
+
+  // If the replied-to user is a bot, return early
+  if (user?.is_bot) {
+    return;
+  }
+
+  // ReplyBuilder and other logic
+  const reply = new ReplyBuilder(ctx);
+  if (msg && msg.toLowerCase() === "ask" && user) {
+    const name = user.username ? `@${user.username}` : user.first_name;
+    const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
+    await ctx.reply(responseMessage, reply.withRepliedMessageId());
+  }
   }
   @SafeExecution()
   static async isNewUser(ctx: Context) {
