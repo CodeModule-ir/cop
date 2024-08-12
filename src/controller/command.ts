@@ -20,15 +20,12 @@ export class Command {
 
   @SafeExecution()
   static start(ctx: Context) {
-    return new ReplyBuilder(ctx).sendReply(MESSAGE.PV_START(), MESSAGE.START());
+        return new ReplyBuilder(ctx).sendReply(MESSAGE.PV_START(), MESSAGE.START());
+
   }
   @SafeExecution()
   static help(ctx: Context) {
-    return new ReplyBuilder(ctx).sendReply(
-      MESSAGE.HELP(),
-      MESSAGE.HELP(),
-      "Markdown"
-    );
+    return new ReplyBuilder(ctx).sendReply(MESSAGE.HELP(), MESSAGE.HELP(), "Markdown")
   }
   @SafeExecution()
   static async shahin(ctx: Context) {
@@ -39,10 +36,7 @@ export class Command {
   }
   @SafeExecution()
   static future(ctx: Context) {
-    return new ReplyBuilder(ctx).sendReply(
-      "We will go to ga",
-      "We will go to ga"
-    );
+    return new ReplyBuilder(ctx).sendReply("We will go to ga","We will go to ga");
   }
 
   @SafeExecution()
@@ -97,7 +91,7 @@ export class Command {
     const replyBuilder = new ReplyBuilder(ctx);
 
     const targetUser = ctx.message?.reply_to_message?.from;
-
+    
     const randomHours = (min: number, max: number) => {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
@@ -109,23 +103,22 @@ export class Command {
     };
 
     if (targetUser?.id === ctx.me?.id) {
-      const hours = randomHours(7, 10);
-      const message = getRandomMessage("replyToBot").replace("{hours}",hours.toString());
+      const hours = randomHours(7, 10); 
+      const message = getRandomMessage("replyToBot").replace("{hours}", hours.toString());
       return await ctx.reply(message, replyBuilder.withCurrentMessageId());
     }
-    if (targetUser) {
-      const hours = randomHours(3, 10);
-      const username = targetUser.username
-        ? `@${targetUser.username}`
-        : targetUser.first_name;
-      const message = getRandomMessage("replyToUser")
-        .replace("{username}", username)
-        .replace("{hours}", hours.toString());
-      await ctx.reply(message, replyBuilder.withRepliedMessageId());
-    }
-    const hours = randomHours(1, 7);
+     if (targetUser) {
+    const hours = randomHours(3, 10); 
+    const username = targetUser.username
+      ? `@${targetUser.username}`
+      : targetUser.first_name;
+    const message = getRandomMessage("replyToUser").replace("{username}", username).replace("{hours}", hours.toString());
+    await ctx.reply(message, replyBuilder.withRepliedMessageId());
+  } else {
+    const hours = randomHours(1, 7); 
     const message = getRandomMessage("notReplyingToAnyone").replace("{hours}", hours.toString());
     await ctx.reply(message);
+  }
   }
   // This method is now called only once, during initialization
   static generate() {
