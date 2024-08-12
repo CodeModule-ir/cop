@@ -19,8 +19,8 @@
     "test": "mocha --config .mochar.json",
     "clean": "rm -rf dist",
     "main": "node dist/app.js",
-    "start": "node -r ts-node/register --env-file=.env src/app.ts",
-    "start:deploy": "node -r ts-node/register src/app.ts"
+    "start": "NODE_ENV=development node -r ts-node/register --env-file=.env src/app.ts",
+    "start:deploy": "NODE_ENV=production node -r ts-node/register src/app.ts"
   },
   "repository": {
     "type": "git",

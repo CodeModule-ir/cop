@@ -1,3 +1,5 @@
+import { EntitySchema } from "typeorm";
+
 export interface User {
   id: number;
   is_bot: boolean;
@@ -35,3 +37,5 @@ export interface RoastMessages {
   notReplyingToAnyone: string[];
   replyToBot: string[];
 }
+export type Environment = "production" | "development";
+export type EntityType = Function | EntitySchema<any>;
