@@ -89,7 +89,7 @@ export class ActionFilter extends Middleware {
         return this.nxt();
       } else if (chat.type === "private") {
         this.ctx.reply(
-          "This command can only be used in supergroups or channels."
+          "This command can only be used in groups."
         );
       } else {
         this.ctx.reply("This command is not allowed in this type of chat.");
