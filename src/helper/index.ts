@@ -1,6 +1,7 @@
 import { Context } from "grammy";
 import { BotOverseer } from "../service/bot";
 import { Logger } from "../config/logger";
+import { ParseMode } from "grammy/types";
 const logger = new Logger({
   file: "error.log",
   level: "error",
@@ -15,7 +16,7 @@ export async function handleError(
   const userId = ctx.from?.id || "Unknown";
   const chatId = ctx.chat?.id || "Unknown";
   const command = ctx.message?.text?.split(" ")[0] || "Unknown command";
-  // Log the error with detailed context
+  // Log the error with detailed ctx
   logger.error(`An error occurred in ${propertyKey}:`, error, "Context", {
     command,
     userId,
@@ -111,4 +112,51 @@ export function tehranZone() {
 
   // Adjust time to Tehran timezone without considering DST
   return new Date(utcTime + tehranOffset * 60000);
+}
+export class ReplyBuilder {
+  private ctx: Context;
+
+  constructor(ctx: Context) {
+    this.ctx = ctx;
+  }
+
+  /**
+   * Generates reply options with the current message ID.
+   */
+  withCurrentMessageId() {
+    return {
+      reply_to_message_id: this.ctx.message?.message_id!,
+    };
+  }
+  withRepliedMessageId() {
+    return {
+      reply_to_message_id: this.ctx.message?.reply_to_message?.message_id!,
+    };
+  }
+
+  withCurrentMessageIdAndParseMode(parseMode?: string) {
+    return {
+      reply_to_message_id: this.ctx.message?.message_id!,
+      parse_mode: parseMode,
+    };
+  }
+
+  withRepliedMessageIdAndParseMode(parseMode?: ParseMode) {
+    return {
+      reply_to_message_id: this.ctx.message?.reply_to_message?.message_id!,
+      parse_mode: parseMode,
+    };
+  }
+
+  async sendReply(privateMessage: string,groupMessage?: string, parseMode?: ParseMode) {
+    if (this.ctx.chat?.type === "private") {
+      return this.ctx.reply(privateMessage);
+    }
+    if (groupMessage) {
+      if (parseMode) {
+        return this.ctx.reply(groupMessage, this.withRepliedMessageIdAndParseMode(parseMode));
+      }
+      return this.ctx.reply(groupMessage,this.withCurrentMessageId())
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { ApprovedUserService } from "../db/user/Approved";
 import { Permissions } from "./Permissions";
 import { initGroupSetting } from "../../decorators/db";
 import { UserService } from "../db/user";
+import { ReplyBuilder } from "../../helper";
 
 export class Approved {
   private static approvedUserRepo: ApprovedUserService =
@@ -11,7 +12,6 @@ export class Approved {
   private static groupSettingsRepo: GroupSettingsService =
     new GroupSettingsService();
   private static userRepo: UserService = new UserService();
-
   // Helper method to fetch the user and group settings
   private static async getEntities(ctx: Context) {
     const userId = ctx.message?.reply_to_message?.from?.id!;
@@ -34,11 +34,10 @@ export class Approved {
   @initGroupSetting()
   static async add(ctx: Context) {
     const { user, group } = await this.getEntities(ctx);
+    const reply = new ReplyBuilder(ctx)
     // Check if the user is a bot
     if (ctx.message?.reply_to_message?.from?.is_bot) {
-      return ctx.reply("Why should I approve a robot?", {
-        reply_to_message_id: ctx.message?.message_id,
-      });
+      return ctx.reply("Why should I approve a robot?", reply.withCurrentMessageId());
     }
     // Check if the user is already approved
     const existingApproval = await this.approvedUserRepo.getByUserIdAndGroup(
@@ -70,15 +69,14 @@ export class Approved {
     // Send a confirmation message
     await ctx.reply(
       "The user has been approved and given full messaging permissions.",
-      {
-        reply_to_message_id: ctx.message?.message_id,
-      }
+      reply.withCurrentMessageId()
     );
   }
 
   @initGroupSetting()
   static async remove(ctx: Context) {
     const { user, group } = await this.getEntities(ctx);
+    const reply = new ReplyBuilder(ctx);
 
     // Remove user from the approved list
     const approvedUser = await this.approvedUserRepo.getByUserIdAndGroup(
@@ -96,9 +94,7 @@ export class Approved {
     // Send a confirmation message
     await ctx.reply(
       "The user's approval has been removed, and their permissions have been restricted.",
-      {
-        reply_to_message_id: ctx.message?.message_id,
-      }
+      reply.withCurrentMessageId()
     );
   }
 
@@ -108,6 +104,7 @@ export class Approved {
     const group = await this.groupSettingsRepo.getByGroupId(chatId);
     const approvedUsers = await this.approvedUserRepo.getByGroup(group!);
 
+    const reply = new ReplyBuilder(ctx);
     if (!approvedUsers || approvedUsers.length === 0) {
       await ctx.reply("There are no approved users in this group.");
       return;
@@ -121,8 +118,9 @@ export class Approved {
       .join("\n");
 
     // Send the list to the chat
-    await ctx.reply(`Approved users in this group:\n${userList}`, {
-      reply_to_message_id: ctx.message?.message_id,
-    });
+    await ctx.reply(
+      `Approved users in this group:\n${userList}`,
+      reply.withCurrentMessageId()
+    );
   }
 }
