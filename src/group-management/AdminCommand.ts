@@ -2,7 +2,13 @@ import { Context } from "grammy";
 import { MESSAGE } from "../helper/message";
 import { SafeExecution } from "../decorators/SafeExecution";
 import { MuteService } from "../service/command/mute";
-import { executeService, executeServiceAdmin, parseDuration, tehranZone } from "../helper";
+import {
+  executeService,
+  executeServiceAdmin,
+  parseDuration,
+  ReplyBuilder,
+  tehranZone,
+} from "../helper";
 import { WarnService } from "../service/command/warn";
 import { BanService } from "../service/command/ban";
 import { BotOverseer } from "../service/bot";
@@ -28,6 +34,7 @@ export class AdminCommand {
   @SafeExecution()
   static async warn(ctx: Context): Promise<void> {
     const bot = new BotOverseer(ctx);
+    const reply = new ReplyBuilder(ctx);
     const [repliedMessage, repliedUserId] = await Promise.all([
       bot.getReplyMessage(),
       bot.getRepliedUserId(),
@@ -45,18 +52,16 @@ export class AdminCommand {
       if (result.banned) {
         await ctx.reply(
           "User has been banned for reaching the maximum warnings.",
-          {
-            reply_to_message_id: ctx.message?.message_id,
-          }
+          reply.withCurrentMessageId()
         );
         logger.info(
           `User ${username} banned for warnings in chat ${ctx.chat?.id}`,
           "AdminCommand"
         );
       } else if (result.warning) {
-        await ctx.reply(MESSAGE.WARN(repliedMessage, result.count!, reason), {
-          reply_to_message_id: ctx.message?.message_id,
-        });
+        await ctx.reply(
+          MESSAGE.WARN(repliedMessage, result.count!, reason),
+          reply.withCurrentMessageId());
         logger.info(
           `Warning issued to ${username} in chat ${ctx.chat?.id}`,
           "AdminCommand"
@@ -74,17 +79,19 @@ export class AdminCommand {
   static async mute(ctx: Context): Promise<void> {
     const bot = new BotOverseer(ctx);
     const userId = await bot.getRepliedUserId();
-    const durationStr = String(ctx.match as string)
-      .trim()
+    const durationStr = String(ctx.match as string).trim();
     let durationMs: number | null = null;
+    const reply = new ReplyBuilder(ctx);
     if (durationStr) {
       durationMs = parseDuration(durationStr);
     }
     // Get the current time and adjust for Tehran's timezone
-  const tehranNow = tehranZone();
+    const tehranNow = tehranZone();
 
-  // Calculate expiration time in Tehran's timezone
-  const expiration = durationMs ? new Date(tehranNow.getTime() + durationMs) : null;
+    // Calculate expiration time in Tehran's timezone
+    const expiration = durationMs
+      ? new Date(tehranNow.getTime() + durationMs)
+      : null;
 
     logger.info(
       `mute command triggered by ${ctx.from?.id} in chat ${ctx.chat?.id} with duration ${durationStr}`,
@@ -92,9 +99,7 @@ export class AdminCommand {
     );
 
     const result = await new MuteService(ctx, userId!).mute(expiration);
-    await ctx.reply(result, {
-      reply_to_message_id: ctx.message?.message_id,
-    });
+    await ctx.reply(result, reply.withCurrentMessageId());
     logger.info(
       `User ${userId} muted in chat ${ctx.chat?.id} until ${expiration}`,
       "AdminCommand"

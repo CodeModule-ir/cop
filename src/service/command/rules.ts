@@ -2,6 +2,7 @@ import { Context } from "grammy";
 import { GroupSettingsService } from "../db/group";
 import { initGroupSetting } from "../../decorators/db";
 import { BotOverseer } from "../bot";
+import { ReplyBuilder } from "../../helper";
 
 export class Rules {
   @initGroupSetting()
@@ -12,6 +13,7 @@ export class Rules {
       return ctx.reply("Could not retrieve chat information.");
     }
     const bot = new BotOverseer(ctx);
+    const reply = new ReplyBuilder(ctx)
     const userId = (await bot.getUser()).id;
     const isAdmin = await bot.isUserAdmin(userId);
     
@@ -24,7 +26,7 @@ export class Rules {
       if (!isAdmin) {
         await ctx.reply(
           "Sorry, but you need to be an admin to use this command!",
-          { reply_to_message_id: ctx.message?.message_id }
+          reply.withCurrentMessageId()
         );
         return;
       }
@@ -44,7 +46,7 @@ export class Rules {
       if (!isAdmin) {
         await ctx.reply(
           "Sorry, but you need to be an admin to use this command!",
-          { reply_to_message_id: ctx.message?.message_id }
+          reply.withCurrentMessageId()
         );
         return;
       }

@@ -21,15 +21,15 @@ const logger = new Logger({
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
 new GenerateCommand(bot).generate();
 bot.on("message", async (ctx) => {
-   if (!ctx.chat) {
-     return;
-   }
+  if (!ctx.chat) {
+    return;
+  }
+  await MessageCheck.Message(ctx);
   await MessageCheck.isCode(ctx);
   await MessageCheck.CheckBlackList(ctx);
   await Spam.WarnSpam(ctx);
   await MessageCheck.isNewUser(ctx);
   await MessageCheck.leftGroup(ctx);
-  
 });
 bot.on("my_chat_member", MessageCheck.initialGroup);
 (async () => {

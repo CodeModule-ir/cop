@@ -1,7 +1,7 @@
 import { Context } from "grammy";
 import { MESSAGE } from "../helper/message";
 import { SafeExecution } from "../decorators/SafeExecution";
-import { COMMANDS } from "../helper";
+import { COMMANDS, ReplyBuilder } from "../helper";
 import { AdminCommand } from "../group-management/AdminCommand";
 import { Logger } from "../config/logger";
 import { RateLimiter } from "../helper/RateLimiter";
@@ -20,26 +20,15 @@ export class Command {
 
   @SafeExecution()
   static start(ctx: Context) {
-    if (ctx.chat?.type === "private") {
-      return ctx.reply(MESSAGE.PV_START());
-    }
-    return ctx.reply(MESSAGE.START(), {
-      reply_parameters: {
-        message_id: ctx.message?.message_id!,
-      },
-    });
+    return new ReplyBuilder(ctx).sendReply(MESSAGE.PV_START(), MESSAGE.START());
   }
   @SafeExecution()
   static help(ctx: Context) {
-    if (ctx.chat?.type === "private") {
-      return ctx.reply(MESSAGE.HELP());
-    }
-    return ctx.reply(MESSAGE.HELP(), {
-      parse_mode: "Markdown",
-      reply_parameters: {
-        message_id: ctx.message?.message_id!,
-      },
-    });
+    return new ReplyBuilder(ctx).sendReply(
+      MESSAGE.HELP(),
+      MESSAGE.HELP(),
+      "Markdown"
+    );
   }
   @SafeExecution()
   static async shahin(ctx: Context) {
@@ -50,11 +39,10 @@ export class Command {
   }
   @SafeExecution()
   static future(ctx: Context) {
-    return ctx.reply("We will go to ga", {
-      reply_parameters: {
-        message_id: ctx.message?.message_id!,
-      },
-    });
+    return new ReplyBuilder(ctx).sendReply(
+      "We will go to ga",
+      "We will go to ga"
+    );
   }
 
   @SafeExecution()
@@ -106,9 +94,10 @@ export class Command {
   static async codeTime(ctx: Context) {
     const user = ctx.from;
     if (!user) return;
+    const replyBuilder = new ReplyBuilder(ctx);
 
     const targetUser = ctx.message?.reply_to_message?.from;
-    
+
     const randomHours = (min: number, max: number) => {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
@@ -118,27 +107,25 @@ export class Command {
       const randomIndex = Math.floor(Math.random() * messages.length);
       return messages[randomIndex];
     };
+
     if (targetUser?.id === ctx.me?.id) {
-      const hours = randomHours(7, 10); 
-      const message = getRandomMessage("replyToBot").replace("{hours}", hours.toString());
-      return await ctx.reply(message, {
-        reply_to_message_id: ctx.message?.message_id,
-      });
+      const hours = randomHours(7, 10);
+      const message = getRandomMessage("replyToBot").replace("{hours}",hours.toString());
+      return await ctx.reply(message, replyBuilder.withCurrentMessageId());
     }
-     if (targetUser) {
-    const hours = randomHours(3, 10); 
-    const username = targetUser.username
-      ? `@${targetUser.username}`
-      : targetUser.first_name;
-    const message = getRandomMessage("replyToUser").replace("{username}", username).replace("{hours}", hours.toString());
-    await ctx.reply(message, {
-      reply_to_message_id: ctx.message?.reply_to_message?.message_id,
-    });
-  } else {
-    const hours = randomHours(1, 7); 
+    if (targetUser) {
+      const hours = randomHours(3, 10);
+      const username = targetUser.username
+        ? `@${targetUser.username}`
+        : targetUser.first_name;
+      const message = getRandomMessage("replyToUser")
+        .replace("{username}", username)
+        .replace("{hours}", hours.toString());
+      await ctx.reply(message, replyBuilder.withRepliedMessageId());
+    }
+    const hours = randomHours(1, 7);
     const message = getRandomMessage("notReplyingToAnyone").replace("{hours}", hours.toString());
     await ctx.reply(message);
-  }
   }
   // This method is now called only once, during initialization
   static generate() {

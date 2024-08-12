@@ -7,13 +7,10 @@ export class ActionFilter extends Middleware {
    */
   async isReplied(): Promise<void> {
     const repliedMessage = this.ctx.message?.reply_to_message;
-
     if (!repliedMessage) {
       await this.ctx.reply(
         "Please use this command in reply to a user's message.",
-        {
-          reply_to_message_id: this.ctx.message?.message_id,
-        }
+        this.reply.withCurrentMessageId()
       );
       return;
     }
@@ -31,7 +28,7 @@ export class ActionFilter extends Middleware {
     if (!userId) {
       await this.ctx.reply(
         "Unable to determine the user ID. Please ensure you are replying to a valid user.",
-        { reply_to_message_id: this.ctx.message?.message_id }
+        this.reply.withCurrentMessageId()
       );
       return;
     }
@@ -42,9 +39,10 @@ export class ActionFilter extends Middleware {
       chatMember.status === "kicked" ||
       (!chatMember as any).is_member
     ) {
-      await this.ctx.reply("The user is no longer a member of this group.", {
-        reply_to_message_id: this.ctx.message?.message_id,
-      });
+      await this.ctx.reply(
+        "The user is no longer a member of this group.",
+        this.reply.withCurrentMessageId()
+      );
       return;
     }
 
@@ -67,16 +65,18 @@ export class ActionFilter extends Middleware {
     const command = this.ctx.message?.text?.split("/")[1].split(" ")[0];
 
     if (this.bot.getBotInfo()!.id === repliedUserId) {
-      await this.ctx.reply(`Why should I ${command} myself?`, {
-        reply_to_message_id: this.ctx.message?.message_id,
-      });
+      await this.ctx.reply(
+        `Why should I ${command} myself?`,
+        this.reply.withCurrentMessageId()
+      );
       return;
     }
 
     if (isAdmin) {
-      await this.ctx.reply(`Why should I ${command} an admin?`, {
-        reply_to_message_id: this.ctx.message?.message_id,
-      });
+      await this.ctx.reply(
+        `Why should I ${command} an admin?`,
+        this.reply.withCurrentMessageId()
+      );
       return;
     }
 
