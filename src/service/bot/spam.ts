@@ -3,6 +3,7 @@ import { WarnService } from "../command/warn";
 import { SafeExecution } from "../../decorators/SafeExecution";
 import { MessageCheck } from "../MessageCheck";
 import { GroupSettingsService } from "../db/group";
+import { tehranZone } from "../../helper";
 
 export class Spam {
   static MessageCounts: Map<
@@ -25,24 +26,24 @@ export class Spam {
 
   @SafeExecution()
   static async toggleSpamTime(ctx: Context, toggle: boolean) {
-     const groupId = ctx.chat!.id;
-     const groupRepo = new GroupSettingsService();
-     const groupSettings = await groupRepo.getByGroupId(groupId);
-     if (groupSettings) {
-       if (toggle && !groupSettings.isSpamTime) {
-         groupSettings.isSpamTime = toggle;
-         await groupRepo.save(groupSettings);
-         await ctx.reply("بوی اسپم تایم میاد 😋");
-       } else if (!toggle && groupSettings.isSpamTime) {
-         groupSettings.isSpamTime = toggle;
-         await groupRepo.save(groupSettings);
-       }
-     }
+    const groupId = ctx.chat!.id;
+    const groupRepo = new GroupSettingsService();
+    const groupSettings = await groupRepo.getByGroupId(groupId);
+    if (groupSettings) {
+      if (toggle && !groupSettings.isSpamTime) {
+        groupSettings.isSpamTime = toggle;
+        await groupRepo.save(groupSettings);
+        await ctx.reply("بوی اسپم تایم میاد 😋");
+      } else if (!toggle && groupSettings.isSpamTime) {
+        groupSettings.isSpamTime = toggle;
+        await groupRepo.save(groupSettings);
+      }
+    }
   }
 
   @SafeExecution()
   static async checkAndToggleSpamTime(ctx: Context) {
-    const now = new Date();
+    const now = tehranZone();
 
     // Check if it's within spam time (12:45 AM to 1:00 AM)
     if (await Spam.isWithinTimeRange(now, "00:45", "01:00")) {
@@ -59,8 +60,7 @@ export class Spam {
     // Existing spam check logic
     if (ctx.message?.sticker || ctx.message?.animation) {
       const userId = ctx.message.from.id;
-      const currentTime = Date.now();
-
+      const currentTime = tehranZone().getTime();
       if (Spam.MessageCounts.has(userId)) {
         const userData = Spam.MessageCounts.get(userId)!;
         if (currentTime - userData.lastMessageTime < 10000) {
@@ -76,7 +76,7 @@ export class Spam {
             return;
           }
         } else {
-          userData.count = 1; 
+          userData.count = 1;
         }
         userData.lastMessageTime = currentTime;
         Spam.MessageCounts.set(userId, userData);
