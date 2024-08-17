@@ -153,7 +153,7 @@ export class MessageCheck {
       return;
     }
     for (const blacklistedTerm of blacklist) {
-      if (messageText.includes(blacklistedTerm.toLowerCase())) {
+      if (messageText === blacklistedTerm.toLowerCase()) {
         const blacklistEntry = BlackListJson.find(
           (entry: { term: string; action: string }) =>
             entry.term.toLowerCase() === blacklistedTerm.toLowerCase()
