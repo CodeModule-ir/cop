@@ -54,20 +54,20 @@ export class GenerateCommand {
         } else if (["lock", "blacklist", "abl", "unLock", "rmbl", "approvedList"].includes(command)) {
             this.create(command, [CmdMid.isValidChatType, CmdMid.AdminStatus]);
         } else if (["purge"].includes(command)) {
-            this.create(command, [CmdMid.isValidChatType, CmdMid.isReplied, CmdMid.AdminStatus]);
+            this.create(command, [CmdMid.isValidChatType, CmdMid.AdminStatus, CmdMid.isReplied]);
         } else if (["unBan"].includes(command)) {
             this.create(command, [
                 CmdMid.isValidChatType,
-                CmdMid.isReplied,
                 CmdMid.AdminStatus,
+                CmdMid.isReplied,
                 CmdMid.adminCheckForRepliedUser,
             ]);
         } else {
             this.create(command, [
-                CmdMid.isValidChatType,
-                CmdMid.userInGroup,
+              CmdMid.isValidChatType,
+              CmdMid.AdminStatus, 
+              CmdMid.userInGroup,
                 CmdMid.isReplied,
-                CmdMid.AdminStatus,
                 CmdMid.adminCheckForRepliedUser,
             ]);
         }
