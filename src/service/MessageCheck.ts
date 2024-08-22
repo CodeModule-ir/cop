@@ -39,27 +39,27 @@ export class MessageCheck {
   }
   @SafeExecution()
   static async Message(ctx: Context) {
-   // Ensure that the message is a reply to someone
-  if (!ctx.message?.reply_to_message) {
-    return;
-  }
+    // Ensure that the message is a reply to someone
+    if (!ctx.message?.reply_to_message) {
+      return;
+    }
 
-  // Extract the message and user details
-  const msg = ctx.message?.text!;
-  const user = ctx.message.reply_to_message.from;
+    // Extract the message and user details
+    const msg = ctx.message?.text!;
+    const user = ctx.message.reply_to_message.from;
 
-  // If the replied-to user is a bot, return early
-  if (user?.is_bot) {
-    return;
-  }
+    // If the replied-to user is a bot, return early
+    if (user?.is_bot) {
+      return;
+    }
 
-  // ReplyBuilder and other logic
-  const reply = new ReplyBuilder(ctx);
-  if (msg && msg.toLowerCase() === "ask" && user) {
-    const name = user.username ? `@${user.username}` : user.first_name;
-    const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
-    await ctx.reply(responseMessage, reply.withRepliedMessageId());
-  }
+    // ReplyBuilder and other logic
+    const reply = new ReplyBuilder(ctx);
+    if (msg && msg.toLowerCase() === "ask" && user) {
+      const name = user.username ? `@${user.username}` : user.first_name;
+      const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
+      await ctx.reply(responseMessage, reply.withRepliedMessageId());
+    }
   }
   @SafeExecution()
   static async isNewUser(ctx: Context) {
@@ -153,7 +153,8 @@ export class MessageCheck {
       return;
     }
     for (const blacklistedTerm of blacklist) {
-      if (messageText === blacklistedTerm.toLowerCase()) {
+      const regex = new RegExp(blacklistedTerm.toLowerCase(), "i");
+      if (regex.test(messageText.toLowerCase())) {
         const blacklistEntry = BlackListJson.find(
           (entry: { term: string; action: string }) =>
             entry.term.toLowerCase() === blacklistedTerm.toLowerCase()
