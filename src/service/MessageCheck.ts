@@ -152,9 +152,27 @@ export class MessageCheck {
     if (isApprovedUser || isAdmin) {
       return;
     }
+    // Function to check if the message consists only of blacklisted terms
+    const isOnlyBlacklistedTerms = (
+      messageText: string,
+      blacklist: string[]
+    ) => {
+      // Normalize message text to lowercase
+      const normalizedText = messageText.toLowerCase();
+
+      // Create a regex pattern that matches the message consisting only of blacklisted terms
+      const blacklistPattern = blacklist
+        .map((term) => `(${term.toLowerCase()})`)
+        .join("|");
+      const regex = new RegExp(
+        `^(${blacklistPattern})(\\s(${blacklistPattern}))*$`
+      );
+
+      return regex.test(normalizedText);
+    };
+
     for (const blacklistedTerm of blacklist) {
-      const regex = new RegExp(blacklistedTerm.toLowerCase(), "i");
-      if (regex.test(messageText.toLowerCase())) {
+      if (isOnlyBlacklistedTerms(messageText, blacklist)) {
         const blacklistEntry = BlackListJson.find(
           (entry: { term: string; action: string }) =>
             entry.term.toLowerCase() === blacklistedTerm.toLowerCase()
