@@ -41,13 +41,14 @@
   },
   "homepage": "https://github.com/CodeModule-ir/cop#readme",
   "dependencies": {
+    "@medishn/gland-logger": "^1.0.5",
     "grammy": "^1.27.0",
-    "mysql2": "^3.11.0",
-    "typeorm": "^0.3.20"
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.16",
     "@types/mocha": "^10.0.7",
+    "@types/pg": "^8.11.10",
     "@types/supertest": "^6.0.2",
     "chai": "^5.1.1",
     "mocha": "^10.7.0",
