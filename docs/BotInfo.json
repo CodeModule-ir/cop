@@ -1,0 +1,20 @@
+{
+  "info": {
+    "bot_version": "4.0.0",
+    "bot_status": "Active",
+    "bot_name": "CMCOP Bot",
+    "created_at": "2024-08-06",
+    "last_update": "2024-08-10",
+    "description": "CMCOP Bot is the official bot for the Codemodule Community. It helps manage groups, users, and enforces the group rules.",
+    "supported_languages": ["en", "fa"]
+  },
+  "user_support": {
+    "help_contact": "For assistance, please contact @m_mdy_m on Telegram.",
+    "support_groups": [
+      {
+        "name": "Codemodule Community Support",
+        "link": "https://t.me/CodeModuleGap"
+      }
+    ]
+  }
+}
