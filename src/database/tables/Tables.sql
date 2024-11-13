@@ -1,4 +1,3 @@
-import {} from 'pg';
 -- Group table: Stores information about groups managed by the bot
 CREATE TABLE Group (
     id SERIAL PRIMARY KEY,
