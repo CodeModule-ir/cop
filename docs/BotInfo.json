@@ -9,11 +9,12 @@
     "supported_languages": ["en", "fa"]
   },
   "user_support": {
-    "help_contact": "For assistance, please contact @m_mdy_m on Telegram.",
+    "help_contact": "For assistance, please contact [m_mdy_m](https://t.me/m_mdy_m) on Telegram.",
+    "support_email": "codemoduletm@gmail.com",
     "support_groups": [
       {
         "name": "Codemodule Community Support",
-        "link": "https://t.me/CodeModuleGap"
+        "link": "[Codemodule Community Support](https://t.me/CodeModuleGap)"
       }
     ]
   }
