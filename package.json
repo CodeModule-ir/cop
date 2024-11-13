@@ -18,7 +18,7 @@
     "build": "tsc",
     "test": "mocha --config .mochar.json",
     "clean": "rm -rf dist",
-    "main": "npm run build & node dist/app.js",
+    "main": "npm run build & node --env-file=.env dist/app.js",
     "start": "NODE_ENV=development node -r ts-node/register --env-file=.env src/app.ts",
     "start:deploy": "NODE_ENV=production node -r ts-node/register src/app.ts"
   },
