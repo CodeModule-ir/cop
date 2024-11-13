@@ -1,46 +1,49 @@
-import { ApprovedUser } from "../entities/ApprovedUser";
-import { GroupSettings } from "../entities/GroupSettings";
-import { User } from "../entities/User";
-import { Warning } from "../entities/Warning";
-import { EntityType, Environment } from "../types";
-const entities: EntityType[] = [User, Warning, GroupSettings, ApprovedUser];
-export const config: Record<
-  Environment,
-  {
-    type: string;
-    url?: string;
-    host?: string;
-    port?: number;
-    username?: string;
-    password?: string;
-    database?: string;
-    entities: EntityType[];
-    synchronize: boolean;
-    logging: boolean;
-  }
-> = {
-  production: {
-    type: "mysql",
-    url: process.env.MYSQL_URL,
-    entities: entities,
-    synchronize: true,
-    logging: false,
-  },
-  development: {
-    type: "mysql",
-    host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT || "3306", 10),
-    username: process.env.DB_USERNAME || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "test",
-    entities: entities,
-    synchronize: true,
-    logging: false,
-  },
-};
+import { DatabaseConfig } from '../types/ResponseTypes';
 
-export const getAppDataSourceConfig = () => {
-  const env: Environment =
-    (process.env.NODE_ENV as Environment) || "development";
-  return config[env];
-};
+class Config {
+  private static _instance: Config | null = null;
+  public token: string;
+  public environment: 'development' | 'production';
+  public database: DatabaseConfig;
+
+  private constructor() {
+    // Ensure that the token is available in the environment
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    if (!token) {
+      throw new Error('Telegram bot token is missing. Please set TELEGRAM_BOT_TOKEN in the environment.');
+    }
+
+    // Set the environment, defaulting to development if not set
+    const environment: 'development' | 'production' = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+
+    // Database configuration with environment variables
+    const dbUser = process.env.DB_USER!;
+    const dbHost = process.env.DB_HOST!;
+    const dbName = process.env.DB_NAME!;
+    const dbPassword = process.env.DB_PASSWORD!;
+    const dbPort = parseInt(process.env.DB_PORT!, 10);
+    const dbUrl = process.env.DB_URL!;
+
+    this.token = token;
+    this.environment = environment;
+    // Initialize the database configuration
+    this.database = {
+      user: dbUser,
+      host: dbHost,
+      databaseName: dbName,
+      password: dbPassword,
+      port: dbPort,
+      url: dbUrl,
+    };
+  }
+
+  // Singleton pattern to ensure only one instance of the Config class
+  public static getInstance(): Config {
+    if (!Config._instance) {
+      Config._instance = new Config();
+    }
+    return Config._instance;
+  }
+}
+
+export default Config.getInstance();
