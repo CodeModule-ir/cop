@@ -53,7 +53,7 @@ export class ConnectionPool {
     return url || `postgresql://${user}:${password}@${host}:${port}/${databaseName}`;
   }
   async getClient(): Promise<PoolClient> {
-    return this._pool.connect();
+    return await this._pool.connect();
   }
 
   async close(): Promise<void> {
