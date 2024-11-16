@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from 'pg';
 import Config from '../config';
-import { Catch } from '../decorators/ErrorHandlingDecorator';
+import { Catch } from '../decorators/Catch';
 export class ConnectionPool {
   private _pool: Pool;
   constructor() {
