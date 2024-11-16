@@ -1,0 +1,41 @@
+{
+  "gorup": {
+    "user": {
+      "ban": {
+        "banned": "",
+        "un_ban": "",
+        "ban_use_blacklist_message": ""
+      },
+      "mute": "",
+      "warn": ""
+    },
+    "join_to_new_group": "",
+    "new_member_welcome": "Welcome to the group, {name}! Please introduce yourself."
+  },
+  "command": {
+    "link": "Here is the group link: [Group Link]",
+    "status": "Checking status for {username}. Please wait...",
+    "time": "Current time: {current_time}",
+    "date": "Today's date: {current_date}",
+    "report": "Thank you for reporting the issue! It will be reviewed by the admin team.",
+    "unreport": "The report has been removed.",
+    "future": "Please wait for future updates regarding this issue. Thank you for your patience.",
+    "info": "Here is the information about the group: [Group Info]",
+    "admins": "Here are the current admins of the group: [Admin List]",
+    "purge": "Purging messages... This may take a moment.",
+    "news": "Latest news in the community: [News Updates]",
+    "lock": "The group is now locked. No new members can join.",
+    "unlock": "The group is now unlocked. New members can join."
+  },
+  "help": {
+    "general": "I am here to assist you! To see a list of commands, use the `/commands` command in a private chat with the bot."
+  },
+  "start": {
+    "Private": "Welcome to CMCOP!\n I am the dedicated robot and police of Codemodule community.\n Use the /help command to explore my features and commands.",
+    "gorup": "Hello! What can I do?"
+  },
+  "commands": {
+    "private": "Use this command in a private chat to interact with the bot.",
+    "public": "This command is only available in private chats. Please use it there."
+  }
+}
