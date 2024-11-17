@@ -31,7 +31,46 @@ export class CopBot {
     const web_hook = Config.web_hook;
     const isProduction = Config.environment === 'production';
     if (isProduction) {
-      const server = http.createServer(webhookCallback(this._bot, 'http', { timeoutMilliseconds: 30000 }));
+      const server = http.createServer(async (req, res) => {
+        if (req.method === 'POST' && req.url === '/webhook') {
+          let body = '';
+
+          // Collect data chunks
+          req.on('data', (chunk) => {
+            body += chunk;
+          });
+
+          // Handle incoming request once the data is complete
+          req.on('end', async () => {
+            try {
+              // Parse the incoming JSON body
+              const update = JSON.parse(body);
+              if (!update) {
+                console.error('Received empty body or malformed JSON.');
+                return (res.statusCode = 400);
+              }
+
+              console.log('Received webhook body:', update);
+              await this._bot.handleUpdate(update); // Handle the update
+              res.statusCode = 200; // Success response to Telegram
+              res.end();
+            } catch (error: any) {
+              console.error('Error parsing JSON in webhook request:', error.message || error.stack);
+              res.statusCode = 500; // Internal Server Error
+              res.end('Internal Server Error');
+            }
+          });
+
+          req.on('error', (err) => {
+            console.error('Request error:', err);
+            res.statusCode = 400;
+            res.end('Bad Request');
+          });
+        } else {
+          res.statusCode = 404; // Not Found
+          res.end();
+        }
+      });
       server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
@@ -44,7 +83,7 @@ export class CopBot {
         } else {
           console.log('No webhook set.');
         }
-      } catch (error:any) {
+      } catch (error: any) {
         console.error('Error setting webhook:', error.message || error.stack);
         process.exit(1); // Exit if critical error
       }
