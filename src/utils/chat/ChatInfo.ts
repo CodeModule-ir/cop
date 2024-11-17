@@ -112,11 +112,11 @@ export class ChatInfo {
       .join(', ');
     return { groupName, groupType, groupDescription, memberCount, admins, inviteLink };
   }
-  async isAdmin(ctx: Context, userId: number): Promise<boolean> {
-    if (!RateLimiter.limit(ctx.chat!.id)) {
+  async isAdmin(userId: number): Promise<boolean> {
+    if (!RateLimiter.limit(this._ctx.chat!.id)) {
       return false;
     }
-    const chatAdmins = await ctx.getChatAdministrators();
+    const chatAdmins = await this._ctx.getChatAdministrators();
     return chatAdmins.some((admin) => admin.user.id === userId);
   }
 }

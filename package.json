@@ -19,7 +19,7 @@
     "test": "mocha --config .mochar.json",
     "clean": "rm -rf dist",
     "main": "npm run build & node --env-file=.env dist/app.js",
-    "start": "NODE_ENV=development node -r ts-node/register --env-file=.env src/app.ts",
+    "start": "NODE_ENV=development node --trace-uncaught -r ts-node/register --env-file=.env src/app.ts",
     "start:deploy": "npm run build && NODE_ENV=production node dist/app.js"
   },
   "repository": {
@@ -46,12 +46,7 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.16",
-    "@types/mocha": "^10.0.7",
     "@types/pg": "^8.11.10",
-    "@types/supertest": "^6.0.2",
-    "chai": "^5.1.1",
-    "mocha": "^10.7.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }

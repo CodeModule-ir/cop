@@ -13,7 +13,7 @@ async function main() {
       const db = ServiceProvider.getInstance();
       await db.close();
       logger.info('Database closed.');
-    } catch (error:any) {
+    } catch (error: any) {
       logger.error('Error during shutdown:', error);
     } finally {
       process.exit(0);
@@ -25,7 +25,7 @@ async function main() {
 
   process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
-    process.exit(1); 
+    process.exit(1);
   });
 }
 main().catch((error) => console.error('Application error:', error));
