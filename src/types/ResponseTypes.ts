@@ -10,6 +10,7 @@ export interface DatabaseConfig {
 export interface BotConfig {
   token: string;
   environment: 'development' | 'production';
+  port: number;
   database: DatabaseConfig;
 }
 export interface ErrorResponse {
