@@ -107,7 +107,7 @@ Please reach out to us for assistance.
     statusCode: 500,
   })
   /** getBotInfo */
-  public static async getbotinfo(ctx: Context) {
+  public static async botinfo(ctx: Context) {
     const reply = new BotReply(ctx);
 
     // Extract detailed information from BotInfo.json
@@ -125,5 +125,36 @@ Please reach out to us for assistance.
 This bot is designed to deliver fast and secure responses to users.
     `;
     await reply.markdownReply(botInfoMessage);
+  }
+  public static async shahin(ctx: Context) {
+    await ctx.reply('دوستان.');
+    setTimeout(() => {
+      return ctx.reply('بحث تخصصی.');
+    }, 2000);
+  }
+  private static aranState: Map<number, number> = new Map();
+  static async aran(ctx: Context) {
+    const userId = ctx.from?.id;
+    if (!userId) return;
+
+    const currentState = GeneralCommands.aranState.get(userId) || 0;
+
+    switch (currentState) {
+      case 0:
+        await ctx.reply('Aran mode: Activated.');
+        GeneralCommands.aranState.set(userId, 1);
+        break;
+      case 1:
+        await ctx.reply('رفرنس بده.');
+        GeneralCommands.aranState.set(userId, 2);
+        break;
+      case 2:
+        await ctx.reply('Aran mode: deActivated.');
+        GeneralCommands.aranState.set(userId, 0);
+        break;
+      default:
+        GeneralCommands.aranState.set(userId, 0);
+        break;
+    }
   }
 }

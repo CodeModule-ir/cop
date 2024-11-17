@@ -244,6 +244,12 @@ export class AdminCommands {
   /** Purge Command */
   static async purge(ctx: Context) {
     const reply = new BotReply(ctx);
+    const chatInfo = new ChatInfo(ctx);
+    const topicChat = chatInfo.chatIsTopic();
+    if (topicChat) {
+      await reply.textReply('The /purge command cannot be used in a topic group.');
+      return;
+    }
     const chatId = ctx.chat?.id;
     const replyToMessageId = ctx.message?.reply_to_message?.message_id;
     if (!chatId || !replyToMessageId) {
