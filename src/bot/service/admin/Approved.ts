@@ -12,7 +12,7 @@ export class ApprovedService {
     if (!group) {
       group = await groupService.save(ctx);
     }
-    const approvedGroups = user.approved_groups ? [...user.approved_groups] : [];
+    const approvedGroups = user.approved_groups ? [...user.approved_groups.map(Number)] : [];
     const approvedUsers = group.approved_users ? [...group.approved_users.map(Number)] : [];
 
     if (!approvedUsers.includes(userId)) {
@@ -24,6 +24,7 @@ export class ApprovedService {
     const updatedUser = await userService.update({
       ...user,
       approved_groups: approvedGroups,
+      role: 'approved_user',
     });
     const updatedGroup = await groupService.update({
       ...group,
@@ -57,6 +58,7 @@ export class ApprovedService {
     const updatedUser = await userService.update({
       ...user,
       approved_groups: updatedApprovedGroups,
+      role: 'user',
     });
     const updatedGroup = await groupService.update({
       ...group,
@@ -80,8 +82,6 @@ export class ApprovedService {
         approvedUsers.push(user);
       }
     }
-    console.log('approvedUsers', approvedUsers);
-
     return approvedUsers;
   }
   private static async getServices() {

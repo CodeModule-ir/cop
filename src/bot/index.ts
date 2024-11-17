@@ -10,6 +10,8 @@ import { forwardChannelPostToGroup } from './handlers/forward';
 import { ServiceProvider } from '../service/database/ServiceProvider';
 import { AdminCommands } from './commands/admin/AdminCommands';
 import { BotReply } from '../utils/chat/BotReply';
+import { BotMiddleware } from './middleware/BotMiddleware';
+import { MessagesService } from '../service/messages';
 export class CopBot {
   private _bot: Bot<Context>;
 
@@ -17,7 +19,6 @@ export class CopBot {
     this._bot = new Bot<Context>(Config.token);
   }
   async start() {
-    await this._bot.api.getUpdates({ offset: -1 });
     this._bot.start();
   }
   @Catch()
@@ -36,25 +37,66 @@ export class CopBot {
       const [userService, groupService] = await Promise.all([datanaseService.getUserService(), datanaseService.getGroupService()]);
       const userData = { first_name: ctx!.from.first_name!, id: ctx.from.id!, username: ctx.from.username! };
       await userService.save(userData);
+
       if (ctx.chat.type === 'group' || (ctx.chat.type === 'supergroup' && ctx.chat.id)) {
         await groupService.save(ctx);
         await groupService.updateMembers(ctx.chat!.id!, ctx.from?.id!);
       }
       // Only process valid commands
-      if (entity?.type === 'bot_command' && message?.text) {
-        const lowerCaseCommand = message.text.toLowerCase().replace('/', '');
+      if (entity?.type === 'bot_command') {
+        const lowerCaseCommand = message!.text!.toLowerCase().replace('/', '').split(' ')[0].trim();
         const commandGeneral = (GeneralCommands as any)[lowerCaseCommand];
         const commandUser = (UserCommands as any)[lowerCaseCommand];
         const commandAdmin = (AdminCommands as any)[lowerCaseCommand];
         if (commandGeneral && typeof commandGeneral === 'function') {
           await commandGeneral(ctx);
         } else if (commandUser && typeof commandUser === 'function') {
-          await commandUser(ctx);
+          const middlewarePassed = await this.applyMiddleware(ctx);
+          if (middlewarePassed) {
+            await commandUser(ctx);
+          }
         } else if (commandAdmin && typeof commandAdmin === 'function') {
-          await commandAdmin(ctx);
+          const middlewarePassed = await this.applyMiddleware(ctx, false);
+          if (middlewarePassed) {
+            await commandAdmin(ctx);
+          }
         }
       }
+      const message_service = new MessagesService(ctx);
+      await message_service.isNewUser();
+      await message_service.isCode();
+      await message_service.checkAndHandleBlacklistedWords();
+      await message_service.userIsLeftGroup();
     });
+  }
+  async applyMiddleware(ctx: Context, isUserCommand: boolean = true): Promise<boolean> {
+    // For user commands, check group chat, bot admin
+    if (isUserCommand) {
+      const groupChatCheck = await BotMiddleware.isGroupChat(ctx, null, false);
+      if (!groupChatCheck) return false; // Return early if group chat check fails
+
+      const botAdminCheck = await BotMiddleware.botIsAdmin(ctx, null, false);
+      if (!botAdminCheck) return false; // Return early if bot admin check fails
+
+      return true;
+    }
+
+    // For admin commands, check group chat, bot admin, user admin, and admin check for replied user
+    else {
+      const groupChatCheck = await BotMiddleware.isGroupChat(ctx, null, false);
+      if (!groupChatCheck) return false; // Return early if group chat check fails
+
+      const botAdminCheck = await BotMiddleware.botIsAdmin(ctx, null, false);
+      if (!botAdminCheck) return false; // Return early if bot admin check fails
+
+      const userAdminCheck = await BotMiddleware.userIsAdmin(ctx, null, false);
+      if (!userAdminCheck) return false; // Return early if user admin check fails
+
+      const adminCheckForReplied = await BotMiddleware.adminCheckForRepliedUser(ctx, null, false);
+      if (!adminCheckForReplied) return false; // Return early if admin check for replied user fails
+
+      return true;
+    }
   }
   async initial(): Promise<void> {
     new GenerateCommand(this._bot).generate();
@@ -69,3 +111,60 @@ export class CopBot {
     });
   }
 }
+/* === Bot Command === */
+/**
+admin:
+  - manage_approvals:
+      - approve_user
+      - disapprove_user
+      - view_approved_list
+  - manage_users:
+      - ban_user
+      - unban_user
+      - warn_user
+      - clear_user_warnings
+      - view_user_warnings
+      - mute_user
+      - unmute_user
+      - grant_admin
+      - revoke_admin
+  - manage_blacklist:
+      - add_to_blacklist
+      - remove_from_blacklist
+      - view_blacklist
+  - manage_rules:
+      - add_rule
+      - edit_rule
+      - delete_rule
+      - delete_last_rule
+      - view_rules
+  - manage_pinning:
+      - pin_message
+      - unpin_message
+      - view_pinned_list
+  - manage_messages:
+      - purge_messages
+  - group_settings:
+      - lock_group
+      - unlock_group
+      - change_group_title
+      - set_welcome_message
+  - view_group_stats
+
+user:
+  - view_rules
+  - codetime
+  - upcoming_features
+  - view_news
+  - request_group_info
+  - report_issue
+  - cancel_report
+  - request_invite_link
+  - view_admin_list
+
+general:
+  - view_date
+  - about_bot
+  - view_support_contact
+  - get_bot_info
+ */

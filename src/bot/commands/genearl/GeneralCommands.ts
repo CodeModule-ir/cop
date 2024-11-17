@@ -1,9 +1,9 @@
 import { Context } from 'grammy';
-import { Catch } from '../../../decorators/ErrorHandlingDecorator';
+import { Catch } from '../../../decorators/Catch';
 import { BotReply } from '../../../utils/chat/BotReply';
 import { help, start, commands } from '../../../utils/jsons/botMessages.json';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
-import { DateCommand } from './date';
+import { DateCommand } from '../../service/general/date';
 import { info, user_support } from '../../../../docs/BotInfo.json';
 /**
  * Reason for lowercase command names:

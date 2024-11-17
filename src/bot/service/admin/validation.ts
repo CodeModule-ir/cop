@@ -8,7 +8,7 @@ export class AdminValidationService {
    * @param ctx - The bot's context object.
    * @returns An object containing groupId and userId if validation succeeds; otherwise, returns null.
    */
-  static async validateApprovalContext(ctx: Context): Promise<{ groupId: number; userId: number } | null> {
+  static async validateContext(ctx: Context): Promise<{ groupId: number; userId: number } | null> {
     const reply = new BotReply(ctx);
 
     // Check if the command is a reply to a user's message
