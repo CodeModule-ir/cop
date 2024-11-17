@@ -56,6 +56,12 @@ export class ChatInfo {
 
     return chatMember.status === 'administrator' || chatMember.status === 'creator';
   }
+  async userIsOwner(): Promise<boolean> {
+    const userId = this._ctx.from!.id;
+    const chatMember = await this._ctx.getChatMember(userId);
+
+    return chatMember.status === 'creator';
+  }
   async userReplyIsAdmin(): Promise<boolean | undefined> {
     const reply = new BotReply(this._ctx);
     const repliedMessage = await reply.getReplyMessage();

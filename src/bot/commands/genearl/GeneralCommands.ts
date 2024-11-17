@@ -4,7 +4,7 @@ import { BotReply } from '../../../utils/chat/BotReply';
 import { help, start, commands } from '../../../utils/jsons/botMessages.json';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { DateCommand } from '../../service/general/date';
-import { info, user_support } from '../../../../docs/BotInfo.json';
+import * as BotInfoJson from '../../../../docs/BotInfo.json';
 /**
  * Reason for lowercase command names:
  *
@@ -92,10 +92,10 @@ export class GeneralCommands {
 
     // Contact information from BotInfo.json
     const contactMessage = `
-**Help Contact**: ${user_support.help_contact}\n\r
-**Support Email**: ${user_support.support_email}
+**Help Contact**: ${BotInfoJson.user_support.help_contact}\n\r
+**Support Email**: ${BotInfoJson.user_support.support_email}
 **Support Groups**:
-    ${user_support.support_groups.map((group) => `- ${group.name}: ${group.link}`).join('\n')}
+    ${BotInfoJson.user_support.support_groups.map((group) => `- ${group.name}: ${group.link}`).join('\n')}
 
 Please reach out to us for assistance.
     `;
@@ -113,14 +113,14 @@ Please reach out to us for assistance.
     // Extract detailed information from BotInfo.json
     const botInfoMessage = `
     **Bot Information**:
-    - **Name**: ${info.bot_name}
-    - **Version**: ${info.bot_version}
-    - **Status**: ${info.bot_status}
-    - **Creation Date**: ${new Date(info.created_at).toLocaleString()}
-    - **Last Updated**: ${new Date(info.last_update).toLocaleString()}
-    - **Supported Languages**: ${info.supported_languages.join(', ')}
+    - **Name**: ${BotInfoJson.info.bot_name}
+    - **Version**: ${BotInfoJson.info.bot_version}
+    - **Status**: ${BotInfoJson.info.bot_status}
+    - **Creation Date**: ${new Date(BotInfoJson.info.created_at).toLocaleString()}
+    - **Last Updated**: ${new Date(BotInfoJson.info.last_update).toLocaleString()}
+    - **Supported Languages**: ${BotInfoJson.info.supported_languages.join(', ')}
 
-**Description**: ${info.description}
+**Description**: ${BotInfoJson.info.description}
     
 This bot is designed to deliver fast and secure responses to users.
     `;
