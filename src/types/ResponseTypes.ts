@@ -11,6 +11,7 @@ export interface BotConfig {
   token: string;
   environment: 'development' | 'production';
   port: number;
+  web_hook: string;
   database: DatabaseConfig;
 }
 export interface ErrorResponse {
