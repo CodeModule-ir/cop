@@ -8,14 +8,16 @@ export class MuteService {
    * @param ctx - The bot context.
    * @returns A message indicating the duration of the mute.
    */
-  static async muteUser(ctx: Context): Promise<string> {
+  static async muteUser(ctx: Context, durationStr?: string | null): Promise<string> {
     const replyMessage = ctx.message?.reply_to_message;
     if (!replyMessage) {
       return 'Please reply to a user to mute them.';
     }
 
     const userId = replyMessage.from?.id!;
-    const durationStr = MuteService.extractDurationFromCommand(ctx.message?.text);
+    if (!durationStr) {
+      durationStr = MuteService.extractDurationFromCommand(ctx.message?.text);
+    }
     const durationMs = durationStr ? parseDuration(durationStr) : null;
 
     const expiration = durationMs ? new Date(tehranZone().getTime() + durationMs) : null;
