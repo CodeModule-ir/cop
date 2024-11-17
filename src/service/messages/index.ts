@@ -46,7 +46,7 @@ export class MessagesService {
 
       if (user.id !== this._ctx.me?.id) {
         // Notify the group about the member leaving
-        const username = user.username ? `@${user.username}` : user.first_name;
+        const username = user.username ? `${user.username}` : user.first_name;
         await this._ctx.reply(`${username} has left the chat.`);
       }
     }
@@ -71,7 +71,7 @@ export class MessagesService {
       group = await groupService.save(this._ctx);
     }
     const approvedUsers = group.approved_users.map(Number);
-    const isAdmin = await this._chatInfo.isAdmin(this._ctx, userId);
+    const isAdmin = await this._chatInfo.isAdmin(userId);
     // Allow approved users and admins to bypass blacklist checks
     if (approvedUsers.includes(+userId) || isAdmin) {
       return;

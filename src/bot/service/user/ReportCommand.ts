@@ -1,5 +1,6 @@
 import { Context } from 'grammy';
 import { BotReply } from '../../../utils/chat/BotReply';
+import { ChatInfo } from '../../../utils/chat/ChatInfo';
 
 export class ReportCommand {
   // Store pending reports with user IDs as keys
@@ -13,11 +14,16 @@ export class ReportCommand {
    */
   static async report(ctx: Context) {
     const reply = new BotReply(ctx);
-
+    const chatInfo = new ChatInfo(ctx);
+    const isAdmin = await chatInfo.isAdmin(ctx.message?.reply_to_message?.from!.id!);
+    if (isAdmin) {
+      await reply.textReply('This user is an admin and cannot be processed for this action.');
+      return;
+    }
     // Ensure the report command is a reply to another message
     const reportedMessage = ctx.message?.reply_to_message;
     if (!reportedMessage || !reportedMessage.from) {
-      await ctx.reply('Please use the /report command by replying to the message you want to report.');
+      await reply.textReply('Please use the /report command by replying to the message you want to report.');
       return;
     }
 

@@ -1,16 +1,16 @@
-import { Context, InlineKeyboard } from 'grammy';
+import { Context } from 'grammy';
 import { BotReply } from '../../../utils/chat/BotReply';
 import { Catch } from '../../../decorators/Catch';
 import { AdminValidationService } from '../../service/admin/validation';
 import { ApprovedService } from '../../service/admin/Approved';
 import { BanService } from '../../service/admin/Ban';
 import { WarnService } from '../../service/admin/Warn';
-import { parseDuration, tehranZone } from '../../../utils';
 import { MuteService } from '../../service/admin/Mute';
 import { AdminService } from '../../service/admin/Admin';
 import { BlackListService } from '../../service/admin/Blacklist';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { GroupSettingsService } from '../../service/admin/Welcome';
+import { User } from 'grammy/types';
 export class AdminCommands {
   /** Approved Commands */
   @Catch({
@@ -119,8 +119,11 @@ export class AdminCommands {
   }
   static async warns(ctx: Context) {
     const reply = new BotReply(ctx);
-    const user = ctx.message?.reply_to_message?.from!;
-
+    const replyMessage = ctx.message?.reply_to_message;
+    let user = ctx.message?.reply_to_message?.from!;
+    if (replyMessage?.forum_topic_created) {
+      user = ctx.from!;
+    }
     const { warnings } = await WarnService.getUserWarnById(ctx);
 
     if (warnings >= 0) {

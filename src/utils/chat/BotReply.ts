@@ -1,5 +1,6 @@
 import { Context, InlineKeyboard } from 'grammy';
 import { RepliedMessage } from '../../types/CommandTypes';
+import { Catch } from '../../decorators/Catch';
 
 export class BotReply {
   private ctx: Context;
@@ -11,6 +12,7 @@ export class BotReply {
    * Sends a generic reply without any special formatting.
    * @param message - The message to send.
    */
+  @Catch()
   async send(message: string): Promise<void> {
     await this.ctx.reply(message);
   }
@@ -19,6 +21,7 @@ export class BotReply {
    * @param message - The plain text message to send.
    * @param options - Additional options such as reply markup.
    */
+  @Catch()
   async textReply(message: string, options: { reply_markup?: InlineKeyboard } = {}): Promise<void> {
     await this.ctx.reply(message, {
       reply_markup: options.reply_markup,
@@ -29,6 +32,7 @@ export class BotReply {
    * Sends a plain text reply to a specific message.
    * @param message - The message to send.
    */
+  @Catch()
   async replyToMessage(message: string): Promise<void> {
     await this.ctx.reply(message, {
       parse_mode: 'HTML',
@@ -42,6 +46,7 @@ export class BotReply {
    * @param message - Markdown message to send.
    * @param replyToMessage - Whether to reply to the user's message.
    */
+  @Catch()
   async markdownReply(message: string): Promise<void> {
     await this.ctx.reply(message, {
       parse_mode: 'Markdown',
@@ -56,6 +61,7 @@ export class BotReply {
    * @param message - HTML formatted message to send.
    * @param replyToMessage - Whether to reply to the user's message.
    */
+  @Catch()
   async htmlReply(message: string): Promise<void> {
     await this.ctx.reply(message, {
       parse_mode: 'HTML',
@@ -65,15 +71,7 @@ export class BotReply {
     });
   }
 
-  /**
-   * Sends a reply with inline keyboard options.
-   * @param message - Message to send.
-   * @param keyboard - Inline keyboard options.
-   */
-  async inlineKeyboardReply(message: string, keyboard: InlineKeyboard): Promise<void> {
-    await this.ctx.reply(message, { reply_markup: keyboard });
-  }
-
+  @Catch()
   async getReplyMessage(): Promise<RepliedMessage | undefined> {
     const repliedMessage = this.ctx.message?.reply_to_message;
     if (repliedMessage && repliedMessage.from) {

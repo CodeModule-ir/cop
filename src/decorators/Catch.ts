@@ -1,4 +1,4 @@
-import { Context } from 'grammy';
+import { Context, GrammyError } from 'grammy';
 import { ErrorResponse } from '../types/ResponseTypes';
 import logger from '../utils/logger';
 import { ServiceProvider } from '../service/database/ServiceProvider';
@@ -10,6 +10,10 @@ export function Catch(customResponse?: ErrorResponse) {
       try {
         return await originalMethod.apply(this, args);
       } catch (error: any) {
+        if (error instanceof GrammyError && error.error_code === 400 && error.description === 'Bad Request: message to be replied not found') {
+          console.warn(`Message not found to reply to. Skipping...`);
+          return;
+        }
         if (error.error_code === 403 && error.description.includes('bot was kicked')) {
           const chatId = error.payload?.chat_id;
           logger.warn(`[Warning] Bot was kicked from a group (chat_id: ${error.payload.chat_id}). Skipping.`);
@@ -25,10 +29,6 @@ export function Catch(customResponse?: ErrorResponse) {
           category: 'General',
         };
         logger.error(`[Category: ${errorResponse.category}] Error in ${target.constructor.name}.${propKey}(): ${error.message}`);
-        // Send the error message to the user (if context is available)
-        if (ctx && typeof ctx.reply === 'function') {
-          await ctx.reply(errorResponse.message);
-        }
       }
     };
 

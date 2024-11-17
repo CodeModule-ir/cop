@@ -44,6 +44,7 @@ export class CopBot {
       }
     } else {
       try {
+        await this._bot.api.getUpdates({ offset: -1 });
         await this._bot.start({
           onStart: (botInfo) => {
             console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
@@ -135,7 +136,8 @@ export class CopBot {
   @Catch()
   async initial(): Promise<void> {
     new GenerateCommand(this._bot).generate();
-    await this.start();
     await this.message();
+    await this.start();
+    console.log('Bot Is Start');
   }
 }

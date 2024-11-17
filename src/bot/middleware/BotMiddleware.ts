@@ -8,6 +8,14 @@ export class BotMiddleware {
     const reply = new BotReply(ctx);
     const chatInfo = new ChatInfo(ctx);
     const userIsAdmin = await chatInfo.userIsAdmin();
+    const command = ctx.message?.text?.split('/')[1].split(' ')[0].toLowerCase().trim();
+    if (command === 'warns') {
+      if (isMiddleware) {
+        return nxt!();
+      } else {
+        return true;
+      }
+    }
     if (!userIsAdmin) {
       await reply.textReply('Sorry, but you need to be an admin to use this command!');
       return false;
@@ -59,7 +67,14 @@ Sorry, but I don't have the necessary permissions to perform this action. Please
    */
   static async adminCheckForRepliedUser(ctx: Context, nxt: NextFunction | null, isMiddleware: boolean = true) {
     const reply = new BotReply(ctx);
-    const repliedUserId = ctx.message?.reply_to_message?.from?.id!;
+    const replyMeseage = ctx.message?.reply_to_message!;
+    let repliedUserId: number | null;
+    if (replyMeseage && !replyMeseage?.forum_topic_created) {
+      repliedUserId = replyMeseage!.from?.id!;
+    } else {
+      repliedUserId = null;
+    }
+
     const admins = await ctx.api.getChatAdministrators(ctx.chat!.id);
     const isAdmin = admins!.some((admin) => admin.user.id === repliedUserId);
     const command = ctx.message?.text?.split('/')[1].split(' ')[0].toLowerCase().trim();
