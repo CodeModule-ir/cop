@@ -1,6 +1,7 @@
 import { Context } from 'grammy';
 import { AdminValidationService } from './validation';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
+import { MuteService } from './Mute';
 
 export class WarnService {
   static async warnUser(ctx: Context): Promise<{
@@ -64,6 +65,7 @@ export class WarnService {
       };
       await warnService.delete(warn.id);
       await Promise.all([groupService.update(updatedGroup), userService.update(updatedUser)]);
+      await MuteService.muteUser(ctx, '1d');
       return {
         warningApplied: true,
         isWarningLimitReached: true,
