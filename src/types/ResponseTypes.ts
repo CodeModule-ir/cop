@@ -5,6 +5,7 @@ export interface DatabaseConfig {
   password: string;
   port: number;
   url: string;
+  serverUrl: string;
 }
 
 export interface BotConfig {
