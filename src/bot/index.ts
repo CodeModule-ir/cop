@@ -31,16 +31,22 @@ export class CopBot {
     const web_hook = Config.web_hook;
     const isProduction = Config.environment === 'production';
     if (isProduction) {
-      const server = http.createServer(webhookCallback(this._bot, 'http'));
+      const server = http.createServer(webhookCallback(this._bot, 'http', { timeoutMilliseconds: 30000 }));
       server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
       try {
         await this._bot.api.setWebhook(`${web_hook}`);
         console.log(`Webhook set successfully to: ${web_hook}`);
-      } catch (error) {
-        console.error('Error setting webhook:', error);
-        process.exit(1);
+        const webhookStatus = await this._bot.api.getWebhookInfo();
+        if (webhookStatus.url) {
+          console.log(`Webhook is already set to: ${webhookStatus.url}`);
+        } else {
+          console.log('No webhook set.');
+        }
+      } catch (error:any) {
+        console.error('Error setting webhook:', error.message || error.stack);
+        process.exit(1); // Exit if critical error
       }
     } else {
       try {
