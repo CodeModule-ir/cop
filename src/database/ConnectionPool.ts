@@ -20,7 +20,6 @@ export class ConnectionPool {
       await this._pool.connect();
     } catch (error: any) {
       console.log('error:', error.code);
-
       if (error.code === '3D000') {
         console.log(`Database does not exist. Creating database ${Config.database.databaseName}...`);
         await this.createDatabase();

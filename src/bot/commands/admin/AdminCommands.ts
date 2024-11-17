@@ -305,7 +305,6 @@ export class AdminCommands {
       return;
     }
     if (welcomeContent) {
-      console.log('welcomeContent', welcomeContent);
       await GroupSettingsService.setWelcomeMessage(ctx, welcomeContent);
       await reply.textReply(`The welcome message has been updated to: \n${welcomeContent}`);
       return;
