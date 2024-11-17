@@ -76,7 +76,7 @@ export class ChatInfo {
     const admins = await this._ctx.api.getChatAdministrators(this._ctx.chat!.id);
     const adminList = admins
       .filter((admin) => !admin.user.is_bot) // Exclude bots from the admin list
-      .map((admin) => `- ${admin.user.first_name} (@${admin.user.username || 'No username'})`)
+      .map((admin) => `- ${admin.user.first_name} (${admin.user.username || 'No username'})`)
       .join('\n');
     return adminList;
   }
@@ -106,7 +106,7 @@ export class ChatInfo {
     const adminList = creator.filter((admin) => admin.status === 'administrator' || admin.status === 'creator');
     const admins = adminList
       .map((admin) => {
-        const username = admin.user.username ? `@${admin.user.username}` : admin.user.first_name;
+        const username = admin.user.username ? `${admin.user.username}` : admin.user.first_name;
         return `${username} (${admin.status === 'creator' ? 'Creator' : 'Admin'})`;
       })
       .join(', ');
