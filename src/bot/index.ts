@@ -34,16 +34,11 @@ export class CopBot {
       const server = http.createServer(async (req, res) => {
         if (req.method === 'POST' && req.url === '/webhook') {
           let body = '';
-
-          // Collect data chunks
           req.on('data', (chunk) => {
             body += chunk;
           });
-
-          // Handle incoming request once the data is complete
           req.on('end', async () => {
             try {
-              // Parse the incoming JSON body
               const update = JSON.parse(body);
               if (!update) {
                 console.error('Received empty body or malformed JSON.');
@@ -51,12 +46,12 @@ export class CopBot {
               }
 
               console.log('Received webhook body:', update);
-              await this._bot.handleUpdate(update); // Handle the update
-              res.statusCode = 200; // Success response to Telegram
+              await this._bot.handleUpdate(update);
+              res.statusCode = 200;
               res.end();
             } catch (error: any) {
               console.error('Error parsing JSON in webhook request:', error.message || error.stack);
-              res.statusCode = 500; // Internal Server Error
+              res.statusCode = 500;
               res.end('Internal Server Error');
             }
           });
@@ -67,26 +62,15 @@ export class CopBot {
             res.end('Bad Request');
           });
         } else {
-          res.statusCode = 404; // Not Found
+          res.statusCode = 404;
           res.end();
         }
       });
       server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
-      try {
-        await this._bot.api.setWebhook(`${web_hook}`);
-        console.log(`Webhook set successfully to: ${web_hook}`);
-        const webhookStatus = await this._bot.api.getWebhookInfo();
-        if (webhookStatus.url) {
-          console.log(`Webhook is already set to: ${webhookStatus.url}`);
-        } else {
-          console.log('No webhook set.');
-        }
-      } catch (error: any) {
-        console.error('Error setting webhook:', error.message || error.stack);
-        process.exit(1); // Exit if critical error
-      }
+      await this._bot.api.setWebhook(`${web_hook}`);
+      console.log(`Webhook set successfully to: ${web_hook}`);
     } else {
       try {
         await this._bot.start({
@@ -96,7 +80,7 @@ export class CopBot {
         });
       } catch (error) {
         console.error('Error starting bot in long-polling mode:', error);
-        process.exit(1); // Exit if the bot fails to start
+        process.exit(1);
       }
     }
   }
@@ -179,9 +163,9 @@ export class CopBot {
   }
   @Catch()
   async initial(): Promise<void> {
+    await this.start();
     new GenerateCommand(this._bot).generate();
     await this.message();
-    await this.start();
     console.log('Bot Is Start');
   }
 }
