@@ -135,24 +135,40 @@ export class AdminCommands {
     await reply.markdownReply(`${warns}`);
   }
   /** Mute Commands */
+  @Catch()
   static async mute(ctx: Context) {
     const reply = new BotReply(ctx);
     const message = await MuteService.muteUser(ctx);
     return await reply.textReply(message);
   }
+  @Catch()
   static async unmute(ctx: Context) {
     const reply = new BotReply(ctx);
     const message = await MuteService.unmuteUser(ctx);
     return await reply.textReply(message);
   }
   /** Admin Command  */
+  @Catch()
   static async grant(ctx: Context) {
     const reply = new BotReply(ctx);
+    const chatInfo = new ChatInfo(ctx);
+    const isOwner = await chatInfo.userIsOwner();
+    if (isOwner) {
+      await reply.textReply('The owner of the chat cannot be granted administrator privileges.');
+      return;
+    }
     const grantUser = await AdminService.grant(ctx);
     await reply.textReply(grantUser);
   }
+  @Catch()
   static async revoke(ctx: Context) {
     const reply = new BotReply(ctx);
+    const chatInfo = new ChatInfo(ctx);
+    const isOwner = await chatInfo.userIsOwner();
+    if (isOwner) {
+      await reply.textReply("You cannot revoke the owner's rights.");
+      return;
+    }
     const revokeUser = await AdminService.revoke(ctx);
     await reply.textReply(revokeUser);
   }
