@@ -51,9 +51,3 @@ CREATE TABLE IF NOT EXISTS "GroupRule" (
     added_at TIMESTAMP DEFAULT NOW(),
     added_by BIGINT REFERENCES "User"(id)
 );
--- migration table schema
-CREATE TABLE IF NOT EXISTS "Migration" (
-  id SERIAL PRIMARY KEY,
-  name TEXT UNIQUE NOT NULL,
-  applied_at TIMESTAMP DEFAULT NOW()
-);
