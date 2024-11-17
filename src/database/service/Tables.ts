@@ -2,6 +2,7 @@ import { Catch } from '../../decorators/Catch';
 import { ConnectionPool } from '../ConnectionPool';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import Config from '../../config/index';
 export class TablesService {
   constructor(private _connectionPool: ConnectionPool) {}
   @Catch({
@@ -11,7 +12,8 @@ export class TablesService {
   })
   async initialTables() {
     const client = await this._connectionPool.getClient();
-    const sqlFilePath = path.join(__dirname, '..', './sql/Tables.sql');
+    const productionPath = path.join(process.cwd(), 'src', 'database', 'sql', 'Tables.sql');
+    const sqlFilePath = Config.environment === 'production' ? productionPath : path.join(__dirname, '..', './sql/Tables.sql');
     const sql = await fs.readFile(sqlFilePath, 'utf-8');
     await client.query(sql);
     console.log('Initial tables have been set up successfully.');
@@ -29,7 +31,8 @@ export class TablesService {
       console.log('The tables have already been seeded. Skipping seeding process.');
       return; // Skip seeding if there's already data in the User table
     }
-    const sqlFilePath = path.join(__dirname, '..', './sql/seed/SeedDataTables.sql');
+    const productionPath = path.join(process.cwd(), 'src', 'database', 'sql', 'seed', 'SeedDataTables.sql');
+    const sqlFilePath = Config.environment === 'production' ? productionPath : path.join(__dirname, '..', './sql/seed/SeedDataTables.sql');
     const sql = await fs.readFile(sqlFilePath, 'utf-8');
     await client.query(sql);
     console.log('All tables have been seeded successfully.');
