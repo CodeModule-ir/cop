@@ -22,10 +22,7 @@ class Config {
     const dbName = process.env.DB_NAME!;
     const dbPassword = process.env.DB_PASSWORD!;
     const dbPort = parseInt(process.env.DB_PORT!, 10);
-    let dbUrl = process.env.DB_URL!;
-    if (environment === 'production') {
-      dbUrl = process.env.DATABASE_URL!;
-    }
+    const dbUrl = environment === 'production' ? process.env.DATABASE_URL! : process.env.DB_URL!;
     this.token = token;
     this.environment = environment;
     // Initialize the database configuration

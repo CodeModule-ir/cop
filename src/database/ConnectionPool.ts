@@ -3,11 +3,13 @@ import Config from '../config';
 import { Catch } from '../decorators/Catch';
 export class ConnectionPool {
   private _pool: Pool;
+  private _isProduction: 'development' | 'production';
   constructor() {
     const connectionString = this.getConnectionString();
+    this._isProduction = Config.environment;
     this._pool = new Pool({
       connectionString,
-      ssl: { rejectUnauthorized: false },
+      ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
     });
   }
   @Catch({
@@ -17,9 +19,10 @@ export class ConnectionPool {
   })
   async connect(): Promise<void> {
     try {
-      await this._pool.connect();
+      const client = await this._pool.connect();
+      client.release(); // Verify and release immediately
     } catch (error: any) {
-      console.log('error:', error.code);
+      console.error('Database connection error:', error.message);
       if (error.code === '3D000') {
         console.log(`Database does not exist. Creating database ${Config.database.databaseName}...`);
         await this.createDatabase();
@@ -27,7 +30,9 @@ export class ConnectionPool {
         const newConnectionString = this.getConnectionString();
         this._pool = new Pool({
           connectionString: newConnectionString,
+          ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
         });
+        console.log('Retrying connection after creating the database...');
         await this._pool.connect();
       }
     }
@@ -46,7 +51,12 @@ export class ConnectionPool {
       port,
       database: 'postgres',
     });
-    await client.query(`CREATE DATABASE ${databaseName}`);
+    try {
+      await client.query(`CREATE DATABASE "${databaseName}"`);
+      console.log(`Database "${databaseName}" created successfully.`);
+    } finally {
+      await client.end();
+    }
   }
   private getConnectionString(): string {
     const { user, host, databaseName, password, port, url } = Config.database;
