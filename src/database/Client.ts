@@ -1,5 +1,4 @@
 import { ConnectionPool } from './ConnectionPool';
-import { MigrationService } from './service/Migration';
 import { TablesService } from './service/Tables';
 export class Client {
   private _connectionPool: ConnectionPool;
@@ -8,12 +7,6 @@ export class Client {
   }
   async initialize() {
     await this._connectionPool.connect();
-    const migrationService = new MigrationService(this._connectionPool);
-
-    console.log('Applying migrations...');
-    await migrationService.applyMigrations(); // Apply pending migrations
-    console.log('Migrations applied successfully.');
-
     const tablesService = new TablesService(this._connectionPool);
     console.log('Setting up initial tables...');
     await tablesService.initialTables();
