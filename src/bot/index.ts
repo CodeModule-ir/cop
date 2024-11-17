@@ -6,7 +6,6 @@ import { GenerateCommand } from './handlers/GenerateCommands';
 import { GeneralCommands } from './commands/genearl/GeneralCommands';
 import { ChatInfo } from '../utils/chat/ChatInfo';
 import { UserCommands } from './commands/user/UserCommands';
-import { forwardChannelPostToGroup } from './handlers/forward';
 import { ServiceProvider } from '../service/database/ServiceProvider';
 import { AdminCommands } from './commands/admin/AdminCommands';
 import { BotReply } from '../utils/chat/BotReply';
@@ -102,69 +101,5 @@ export class CopBot {
     new GenerateCommand(this._bot).generate();
     await this.start();
     await this.message();
-    await this.channel();
-  }
-  @Catch()
-  async channel(): Promise<void> {
-    this._bot.on('channel_post', async (ctx) => {
-      forwardChannelPostToGroup(ctx);
-    });
   }
 }
-/* === Bot Command === */
-/**
-admin:
-  - manage_approvals:
-      - approve_user
-      - disapprove_user
-      - view_approved_list
-  - manage_users:
-      - ban_user
-      - unban_user
-      - warn_user
-      - clear_user_warnings
-      - view_user_warnings
-      - mute_user
-      - unmute_user
-      - grant_admin
-      - revoke_admin
-  - manage_blacklist:
-      - add_to_blacklist
-      - remove_from_blacklist
-      - view_blacklist
-  - manage_rules:
-      - add_rule
-      - edit_rule
-      - delete_rule
-      - delete_last_rule
-      - view_rules
-  - manage_pinning:
-      - pin_message
-      - unpin_message
-      - view_pinned_list
-  - manage_messages:
-      - purge_messages
-  - group_settings:
-      - lock_group
-      - unlock_group
-      - change_group_title
-      - set_welcome_message
-  - view_group_stats
-
-user:
-  - view_rules
-  - codetime
-  - upcoming_features
-  - view_news
-  - request_group_info
-  - report_issue
-  - cancel_report
-  - request_invite_link
-  - view_admin_list
-
-general:
-  - view_date
-  - about_bot
-  - view_support_contact
-  - get_bot_info
- */
