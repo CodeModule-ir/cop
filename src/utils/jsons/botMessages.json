@@ -1,15 +1,5 @@
 {
   "gorup": {
-    "user": {
-      "ban": {
-        "banned": "",
-        "un_ban": "",
-        "ban_use_blacklist_message": ""
-      },
-      "mute": "",
-      "warn": ""
-    },
-    "join_to_new_group": "",
     "new_member_welcome": "Welcome to the group, {name}! Please introduce yourself."
   },
   "command": {
