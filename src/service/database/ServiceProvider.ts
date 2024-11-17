@@ -1,8 +1,10 @@
 import { PoolClient } from 'pg';
 import { Client } from '../../database/Client';
 import { ConnectionPool } from '../../database/ConnectionPool';
-import { GroupService } from '../../database/service/group/Group';
-import { UserService } from '../../database/service/user/User';
+import { GroupService } from '../../database/models/Group';
+import { UserService } from '../../database/models/User';
+import { GroupRuleService } from '../../database/models/GroupRule';
+import { WarningDatabaseService } from '../../database/models/Warning';
 
 export class ServiceProvider {
   private static instance: ServiceProvider;
@@ -38,11 +40,19 @@ export class ServiceProvider {
     return await this._connectionPool.getClient();
   }
   async getGroupService() {
-    const clint = await this.getPoolClint();
-    return new GroupService(clint);
+    const client = await this.getPoolClint();
+    return new GroupService(client);
   }
   async getUserService() {
-    const clint = await this.getPoolClint();
-    return new UserService(clint);
+    const client = await this.getPoolClint();
+    return new UserService(client);
+  }
+  async getRulesService(){
+    const client = await this.getPoolClint()
+    return new GroupRuleService(client)
+  }
+  async getWarnsService(){
+    const clint = await this.getPoolClint()
+    return new WarningDatabaseService(clint)
   }
 }
