@@ -7,6 +7,7 @@ export class ConnectionPool {
     const connectionString = this.getConnectionString();
     this._pool = new Pool({
       connectionString,
+      ssl: { rejectUnauthorized: false },
     });
   }
   @Catch({
