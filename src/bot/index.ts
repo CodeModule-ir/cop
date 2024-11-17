@@ -28,13 +28,9 @@ export class CopBot {
   }
   async start() {
     try {
-      // Ensure the bot is listening on the correct port (Render provides the PORT environment variable)
-      const port = Config.port;
-
-      // Use long-polling
+      const port = Config.port || 3000;
       const server = http.createServer(webhookCallback(this._bot, 'http'));
-
-      server.listen(port, () => {
+      server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
       await this._bot.start({
