@@ -12,10 +12,18 @@ import { BotReply } from '../utils/chat/BotReply';
 import { BotMiddleware } from './middleware/BotMiddleware';
 import { MessagesService } from '../service/messages';
 export class CopBot {
+  private static instance: CopBot;
   private _bot: Bot<Context>;
 
-  constructor() {
+  private constructor() {
     this._bot = new Bot<Context>(Config.token);
+  }
+  // Public method to get the singleton instance of CopBot
+  public static getInstance(): CopBot {
+    if (!CopBot.instance) {
+      CopBot.instance = new CopBot();
+    }
+    return CopBot.instance;
   }
   async start() {
     this._bot.start();
@@ -39,7 +47,7 @@ export class CopBot {
 
       if (ctx.chat.type === 'group' || (ctx.chat.type === 'supergroup' && ctx.chat.id)) {
         await groupService.save(ctx);
-        await groupService.updateMembers(ctx.chat!.id!, ctx.from?.id!);
+        await groupService.updateMembers(ctx.chat!.id!, ctx.from?.id!,ctx);
       }
       // Only process valid commands
       if (entity?.type === 'bot_command') {
@@ -97,6 +105,7 @@ export class CopBot {
       return true;
     }
   }
+  @Catch()
   async initial(): Promise<void> {
     new GenerateCommand(this._bot).generate();
     await this.start();

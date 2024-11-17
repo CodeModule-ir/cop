@@ -196,7 +196,7 @@ export class AdminCommands {
       await reply.textReply('Please specify a word to add to the blacklist.');
       return;
     }
-    await BlackListService.add(groupId, word);
+    await BlackListService.add(groupId, word, ctx);
     await reply.send('Blacklist has been updated.');
   }
   @Catch({
@@ -210,7 +210,7 @@ export class AdminCommands {
     await ctx.deleteMessage();
     const groupId = ctx.chat?.id!;
     const wordToRemove = ctx.message?.text?.split(' ')[1];
-    await BlackListService.remove(groupId, wordToRemove);
+    await BlackListService.remove(groupId, ctx, wordToRemove);
     await reply.send('Blacklist has been updated.');
   }
   @Catch({
@@ -223,7 +223,7 @@ export class AdminCommands {
     await ctx.deleteMessage();
     const reply = new BotReply(ctx);
     const groupId = ctx.chat?.id!;
-    await BlackListService.clear(groupId);
+    await BlackListService.clear(groupId, ctx);
     await reply.send('The blacklist has been cleared.');
   }
   /** Pin Command */

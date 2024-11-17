@@ -68,7 +68,7 @@ export class GroupService {
   private getMemebrsService() {
     return new MembersService(this._client);
   }
-  async updateMembers(groupId: number, newMember: number | string): Promise<Group> {
-    return await this.getMemebrsService().update(groupId, newMember);
+  async updateMembers(groupId: number, newMember: number | string,ctx:Context): Promise<Group> {
+    return await this.getMemebrsService().update(groupId, newMember,ctx);
   }
 }

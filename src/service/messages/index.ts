@@ -33,7 +33,7 @@ export class MessagesService {
       }
       for (const user of users) {
         if (user.id !== this._ctx.me?.id) {
-          await groupService.updateMembers(this._ctx.chat!.id!, this._ctx.from?.id!);
+          await groupService.updateMembers(this._ctx.chat!.id!, this._ctx.from?.id!, this._ctx);
           await this._reply.send(welcome_message);
         }
       }

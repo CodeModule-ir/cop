@@ -11,7 +11,7 @@ export class MuteService {
   static async muteUser(ctx: Context): Promise<string> {
     const replyMessage = ctx.message?.reply_to_message;
     if (!replyMessage) {
-      throw new Error('Please reply to a user to mute them.');
+      return 'Please reply to a user to mute them.';
     }
 
     const userId = replyMessage.from?.id!;

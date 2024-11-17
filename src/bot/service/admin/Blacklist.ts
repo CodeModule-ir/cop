@@ -16,16 +16,12 @@ export class BlackListService {
 
     return group.black_list || [];
   }
-  static async add(groupId: number, word: string): Promise<string[]> {
+  static async add(groupId: number, word: string, ctx: Context): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
-
-    // Fetch group by group ID
     let group = await groupService.getByGroupId(groupId);
-
-    // If group doesn't exist, throw an error
     if (!group) {
-      throw new Error(`Group with ID ${groupId} not found.`);
+      group = await groupService.save(ctx);
     }
 
     // Ensure the blacklist is initialized
@@ -42,16 +38,14 @@ export class BlackListService {
 
     return group.black_list;
   }
-  static async remove(groupId: number, word?: string): Promise<string[]> {
+  static async remove(groupId: number, ctx: Context, word?: string): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
 
     // Fetch group by group ID
     let group = await groupService.getByGroupId(groupId);
-
-    // If group doesn't exist, throw an error
     if (!group) {
-      throw new Error(`Group with ID ${groupId} not found.`);
+      group = await groupService.save(ctx);
     }
     if (!word) {
       if (group.black_list && group.black_list.length > 0) {
@@ -68,16 +62,12 @@ export class BlackListService {
 
     return group.black_list || [];
   }
-  static async clear(groupId: number): Promise<string[]> {
+  static async clear(groupId: number, ctx: Context): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
-
-    // Fetch group by group ID
     let group = await groupService.getByGroupId(groupId);
-
-    // If group doesn't exist, throw an error
     if (!group) {
-      throw new Error(`Group with ID ${groupId} not found.`);
+      group = await groupService.save(ctx);
     }
 
     // Clear the blacklist
