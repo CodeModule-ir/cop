@@ -16,8 +16,8 @@ export class GroupService {
       chat_permissions: JSON.stringify(group.chat_permissions),
       approved_users: group.approved_users || [],
       warnings: group.warnings || [],
-      is_spam_time: group.is_spam_time || false,
       members: group.members || [],
+      welcome_message: group.welcome_message,
       updated_at: group.updated_at || new Date(),
       joined_at: group.joined_at || new Date(),
     });
@@ -31,7 +31,7 @@ export class GroupService {
       chat_permissions: group.chat_permissions,
       approved_users: group.approved_users,
       warnings: group.warnings,
-      is_spam_time: group.is_spam_time,
+      welcome_message: group.welcome_message,
       members: group.members,
       updated_at: group.updated_at || new Date(),
     };
@@ -47,6 +47,7 @@ export class GroupService {
     const [id, title] = [ctx.chat!.id!, ctx.chat!.title];
     const perrmission = (await ctx.api.getChat(id)).permissions;
     let group = await this.getByGroupId(id);
+    const default_welcome_message = `Welcome to ${ctx.chat!.title}\n\nWe are so glad to have you here!. If you have any questions, don't hesitate to ask! 💬\n\nEnjoy your time here!`;
     if (!group) {
       const newGroupData: Omit<Group, 'id'> = {
         joined_at: new Date(),
@@ -56,8 +57,8 @@ export class GroupService {
         black_list: [],
         chat_permissions: perrmission || {},
         approved_users: [],
-        warnings: 0,
-        is_spam_time: false,
+        warnings: [],
+        welcome_message: default_welcome_message,
         members: [],
       };
       group = await this.create(newGroupData);

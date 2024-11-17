@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS "Group" (
     joined_at TIMESTAMP DEFAULT NOW(),
     approved_users BIGINT[],                  -- Array of approved user IDs
     warnings BIGINT[],                   -- Number of warnings in the group
-    is_spam_time BOOLEAN DEFAULT FALSE,       -- Flag for spam detection
     welcome_message TEXT,
     members BIGINT[]
 );
