@@ -1,4 +1,5 @@
 import { PoolClient, QueryResult, QueryResultRow } from 'pg';
+import { Catch } from '../../decorators/Catch';
 
 export class DatabaseService {
   constructor(private _client: PoolClient) {}
@@ -6,13 +7,9 @@ export class DatabaseService {
   /**
    * Runs a query with parameters and returns the result.
    */
+  @Catch()
   async query<T extends QueryResultRow>(sql: string, params: any[] = []): Promise<QueryResult<T>> {
-    try {
-      return await this._client.query<T>(sql, params);
-    } catch (error) {
-      console.error('Database query error:', error);
-      throw error;
-    }
+    return await this._client.query<T>(sql, params);
   }
 
   /**
