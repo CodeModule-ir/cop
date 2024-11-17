@@ -1,7 +1,7 @@
 import { Context } from 'grammy';
 import { Catch } from '../../../decorators/Catch';
 import { BotReply } from '../../../utils/chat/BotReply';
-import { help, start, commands } from '../../../utils/jsons/botMessages.json';
+import * as botMessages from '../../../utils/jsons/botMessages.json';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { DateCommand } from '../../service/general/date';
 import * as BotInfoJson from '../../../../docs/BotInfo.json';
@@ -18,20 +18,21 @@ import * as BotInfoJson from '../../../../docs/BotInfo.json';
  * Code for handling case-insensitivity bot/bot.ts
  */
 export class GeneralCommands {
+  @Catch()
   static getMessage(ctx: Context): { commands: string; help: string; start: string } {
     const chatInfo = new ChatInfo(ctx);
     const chattype = chatInfo.getChatType();
     if (chattype === 'private') {
       return {
-        help: help.general,
-        commands: commands.private,
-        start: start.Private,
+        help: botMessages.help.general,
+        commands: botMessages.commands.private,
+        start: botMessages.start.Private,
       };
     }
     return {
-      commands: commands.public,
-      help: help.general,
-      start: start.gorup,
+      commands: botMessages.commands.public,
+      help: botMessages.help.general,
+      start: botMessages.start.gorup,
     };
   }
   // === General Command Handlers ===
