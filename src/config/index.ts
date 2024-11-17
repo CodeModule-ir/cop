@@ -5,6 +5,7 @@ class Config {
   public token: string;
   public environment: 'development' | 'production';
   public database: DatabaseConfig;
+  public port: number;
 
   private constructor() {
     // Ensure that the token is available in the environment
@@ -12,7 +13,7 @@ class Config {
     if (!token) {
       throw new Error('Telegram bot token is missing. Please set TELEGRAM_BOT_TOKEN in the environment.');
     }
-
+    const port = process.env.PORT!;
     // Set the environment, defaulting to development if not set
     const environment: 'development' | 'production' = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -25,6 +26,7 @@ class Config {
     const dbUrl = environment === 'production' ? process.env.DATABASE_URL! : process.env.DB_URL!;
     this.token = token;
     this.environment = environment;
+    this.port = Number(port);
     // Initialize the database configuration
     this.database = {
       user: dbUser,

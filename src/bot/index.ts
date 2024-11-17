@@ -11,6 +11,7 @@ import { AdminCommands } from './commands/admin/AdminCommands';
 import { BotReply } from '../utils/chat/BotReply';
 import { BotMiddleware } from './middleware/BotMiddleware';
 import { MessagesService } from '../service/messages';
+import * as http from 'http';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -27,6 +28,15 @@ export class CopBot {
   }
   async start() {
     try {
+      // Ensure the bot is listening on the correct port (Render provides the PORT environment variable)
+      const port = Config.port;
+
+      // Use long-polling
+      const server = http.createServer(webhookCallback(this._bot, 'http'));
+
+      server.listen(port, () => {
+        console.log(`Bot started on port ${port}`);
+      });
       await this._bot.start({
         onStart: (botInfo) => {
           console.log(`Bot started successfully! Username: ${botInfo.username}`);
