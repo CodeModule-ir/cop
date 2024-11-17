@@ -7,10 +7,10 @@ export interface Group {
   black_list: string[];
   chat_permissions: ChatPermissions;
   approved_users: number[];
-  warnings: number;
-  is_spam_time: boolean;
+  warnings: number[];
   members: number[];
   updated_at: Date;
+  welcome_message: string;
   joined_at: Date;
 }
 export interface User {
@@ -31,12 +31,6 @@ export interface Warning {
   reason: string;
   warned_at: Date;
 }
-export interface ApprovedUser {
-  id: number;
-  user_id: User['id'];
-  group_id: Group['id'];
-  username: string;
-}
 export interface Channel {
   id: number;
   name: string;
@@ -49,10 +43,4 @@ export interface GroupRule {
   rule_text: string[];
   added_by: User['id'];
   added_at: Date;
-}
-export interface GroupMessageSettings {
-  id: number;
-  group_id: Group['id'];
-  is_locked: boolean;
-  welcome_message: string;
 }
