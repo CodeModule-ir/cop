@@ -17,13 +17,12 @@ export class BotReply {
   /**
    * Sends a plain text reply.
    * @param message - The plain text message to send.
-   * @param replyToMessage - Optionally, reply to a specific message.
+   * @param options - Additional options such as reply markup.
    */
-  async textReply(message: string): Promise<void> {
+  async textReply(message: string, options: { reply_markup?: InlineKeyboard } = {}): Promise<void> {
     await this.ctx.reply(message, {
-      reply_parameters: {
-        message_id: this.ctx.message?.message_id!,
-      },
+      reply_markup: options.reply_markup,
+      reply_to_message_id: this.ctx.message?.message_id, // Corrected the key to `reply_to_message_id`
     });
   }
   /**
