@@ -29,7 +29,6 @@ export function Catch(customResponse?: ErrorResponse) {
         if (ctx && typeof ctx.reply === 'function') {
           await ctx.reply(errorResponse.message);
         }
-        throw error
       }
     };
 
