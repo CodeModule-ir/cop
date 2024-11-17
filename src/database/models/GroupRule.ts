@@ -103,8 +103,6 @@ export class GroupRuleService {
     const groupId = chat.id;
 
     const groupRules = await this.getRulesByGroupId(groupId);
-    console.log('groupRules', groupRules);
-
     if (groupRules.length === 0) {
       console.log(`No rules found for group ID: ${groupId}.`);
       return;
