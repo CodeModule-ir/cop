@@ -27,20 +27,32 @@ export class CopBot {
     return CopBot.instance;
   }
   async start() {
-    try {
-      const port = Config.port || 3000;
+    const port = Config.port || 3000;
+    const web_hook = Config.web_hook;
+    const isProduction = Config.environment === 'production';
+    if (isProduction) {
       const server = http.createServer(webhookCallback(this._bot, 'http'));
       server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
-      await this._bot.start({
-        onStart: (botInfo) => {
-          console.log(`Bot started successfully! Username: ${botInfo.username}`);
-        },
-      });
-    } catch (error) {
-      console.error('Error starting the bot:', error);
-      process.exit(1); // Exit the process if the bot fails to start
+      try {
+        await this._bot.api.setWebhook(`${web_hook}`);
+        console.log(`Webhook set successfully to: ${web_hook}`);
+      } catch (error) {
+        console.error('Error setting webhook:', error);
+        process.exit(1);
+      }
+    } else {
+      try {
+        await this._bot.start({
+          onStart: (botInfo) => {
+            console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
+          },
+        });
+      } catch (error) {
+        console.error('Error starting bot in long-polling mode:', error);
+        process.exit(1); // Exit if the bot fails to start
+      }
     }
   }
   @Catch()

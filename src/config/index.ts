@@ -6,10 +6,12 @@ class Config {
   public environment: 'development' | 'production';
   public database: DatabaseConfig;
   public port: number;
+  public web_hook: string;
 
   private constructor() {
     // Ensure that the token is available in the environment
     const token = process.env.TELEGRAM_BOT_TOKEN;
+    const web_hook = process.env.WEB_HOOK!;
     if (!token) {
       throw new Error('Telegram bot token is missing. Please set TELEGRAM_BOT_TOKEN in the environment.');
     }
@@ -27,6 +29,7 @@ class Config {
     this.token = token;
     this.environment = environment;
     this.port = Number(port);
+    this.web_hook = web_hook;
     // Initialize the database configuration
     this.database = {
       user: dbUser,
