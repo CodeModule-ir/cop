@@ -20,7 +20,7 @@
     "clean": "rm -rf dist",
     "main": "npm run build & node --env-file=.env dist/app.js",
     "start": "NODE_ENV=development node --trace-uncaught -r ts-node/register --env-file=.env src/app.ts",
-    "start:deploy": "npm run build && NODE_ENV=production node dist/app.js"
+    "start:deploy": "NODE_ENV=production node --trace-uncaught -r ts-node/register src/app.ts"
   },
   "repository": {
     "type": "git",
