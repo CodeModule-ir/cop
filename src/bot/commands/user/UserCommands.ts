@@ -2,35 +2,45 @@ import { Context } from 'grammy';
 import { BotReply } from '../../../utils/chat/BotReply';
 import { RoastMessages } from '../../../types/CommandTypes';
 import * as roastMessages from '../../../utils/jsons/roast.json';
-import { ReportCommand } from './ReportCommand';
+import { ReportCommand } from '../../service/user/ReportCommand';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
+import { Catch } from '../../../decorators/Catch';
+import { ChatInfo } from '../../../utils/chat/ChatInfo';
 export class UserCommands {
   /**
    * Sends the rules of the group.
    * This command retrieves and sends the rules of the current group to the user.
    * It helps ensure that group members are aware of the guidelines for interaction.
    */
+  @Catch()
   static async rules(ctx: Context) {
     const reply = new BotReply(ctx);
-    const groupService = await ServiceProvider.getInstance().getGroupService();
+    const chatinfo = new ChatInfo(ctx);
+    const services = ServiceProvider.getInstance();
+    const groupRulesService = await services.getRulesService();
 
     const input = ctx.message?.text!.split(/\s+/).slice(1);
     const action = input![0]?.toLowerCase();
     const ruleContent = input!.join(' ');
+
     if (!action) {
       // Default behavior: Display all rules
-      const rulesMessage = await groupService.getRules(ctx.chat?.id!);
+      const rulesMessage = await groupRulesService.getRulesByGroupId(ctx.chat?.id!);
       if (rulesMessage.length === 0) {
         await reply.markdownReply('No rules have been set for this group.');
       } else {
-        await reply.markdownReply(rulesMessage.join('\n'));
+        await reply.markdownReply(rulesMessage[0].rule_text.join('\n'));
       }
       return;
     }
-
+    const userIsAdmin = await chatinfo.userIsAdmin();
+    if (!userIsAdmin) {
+      await reply.textReply('Sorry, only admins are allowed to use this command.');
+      return;
+    }
     if (action === 'lr') {
       // Delete the last rule
-      const updatedRules = await groupService.deleteLastRule(ctx.chat?.id!);
+      const updatedRules = await groupRulesService.deleteLastGroupRule(ctx);
       if (!updatedRules) {
         await reply.markdownReply('No rules to delete.');
       } else {
@@ -38,7 +48,7 @@ export class UserCommands {
       }
     } else if (action === 'r') {
       // Clear all rules
-      await groupService.clearRules(ctx.chat?.id!);
+      await groupRulesService.clearAllRulesForGroup(ctx);
       await reply.markdownReply('All rules have been deleted.');
     } else {
       // Add a new rule
@@ -46,7 +56,8 @@ export class UserCommands {
         await reply.markdownReply('Please provide a rule to add.');
         return;
       }
-      await groupService.addRule(ctx.chat?.id!, ruleContent);
+      // This will only be executed if the user is an admin, as we already check for admin status above.
+      await groupRulesService.addGroupRule(ctx, ruleContent);
       await reply.markdownReply(`Rule added: "${ruleContent}"`);
     }
   }
@@ -108,34 +119,14 @@ export class UserCommands {
    * The information could include the group name, description, and any additional relevant data.
    */
   static async groupinfo(ctx: Context) {
-    const group = ctx.chat;
     const reply = new BotReply(ctx);
-    // Ensure we are in a group context
-    if (!group || (group.type !== 'group' && group.type !== 'supergroup')) {
+    const chatInfo = new ChatInfo(ctx);
+    const groupInfo = await chatInfo.chatInfo();
+    if (!groupInfo) {
       await reply.send('This command can only be used in groups.');
       return;
     }
-
-    // Fetch detailed chat information from Telegram API if necessary
-    const chatDetails = await ctx.api.getChat(group.id);
-
-    // Extract information
-    const groupName = chatDetails.title || 'Unnamed Group';
-    const groupDescription = chatDetails.description || 'No description available';
-    const groupType = chatDetails.type === 'supergroup' ? 'Supergroup' : 'Group';
-    const memberCount = await ctx.api.getChatMemberCount(group.id);
-    const inviteLink = chatDetails.invite_link || 'Invite link not available';
-    const creator = await ctx.api.getChatAdministrators(group.id);
-    const adminList = creator.filter((admin) => admin.status === 'administrator' || admin.status === 'creator');
-
-    // Format admin list
-    const admins = adminList
-      .map((admin) => {
-        const username = admin.user.username ? `@${admin.user.username}` : admin.user.first_name;
-        return `${username} (${admin.status === 'creator' ? 'Creator' : 'Admin'})`;
-      })
-      .join(', ');
-
+    const { groupName, groupType, groupDescription, memberCount, admins, inviteLink } = groupInfo;
     // Create the response message
     const response = `
 <b>Group Information:</b>
@@ -191,13 +182,9 @@ export class UserCommands {
    */
   static async adminlist(ctx: Context) {
     const reply = new BotReply(ctx);
+    const chatinfo = new ChatInfo(ctx);
     // Fetch the list of administrators in the group
-    const admins = await ctx.api.getChatAdministrators(ctx.chat!.id);
-    const adminList = admins
-      .filter((admin) => !admin.user.is_bot) // Exclude bots from the admin list
-      .map((admin) => `- ${admin.user.first_name} (@${admin.user.username || 'No username'})`)
-      .join('\n');
-
+    const adminList = await chatinfo.adminList();
     if (adminList) {
       // Send the formatted list of admins to the user
       await reply.htmlReply(`<b>Admins in this group:</b>\n${adminList}`);

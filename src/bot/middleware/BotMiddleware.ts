@@ -63,7 +63,6 @@ Sorry, but I don't have the necessary permissions to perform this action. Please
     const admins = await ctx.api.getChatAdministrators(ctx.chat!.id);
     const isAdmin = admins!.some((admin) => admin.user.id === repliedUserId);
     const command = ctx.message?.text?.split('/')[1].split(' ')[0].toLowerCase().trim();
-    console.log('Command:adminCheckForRepliedUser', command);
     if (command === 'revoke' || command === 'grant' || command === 'pin' || command === 'unpin' || command === 'purge') {
       if (isMiddleware) {
         return nxt!();
