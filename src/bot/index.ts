@@ -32,6 +32,9 @@ export class CopBot {
     const isProduction = Config.environment === 'production';
     if (isProduction) {
       const server = http.createServer(async (req, res) => {
+        console.log('method',req.method);
+        console.log('url', req.url);
+        
         if (req.method === 'POST' && req.url === '/webhook') {
           let body = '';
           req.on('data', (chunk) => {
@@ -71,6 +74,11 @@ export class CopBot {
       });
       await this._bot.api.setWebhook(`${web_hook}`);
       console.log(`Webhook set successfully to: ${web_hook}`);
+      await this._bot.start({
+        onStart: (botInfo) => {
+          console.log(`Bot started in Webhook mode! Username: ${botInfo.username}`);
+        },
+      });
     } else {
       try {
         await this._bot.start({
