@@ -5,12 +5,11 @@ export const COMMANDS: string[] = [
   'commands',
   'date',
   'viewsupportcontact',
-  'getbotinfo',
+  'botinfo',
   /** Users Commands */
   'rules',
   'codetime',
   'future',
-  'news',
   'groupinfo',
   'report',
   'cancel',
@@ -32,14 +31,13 @@ export const COMMANDS: string[] = [
   /** Mute Commands */
   'mute',
   'unmute',
-  'mutelist',
   /** Admin Command  */
   'grant',
   'revoke',
   /** BlackList Command */
   'blacklist',
-  'rmbl',
   'abl',
+  'rmbl',
   'clrbl',
   /** Rules Commands */
   'rules',
@@ -51,7 +49,6 @@ export const COMMANDS: string[] = [
   /** Group Setting Command */
   'welcome',
   /** General Commands */
-  'group_stats',
   'shahin',
   'aran',
 ] as const;

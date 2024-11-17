@@ -20,48 +20,46 @@ Code Module Cop is a powerful and flexible group management bot for Telegram and
 
 ### Installation
 
-1. Clone the repository:
+1.  Clone the repository:
 
     ```bash
     git clone https://github.com/CodeModule-ir/cop.git
     cd cmcop
     ```
 
-2. Install dependencies:
+2.  Install dependencies:
 
     ```bash
     npm install
     ```
 
-3. **Set Up Environment Variables**
+3.  **Set Up Environment Variables**
 
-   The bot requires specific environment variables to run correctly. These are stored in a `.env` file in the root directory of your project. This file should not be committed to version control, so ensure it is listed in your `.gitignore`.
+    The bot requires specific environment variables to run correctly. These are stored in a `.env` file in the root directory of your project. This file should not be committed to version control, so ensure it is listed in your `.gitignore`.
 
-   Create a `.env` file in the root of your project directory with the following content:
+    Create a `.env` file in the root of your project directory with the following content:
 
-    ```env
-    TELEGRAM_BOT_TOKEN=your_bot_token_here
-    DB_HOST=db
-    DB_PORT=3306
-    DB_USERNAME=your_db_username
-    DB_PASSWORD=your_db_password
-    DB_NAME=your_db_name
+        ```env
+
+    TELEGRAM_BOT_TOKEN=your_bot_token
+    DB_USER=
+    DB_HOST=
+    DB_NAME=
+    DB_PASSWORD=
+    DB_PORT=
+    DB_URL=postgres://username:password@host:port/database_name
+    DATABASE_URL='' // for production
     ```
-   - **TELEGRAM_BOT_TOKEN**: Your Telegram bot token. You can obtain this by creating a bot on Telegram and getting the token from BotFather.
-   - **DB_HOST**: The hostname of your database server. If you are running the database locally, this is often `localhost`. In containerized setups, this might be a service name like `db`.
-   - **DB_PORT**: The port on which your database server is listening. For MySQL, this is typically `3306`.
-   - **DB_USERNAME**: The username used to access your database.
-   - **DB_PASSWORD**: The password associated with the database username.
-   - **DB_NAME**: The name of the database that the bot will use.
 
-4. **Start the Bot**
+4.  **Start the Bot**
 
-   With the environment variables set, you can start the bot:
+    With the environment variables set, you can start the bot:
 
-    ```bash
-    npm start
-    ```
-For detailed installation instructions, see the [INSTALLATION.md](./docs/INSTALLATION.md) file.
+        ```bash
+        npm start
+        ```
+
+    For detailed installation instructions, see the [INSTALLATION.md](./docs/INSTALLATION.md) file.
 
 ## Usage
 
