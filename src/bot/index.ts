@@ -163,9 +163,9 @@ export class CopBot {
   }
   @Catch()
   async initial(): Promise<void> {
-    await this.start();
     new GenerateCommand(this._bot).generate();
     await this.message();
+    await this.start();
     console.log('Bot Is Start');
   }
 }
