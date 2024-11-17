@@ -8,3 +8,4 @@ tests
 __tests__
 .git
 .gitignore
+archive
