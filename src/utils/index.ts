@@ -87,3 +87,6 @@ export function tehranZone() {
   // Adjust time to Tehran timezone without considering DST
   return new Date(utcTime + tehranOffset * 60000);
 }
+export function escapeMarkdownV2(text: string): string {
+  return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+}

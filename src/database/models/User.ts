@@ -1,6 +1,6 @@
 import { PoolClient } from 'pg';
 import { User } from '../../types/database/TablesTypes';
-import { DatabaseService } from '../service/Databas';
+import { DatabaseService } from '../service/Database';
 export class UserService {
   private _db: DatabaseService;
   constructor(private _client: PoolClient) {
@@ -55,6 +55,14 @@ export class UserService {
         approved_groups: [],
       };
       user = await this.create(newUserData);
+    } else {
+      const updatedUserData = {
+        ...user,
+        username: username,
+        first_name: first_name,
+        updated_at: new Date(),
+      };
+      user = await this.update(updatedUserData);
     }
     return user!;
   }

@@ -20,17 +20,10 @@ export class WarnService {
     const { groupId, userId } = validationResult;
     const services = ServiceProvider.getInstance();
     const input = ctx.message?.text!.split(/\s+/).slice(1);
-    const reason = input!.join('')?.toLowerCase() || 'reason is not set for warning';
+    const reason = input!.join(' ')?.toLowerCase() || 'reason is not set for warning';
     const [groupService, userService, warnService] = await Promise.all([services.getGroupService(), services.getUserService(), services.getWarnsService()]);
-    let group = await groupService.getByGroupId(groupId);
-    let user = await userService.getByTelegramId(userId);
-    const userData = { first_name: ctx!.message?.reply_to_message?.from?.first_name!, id: userId, username: ctx.message?.reply_to_message?.from?.username! };
-    if (!user) {
-      user = await userService.save(userData);
-    }
-    if (!group) {
-      group = await groupService.save(ctx);
-    }
+    let group = (await groupService.getByGroupId(groupId))!;
+    let user = (await userService.getByTelegramId(userId))!;
     let warn = await warnService.getByGroupId(groupId);
     if (!warn) {
       warn = await warnService.save(group.id, user.id, reason);
@@ -85,18 +78,10 @@ export class WarnService {
       return { warningRemoved: false, warnings: 0 };
     }
 
-    const { groupId, userId } = validationResult;
+    const { userId } = validationResult;
     const services = ServiceProvider.getInstance();
-    const [groupService, userService] = await Promise.all([services.getGroupService(), services.getUserService()]);
-    let group = await groupService.getByGroupId(groupId);
-    let user = await userService.getByTelegramId(userId);
-    const userData = { first_name: ctx!.message?.reply_to_message?.from?.first_name!, id: userId, username: ctx.message?.reply_to_message?.from?.username! };
-    if (!user) {
-      user = await userService.save(userData);
-    }
-    if (!group) {
-      group = await groupService.save(ctx);
-    }
+    const userService = await services.getUserService();
+    let user = (await userService.getByTelegramId(userId))!;
     const updatedUser = {
       ...user,
       warnings: user.warnings - 1,
@@ -107,13 +92,7 @@ export class WarnService {
       warnings: updatedUser.warnings,
     };
   }
-  static async getUserWarnById(ctx: Context): Promise<{ warnings: number }> {
-    const validationResult = await AdminValidationService.validateContext(ctx);
-    if (!validationResult) {
-      return { warnings: 0 };
-    }
-
-    const { userId } = validationResult;
+  static async getUserWarnById(ctx: Context, userId: number): Promise<{ warnings: number }> {
     const services = ServiceProvider.getInstance();
     const userService = await services.getUserService();
     let user = await userService.getByTelegramId(userId);
@@ -122,7 +101,6 @@ export class WarnService {
     if (!user) {
       user = await userService.save(userData);
     }
-
     return { warnings: user.warnings };
   }
   static async getAllWarns(ctx: Context): Promise<string> {
@@ -170,7 +148,7 @@ export class WarnService {
       output += `\n${index + 1}. Name: ${user.first_name}\n`;
       output += `   User ID: ${user.userId}\n`;
       output += `   Warnings: ${user.warnings}\n`;
-      output += `   Reason: ${user.reason}\n`;
+      output += `   Last Reason: ${user.reason}\n`;
     });
 
     // Add summary

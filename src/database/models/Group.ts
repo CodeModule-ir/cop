@@ -2,7 +2,8 @@ import { PoolClient } from 'pg';
 import { Group } from '../../types/database/TablesTypes';
 import { Context } from 'grammy';
 import { MembersService } from '../service/Members';
-import { DatabaseService } from '../service/Databas';
+import { DatabaseService } from '../service/Database';
+import { Catch } from '../../decorators/Catch';
 export class GroupService {
   private _db: DatabaseService;
   constructor(private _client: PoolClient) {
@@ -65,10 +66,7 @@ export class GroupService {
     }
     return group!;
   }
-  private getMemebrsService() {
-    return new MembersService(this._client);
-  }
-  async updateMembers(groupId: number, newMember: number | string,ctx:Context): Promise<Group> {
-    return await this.getMemebrsService().update(groupId, newMember,ctx);
+  async updateMembers(groupId: number, newMember: number | string, ctx: Context): Promise<Group> {
+    return await new MembersService(this._client).update(groupId, newMember, ctx);
   }
 }

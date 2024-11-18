@@ -2,7 +2,7 @@ import { PoolClient } from 'pg';
 import { GroupRule } from '../../types/database/TablesTypes';
 import { ServiceProvider } from '../../service/database/ServiceProvider';
 import { Context } from 'grammy';
-import { DatabaseService } from '../service/Databas';
+import { DatabaseService } from '../service/Database';
 
 export class GroupRuleService {
   private _db: DatabaseService;
