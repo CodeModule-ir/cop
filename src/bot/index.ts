@@ -71,6 +71,7 @@ export class CopBot {
       });
       await this._bot.api.setWebhook(`${web_hook}`);
       console.log(`Webhook set successfully to: ${web_hook}`);
+      await this._bot.api.getUpdates({ offset: -1 });
       await this._bot.start({
         onStart: (botInfo) => {
           console.log(`Bot started in Webhook mode! Username: ${botInfo.username}`);
