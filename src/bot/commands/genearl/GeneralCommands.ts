@@ -67,14 +67,27 @@ export class GeneralCommands {
   public static async date(ctx: Context) {
     const reply = new BotReply(ctx);
     const { gregorianDate, persianDate } = await DateCommand.date();
+    console.log('gregorianDate.split(', ')', gregorianDate.split(','));
+    
     const message = `
-🌍 **Gregorian Date**:
-  ${gregorianDate}
+📅 **Date Information**
 
-🌍 **Persian Date**:
-  ${persianDate}
+🌐 **Gregorian Date (Miladi)**:
+  - **Year**: ${gregorianDate.split(',')[2].trim()}
+  - 🗓️ **Day**: ${gregorianDate.split(',')[0]}
+  - 📆 **Full Date**: ${gregorianDate.split(',')[1].trim()} ${gregorianDate.split(',')[2].trim()}
+  - ⏰ **Time**: ${gregorianDate.split(': ')[1]}
+
+🇮🇷 **Persian Date (Shamsi)**:
+  - **Year**: ${persianDate.split(' ')[3]}
+  - 🗓️ **Day**: ${persianDate.split(' ')[0]}
+  - 📆 **Full Date**: ${persianDate.split(' ')[1]} ${persianDate.split(' ')[2]} ${persianDate.split(' ')[3]}
+  - ⏰ **Time**: ${persianDate.split('ساعت: ')[1]}
+
+✨ **Timezone Information**:
+  - Calculated based on **Tehran Time Zone (UTC+3:30)**.
 `;
-    reply.markdownReply(message);
+    await reply.markdownReply(message);
   }
 
   static async commands(ctx: Context) {

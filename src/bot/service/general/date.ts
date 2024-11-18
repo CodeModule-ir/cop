@@ -1,5 +1,3 @@
-import { Context } from 'grammy';
-import { Catch } from '../../../decorators/Catch';
 export function tehranZone() {
   // Get current date and adjust to Tehran time zone
   const now = new Date();
@@ -12,7 +10,6 @@ export function tehranZone() {
   return new Date(utcTime + tehranOffset * 60000);
 }
 export class DateCommand {
-  @Catch()
   static async date(): Promise<{
     gregorianDate: string;
     persianDate: string;
