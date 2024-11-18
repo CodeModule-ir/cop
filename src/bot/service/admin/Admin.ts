@@ -6,6 +6,9 @@ export class AdminService {
     if (!replyUser) {
       return 'Please reply to the user you want to promote to admin.';
     }
+    if (replyUser.id === ctx.me?.id) {
+      return '⚠️ I cannot promote myself.';
+    }
     const input = ctx.message?.text!.split(/\s+/).slice(1);
     const nickname = input!.join('').toLowerCase() || 'admin';
     await this.applyPromote(ctx, replyUser.id, true);
@@ -21,6 +24,10 @@ export class AdminService {
     if (!replyUser) {
       return 'Please reply to the user you want to promote to admin.';
     }
+    if (replyUser.id === ctx.me?.id) {
+      return '⚠️ I cannot demote myself.';
+    }
+
     await this.applyPromote(ctx, replyUser.id, false);
     return `${replyUser.first_name} has been demoted from admin.`;
   }

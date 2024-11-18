@@ -5,6 +5,9 @@ import { help, commands, start } from '../../../utils/jsons/botMessages.json';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { DateCommand } from '../../service/general/date';
 import * as BotInfoJson from '../../../../docs/BotInfo.json';
+import { ReplyToBot } from '../../../decorators/Bot';
+import { RestrictToGroupChats } from '../../../decorators/Context';
+import { jokeMessage } from '../../../utils';
 /**
  * Reason for lowercase command names:
  *
@@ -35,6 +38,7 @@ export class GeneralCommands {
     };
   }
   // === General Command Handlers ===
+  @ReplyToBot()
   @Catch({
     message: 'Error displaying help message. Please try again later.',
     category: 'Bot',
@@ -47,6 +51,7 @@ export class GeneralCommands {
     await reply.markdownReply(sanitizedHelp);
   }
 
+  @ReplyToBot()
   @Catch({
     message: 'Error starting the bot. Please try again later.',
     category: 'Bot',
@@ -58,6 +63,7 @@ export class GeneralCommands {
     await reply.textReply(start);
   }
 
+  @ReplyToBot()
   @Catch({
     message: 'Error retrieving the date. Please try again later.',
     category: 'Bot',
@@ -92,6 +98,7 @@ export class GeneralCommands {
     const { commands } = GeneralCommands.getMessage(ctx);
     await reply.textReply(commands);
   }
+  @ReplyToBot()
   @Catch({
     message: 'Error retrieving support contact information. Please try again later.',
     category: 'Bot',
@@ -138,13 +145,18 @@ This bot is designed to deliver fast and secure responses to users.
     await reply.markdownReply(botInfoMessage);
   }
   public static async shahin(ctx: Context) {
-    await ctx.reply('دوستان.');
+    const reply = new BotReply(ctx);
+    const topicId = ctx.message?.reply_to_message?.message_thread_id!;
+    await reply.sendToTopic('دوستان.', topicId);
     setTimeout(() => {
-      return ctx.reply('بحث تخصصی.');
+      return reply.sendToTopic('بحث تخصصی.', topicId);
     }, 2000);
   }
   private static aranState: Map<number, number> = new Map();
+
   static async aran(ctx: Context) {
+    const reply = new BotReply(ctx);
+    const topicId = ctx.message?.reply_to_message?.message_thread_id!;
     const userId = ctx.from?.id;
     if (!userId) return;
 
@@ -152,20 +164,26 @@ This bot is designed to deliver fast and secure responses to users.
 
     switch (currentState) {
       case 0:
-        await ctx.reply('Aran mode: Activated.');
+        await reply.sendToTopic('Aran mode: Activated.', topicId);
         GeneralCommands.aranState.set(userId, 1);
         break;
       case 1:
-        await ctx.reply('رفرنس بده.');
+        await reply.sendToTopic('رفرنس بده.', topicId);
         GeneralCommands.aranState.set(userId, 2);
         break;
       case 2:
-        await ctx.reply('Aran mode: deActivated.');
+        await reply.sendToTopic('Aran mode: deActivated.', topicId);
         GeneralCommands.aranState.set(userId, 0);
         break;
       default:
         GeneralCommands.aranState.set(userId, 0);
         break;
     }
+  }
+  static async joke(ctx: Context) {
+    const reply = new BotReply(ctx);
+    const topicId = ctx.message?.reply_to_message?.message_thread_id!;
+    const randomMessage = jokeMessage();
+    await reply.sendToTopic(randomMessage, topicId);
   }
 }
