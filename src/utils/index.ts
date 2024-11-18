@@ -1,9 +1,11 @@
+import * as ReplyBotMessage from './jsons/ReplyBotMessage.json';
 export const COMMANDS: string[] = [
   /** General Commands */
   'start',
   'help',
   'commands',
   'date',
+  'joke',
   'viewsupportcontact',
   'botinfo',
   /** Users Commands */
@@ -89,4 +91,8 @@ export function tehranZone() {
 }
 export function escapeMarkdownV2(text: string): string {
   return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+}
+export function jokeMessage() {
+  const messagesData = ReplyBotMessage;
+  return messagesData.messages[Math.floor(Math.random() * messagesData.messages.length)];
 }

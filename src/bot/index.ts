@@ -7,8 +7,10 @@ import { GeneralCommands } from './commands/genearl/GeneralCommands';
 import { UserCommands } from './commands/user/UserCommands';
 import { AdminCommands } from './commands/admin/AdminCommands';
 import * as http from 'http';
-import { SaveUserData } from '../decorators/Database';
-import { MessageValidator } from '../decorators/Context';
+import { EnsureUserAndGroup, SaveUserData } from '../decorators/Database';
+import { MessageValidator, RateLimit, RestrictToGroupChats } from '../decorators/Context';
+import { BotReply } from '../utils/chat/BotReply';
+import { ServiceProvider } from '../service/database/ServiceProvider';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -79,6 +81,7 @@ export class CopBot {
       });
     } else {
       try {
+        await this._bot.api.deleteWebhook();
         await this._bot.api.getUpdates({ offset: -1 });
         await this._bot.start({
           onStart: (botInfo) => {
@@ -94,6 +97,7 @@ export class CopBot {
   @Catch()
   async initial(): Promise<void> {
     new GenerateCommand(this._bot).generate();
+    this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
     await this.start();
     this._bot.catch((err) => {
@@ -103,9 +107,18 @@ export class CopBot {
   }
   @SaveUserData()
   @MessageValidator()
+  @RateLimit({ commandLimit: 3, timeFrame: 15000 })
   @Catch()
   async handleMessage(ctx: Context) {
     const messageText = ctx.message?.text?.toLowerCase().trim();
+    const msg = ctx.message?.text!;
+    const reply = new BotReply(ctx);
+    const user = ctx.message?.reply_to_message!.from;
+    if (msg && msg.toLowerCase() === 'ask' && user) {
+      const name = user.username ? `@${user.username}` : user.first_name;
+      const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
+      await reply.textReply(responseMessage);
+    }
     const command = messageText?.split(' ')[0]?.replace('/', '');
     if (command) {
       const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
@@ -113,5 +126,23 @@ export class CopBot {
         await handler(ctx);
       }
     }
+  }
+
+  @SaveUserData()
+  async handleJoinNewChat(ctx: Context) {
+    const chat = ctx.chat!;
+    if (!chat) {
+      return;
+    }
+
+    const reply = new BotReply(ctx);
+    const from = ctx.from;
+    console.log(`Bot added to group ${chat.title} by ${from?.username}`);
+    const message = `
+      Hello ${ctx.chat?.title}!
+First of all, thanks to @${from?.username!} for inviting me to this awesome group!
+I'm here to help out and make sure everyone has a good time. Are you curious about what I can do? Just type the /help command.
+    `;
+    await reply.textReply(message);
   }
 }

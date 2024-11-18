@@ -9,12 +9,14 @@ import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { RequireReply, RestrictToGroupChats } from '../../../decorators/Context';
 import { EnsureUserAndGroup } from '../../../decorators/Database';
 import { escapeMarkdownV2 } from '../../../utils';
+import { ReplyToBot } from '../../../decorators/Bot';
 export class UserCommands {
   /**
    * Sends the rules of the group.
    * This command retrieves and sends the rules of the current group to the user.
    * It helps ensure that group members are aware of the guidelines for interaction.
    */
+  @ReplyToBot()
   @RestrictToGroupChats()
   @EnsureUserAndGroup('from')
   @Catch()
@@ -155,6 +157,7 @@ export class UserCommands {
    * This command allows users to report issues or ask questions directly to the group admins.
    * It’s typically used for urgent matters or when a user needs assistance.
    */
+  @ReplyToBot()
   @RestrictToGroupChats()
   @RequireReply()
   static async report(ctx: Context) {

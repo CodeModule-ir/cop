@@ -13,10 +13,11 @@ import { GroupSettingsService } from '../../service/admin/Welcome';
 import { OnlyAdminsCanUse } from '../../../decorators/User';
 import { RequireReply, RestrictToGroupChats } from '../../../decorators/Context';
 import { EnsureUserAndGroup } from '../../../decorators/Database';
-import { BotIsAdmin } from '../../../decorators/Bot';
+import { BotIsAdmin, ReplyToBot } from '../../../decorators/Bot';
 export class AdminCommands {
   /** Approved Commands */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -45,6 +46,7 @@ export class AdminCommands {
   }
 
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -68,6 +70,7 @@ export class AdminCommands {
   }
 
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
@@ -91,6 +94,7 @@ export class AdminCommands {
   }
   /** Ban Commands */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -107,6 +111,7 @@ export class AdminCommands {
     }
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -122,6 +127,7 @@ export class AdminCommands {
   }
   /** Warn Commands */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -140,6 +146,7 @@ export class AdminCommands {
     }
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -157,6 +164,7 @@ export class AdminCommands {
     }
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @EnsureUserAndGroup()
   static async warns(ctx: Context) {
@@ -174,6 +182,7 @@ export class AdminCommands {
     }
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
@@ -185,6 +194,7 @@ export class AdminCommands {
   }
   /** Mute Commands */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -196,6 +206,7 @@ export class AdminCommands {
     return await reply.textReply(message);
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -208,6 +219,7 @@ export class AdminCommands {
   }
   /** Admin Command  */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -215,16 +227,11 @@ export class AdminCommands {
   @Catch()
   static async grant(ctx: Context) {
     const reply = new BotReply(ctx);
-    const chatInfo = new ChatInfo(ctx);
-    const isOwner = await chatInfo.userIsOwner();
-    if (isOwner) {
-      await reply.textReply('The owner of the chat cannot be granted administrator privileges.');
-      return;
-    }
     const grantUser = await AdminService.grant(ctx);
     await reply.textReply(grantUser);
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -232,18 +239,13 @@ export class AdminCommands {
   @Catch()
   static async revoke(ctx: Context) {
     const reply = new BotReply(ctx);
-    const chatInfo = new ChatInfo(ctx);
-    const isOwner = await chatInfo.userIsOwner();
-    if (isOwner) {
-      await reply.textReply("You cannot revoke the owner's rights.");
-      return;
-    }
     const revokeUser = await AdminService.revoke(ctx);
     await reply.textReply(revokeUser);
   }
 
   /** BlackList Command */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
@@ -284,6 +286,7 @@ Group Type: ${group?.type || 'Unknown'}
 
   /** Add a Word to the Blacklist */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
@@ -307,6 +310,7 @@ Group Type: ${group?.type || 'Unknown'}
 
   /** Remove the Last Word from the Blacklist */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
@@ -326,6 +330,7 @@ Group Type: ${group?.type || 'Unknown'}
 
   /** Clear the Entire Blacklist */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
@@ -343,6 +348,7 @@ Group Type: ${group?.type || 'Unknown'}
   }
   /** Pin Command */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -356,6 +362,7 @@ Group Type: ${group?.type || 'Unknown'}
     await reply.textReply('The message has been pinned.');
   }
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -370,6 +377,7 @@ Group Type: ${group?.type || 'Unknown'}
   }
   /** Purge Command */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -416,6 +424,7 @@ Group Type: ${group?.type || 'Unknown'}
   }
   /** Group Setting Command */
   @RestrictToGroupChats()
+  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()

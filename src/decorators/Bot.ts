@@ -1,7 +1,8 @@
 import { BotReply } from '../utils/chat/BotReply';
 import { BotInfo } from '../utils/chat/BotInfo';
 import { createDecorator } from '.';
-
+import * as ReplyBotMessage from '../utils/jsons/ReplyBotMessage.json';
+import { jokeMessage } from '../utils';
 export function BotIsAdmin() {
   return createDecorator(async (ctx, next, close) => {
     const reply = new BotReply(ctx);
@@ -12,5 +13,17 @@ export function BotIsAdmin() {
       close();
     }
     await next();
+  });
+}
+export function ReplyToBot() {
+  return createDecorator(async (ctx, next, close) => {
+    const reply = new BotReply(ctx);
+    const replyMessage = ctx.message?.reply_to_message?.from!;
+    if (replyMessage.id! === ctx.me.id) {
+      const randomMessage = jokeMessage();
+      await reply.textReply(randomMessage);
+      close();
+    }
+    return next();
   });
 }

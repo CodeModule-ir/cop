@@ -2,7 +2,6 @@ import { GrammyError } from 'grammy';
 import { ErrorResponse } from '../types/ResponseTypes';
 import logger from '../utils/logger';
 import { createDecorator } from './index';
-import { ServiceProvider } from '../service/database/ServiceProvider';
 export function Catch(customResponse?: ErrorResponse) {
   return createDecorator(async (ctx, next) => {
     try {
@@ -13,11 +12,7 @@ export function Catch(customResponse?: ErrorResponse) {
         return;
       }
       if (error.error_code === 403 && error.description.includes('bot was kicked')) {
-        const chatId = error.payload?.chat_id;
         logger.warn(`[Warning] Bot was kicked from a group (chat_id: ${error.payload.chat_id}). Skipping.`);
-        const service = ServiceProvider.getInstance();
-        const groupService = await service.getGroupService();
-        await groupService.delete(chatId);
         return;
       }
       // Custom response or default error message

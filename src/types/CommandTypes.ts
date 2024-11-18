@@ -13,3 +13,7 @@ export interface RepliedMessage {
   message_thread_id?: number;
   text?: string;
 }
+export type RateLimitConfig = {
+  commandLimit?: number;
+  timeFrame?: number;
+};

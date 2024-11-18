@@ -1,6 +1,8 @@
 import { BotReply } from '../utils/chat/BotReply';
 import { MessagesService } from '../service/messages';
 import { createDecorator } from '.';
+import { RateLimitConfig } from '../types/CommandTypes';
+import { RateLimiter } from '../utils/RateLimiter';
 /**
  * A decorator to restrict commands to group chats.
  * Provides user feedback for invalid chat types.
@@ -61,6 +63,23 @@ export function RequireReply() {
     } catch (error) {
       console.error('Error in RequireReply decorator:', error);
       await reply.textReply('An unexpected error occurred. Please try again later.');
+      close();
+    }
+  });
+}
+export function RateLimit(config: RateLimitConfig = {}) {
+  const limiter = new RateLimiter(config.commandLimit || 5, config.timeFrame || 10000); // Initialize the limiter
+
+  return createDecorator(async (ctx, next, close) => {
+    const userId = ctx.from?.id;
+    if (!userId) {
+      close();
+      return;
+    }
+    if (limiter.checkRateLimit(userId)) {
+      return await next();
+    } else {
+      await ctx.reply('⏳ You are being rate-limited. Please try again later.');
       close();
     }
   });

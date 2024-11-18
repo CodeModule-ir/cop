@@ -38,7 +38,6 @@ export class GroupService {
     };
     return await this._db.update<Group>('Group', data, condition);
   }
-  async delete(groupId: number) {}
   async getByGroupId(groupId: number): Promise<Group | null> {
     const query = `SELECT * FROM "Group" WHERE group_id = $1;`;
     const result = await this._db.query<Group>(query, [groupId]);
