@@ -67,8 +67,6 @@ export class GeneralCommands {
   public static async date(ctx: Context) {
     const reply = new BotReply(ctx);
     const { gregorianDate, persianDate } = await DateCommand.date();
-    console.log('gregorianDate.split(', ')', gregorianDate.split(','));
-    
     const message = `
 📅 **Date Information**
 
