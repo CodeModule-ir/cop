@@ -48,6 +48,9 @@ export class CopBot {
               }
 
               console.log('Received webhook body:', update);
+               if (!update || !update.id) {
+                 throw new Error('Missing required field: id');
+               }
               await this._bot.handleUpdate(update);
               res.statusCode = 200;
               res.end();

@@ -19,7 +19,7 @@ export function ReplyToBot() {
   return createDecorator(async (ctx, next, close) => {
     const reply = new BotReply(ctx);
     const replyMessage = ctx.message?.reply_to_message?.from!;
-    if (replyMessage.id! === ctx.me.id) {
+    if (replyMessage && replyMessage.id! === ctx.me.id) {
       const randomMessage = jokeMessage();
       await reply.textReply(randomMessage);
       close();
