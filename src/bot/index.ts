@@ -1,4 +1,4 @@
-import { Bot } from 'grammy';
+import { Bot, webhookCallback } from 'grammy';
 import type { Context } from 'grammy';
 import { Catch } from '../decorators/Catch';
 import Config from '../config';
@@ -29,47 +29,7 @@ export class CopBot {
     const web_hook = Config.web_hook;
     const isProduction = Config.environment === 'production';
     if (isProduction) {
-      const server = http.createServer(async (req, res) => {
-        console.log('method', req.method);
-        console.log('url', req.url);
-
-        if (req.method === 'POST' && req.url === '/webhook') {
-          let body = '';
-          req.on('data', (chunk) => {
-            body += chunk;
-          });
-          req.on('end', async () => {
-            try {
-              const update = JSON.parse(body);
-              if (!update) {
-                console.error('Received empty body or malformed JSON.');
-                return (res.statusCode = 400);
-              }
-
-              console.log('Received webhook body:', update);
-              if (!update || !update.id) {
-                throw new Error('Missing required field: id');
-              }
-              await this._bot.handleUpdate(update);
-              res.statusCode = 200;
-              res.end();
-            } catch (error: any) {
-              console.error('Error parsing JSON in webhook request:', error.message || error.stack);
-              res.statusCode = 500;
-              res.end('Internal Server Error');
-            }
-          });
-
-          req.on('error', (err) => {
-            console.error('Request error:', err);
-            res.statusCode = 400;
-            res.end('Bad Request');
-          });
-        } else {
-          res.statusCode = 404;
-          res.end();
-        }
-      });
+      const server = http.createServer(webhookCallback(this._bot, 'http'));
       server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
