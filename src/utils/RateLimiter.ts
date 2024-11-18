@@ -2,49 +2,80 @@ import { RateLimitEntry } from '../types/ResponseTypes';
 
 export class RateLimiter {
   private static rateLimits: Map<number, RateLimitEntry> = new Map();
-  private static COMMAND_LIMIT = 5; // Max commands allowed
-  private static TIME_FRAME = 10000; // Time frame in milliseconds (10 seconds)
-  private static CLEANUP_INTERVAL = 60000; // Cleanup interval in milliseconds (1 minute)
+  private static CLEANUP_INTERVAL = 60000;
 
-  // Initializes the cleanup task
-  static initCleanup() {
-    setInterval(() => {
-      const currentTime = Date.now();
-      for (const [userId, entry] of this.rateLimits.entries()) {
-        if (currentTime - entry.lastCommandTime > this.TIME_FRAME) {
-          this.rateLimits.delete(userId);
-        }
-      }
-    }, this.CLEANUP_INTERVAL);
+  private commandLimit: number;
+  private timeFrame: number;
+  private cleanupInterval: NodeJS.Timeout | null = null;
+
+  constructor(commandLimit = 5, timeFrame = 10000) {
+    this.commandLimit = commandLimit;
+    this.timeFrame = timeFrame;
+    this.startCleanupTask();
   }
 
-  // Rate limit checking logic
-  static limit(userId: number): boolean {
+  /**
+   * Starts the periodic cleanup task to remove stale entries.
+   * Stale entries are those where the time since the last command exceeds the time frame.
+   */
+  private startCleanupTask() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval); // Prevent multiple intervals
+    }
+
+    this.cleanupInterval = setInterval(() => {
+      const currentTime = Date.now();
+      for (const [userId, entry] of RateLimiter.rateLimits.entries()) {
+        if (currentTime - entry.lastCommandTime > this.timeFrame) {
+          RateLimiter.rateLimits.delete(userId);
+        }
+      }
+    }, RateLimiter.CLEANUP_INTERVAL);
+  }
+  /**
+   * Stops the cleanup task.
+   * Should be called if the RateLimiter instance is no longer needed.
+   */
+  public stopCleanupTask() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+  }
+  /**
+   * Checks if a user is within the rate limit.
+   * If the user is allowed, their command count and timestamp are updated.
+   *
+   * @param userId - The unique ID of the user
+   * @returns `true` if the user is within the rate limit; `false` otherwise.
+   */
+  public checkRateLimit(userId: number): boolean {
     const currentTime = Date.now();
-    const entry = this.rateLimits.get(userId);
+    const entry = RateLimiter.rateLimits.get(userId);
 
     if (entry) {
-      if (currentTime - entry.lastCommandTime > this.TIME_FRAME) {
-        // Reset if the time frame has passed
-        this.rateLimits.set(userId, {
+      if (currentTime - entry.lastCommandTime > this.timeFrame) {
+        // Reset the count if the time frame has passed
+        RateLimiter.rateLimits.set(userId, {
           lastCommandTime: currentTime,
           commandCount: 1,
         });
         return true;
       }
 
-      if (entry.commandCount < this.COMMAND_LIMIT) {
+      if (entry.commandCount < this.commandLimit) {
         // Increment the command count
         entry.commandCount += 1;
-        this.rateLimits.set(userId, entry);
+        entry.lastCommandTime = currentTime;
+        RateLimiter.rateLimits.set(userId, entry);
         return true;
       } else {
-        // Rate limit exceeded, silently return false
+        // Rate limit exceeded
         return false;
       }
     } else {
       // First command from the user
-      this.rateLimits.set(userId, {
+      RateLimiter.rateLimits.set(userId, {
         lastCommandTime: currentTime,
         commandCount: 1,
       });
@@ -52,4 +83,3 @@ export class RateLimiter {
     }
   }
 }
-RateLimiter.initCleanup();
