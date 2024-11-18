@@ -195,3 +195,17 @@
 - Fixed issue with bot command registration and execution flow.
 - Removed unused imports and methods, such as `forwardChannelPostToGroup`.
 - Fixed errors related to missing fields in the database schema.
+
+## [4.0.1] - 2024-11-18
+
+#### Bug Fixes:
+
+- Fixed formatting issues in the `ChatInfo` class for admin list display.
+- Resolved database path selection bugs in `Tables.ts`.
+- Removed redundant scripts and simplified `CopBot` initialization logic.
+- Corrected error handling and shutdown processes in `app.ts`.
+
+#### Refactoring:
+
+- Removed middleware in favor of `Catch` decorators for cleaner code structure.
+- Refined error handling for webhook creation and bot start methods.
