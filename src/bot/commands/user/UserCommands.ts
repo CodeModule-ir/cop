@@ -72,8 +72,8 @@ export class UserCommands {
    * or when someone replies to the bot with this command.
    * This is typically used for fun purposes,
    */
-  @Catch()
   @RestrictToGroupChats()
+  @Catch()
   static async codetime(ctx: Context) {
     const user = ctx.from;
     if (!user) return;

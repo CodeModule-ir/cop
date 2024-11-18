@@ -16,8 +16,8 @@ import { EnsureUserAndGroup } from '../../../decorators/Database';
 import { BotIsAdmin } from '../../../decorators/Bot';
 export class AdminCommands {
   /** Approved Commands */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -44,8 +44,8 @@ export class AdminCommands {
     }
   }
 
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -67,8 +67,8 @@ export class AdminCommands {
     }
   }
 
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   @Catch({
@@ -90,8 +90,8 @@ export class AdminCommands {
     await reply.markdownReply(`Here is the list of approved users in this group:\n\n${approvedListMessage}`);
   }
   /** Ban Commands */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -106,8 +106,8 @@ export class AdminCommands {
       return;
     }
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -121,8 +121,8 @@ export class AdminCommands {
     }
   }
   /** Warn Commands */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -139,8 +139,8 @@ export class AdminCommands {
       return;
     }
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -156,8 +156,8 @@ export class AdminCommands {
       await reply.textReply('User or group not found or no warnings to remove.');
     }
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @EnsureUserAndGroup()
   static async warns(ctx: Context) {
     const reply = new BotReply(ctx);
@@ -173,8 +173,8 @@ export class AdminCommands {
       return await reply.textReply('User not found.');
     }
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   @Catch()
@@ -184,8 +184,8 @@ export class AdminCommands {
     await reply.markdownReply(`${warns}`);
   }
   /** Mute Commands */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -195,8 +195,8 @@ export class AdminCommands {
     const message = await MuteService.muteUser(ctx);
     return await reply.textReply(message);
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -207,8 +207,8 @@ export class AdminCommands {
     return await reply.textReply(message);
   }
   /** Admin Command  */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -224,8 +224,8 @@ export class AdminCommands {
     const grantUser = await AdminService.grant(ctx);
     await reply.textReply(grantUser);
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -243,8 +243,8 @@ export class AdminCommands {
   }
 
   /** BlackList Command */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   @Catch({
@@ -283,8 +283,8 @@ Group Type: ${group?.type || 'Unknown'}
   }
 
   /** Add a Word to the Blacklist */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   @Catch({
@@ -306,8 +306,8 @@ Group Type: ${group?.type || 'Unknown'}
   }
 
   /** Remove the Last Word from the Blacklist */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   @Catch({
@@ -325,8 +325,8 @@ Group Type: ${group?.type || 'Unknown'}
   }
 
   /** Clear the Entire Blacklist */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   @Catch({
@@ -342,8 +342,8 @@ Group Type: ${group?.type || 'Unknown'}
     await reply.sendToTopic('The blacklist has been cleared.', ctx.message?.reply_to_message?.message_thread_id!);
   }
   /** Pin Command */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -355,8 +355,8 @@ Group Type: ${group?.type || 'Unknown'}
     await ctx.api.pinChatMessage(groupId, messageId);
     await reply.textReply('The message has been pinned.');
   }
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -369,8 +369,8 @@ Group Type: ${group?.type || 'Unknown'}
     await reply.textReply('The pinned message has been unpinned.');
   }
   /** Purge Command */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
   @EnsureUserAndGroup()
@@ -415,8 +415,8 @@ Group Type: ${group?.type || 'Unknown'}
     await reply.send('Deleting done.');
   }
   /** Group Setting Command */
-  @BotIsAdmin()
   @RestrictToGroupChats()
+  @BotIsAdmin()
   @OnlyAdminsCanUse()
   @EnsureUserAndGroup()
   static async welcome(ctx: Context) {
