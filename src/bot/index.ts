@@ -26,6 +26,7 @@ export class CopBot {
   }
   async start() {
     const port = Config.port || 3000;
+    const web_hook = Config.web_hook;
     const isProduction = Config.environment === 'production';
     if (isProduction) {
       const server = http.createServer(async (req, res) => {
@@ -72,6 +73,8 @@ export class CopBot {
       server.listen(port, '0.0.0.0', () => {
         console.log(`Bot started on port ${port}`);
       });
+      await this._bot.api.setWebhook(`${web_hook}`);
+      console.log(`Webhook set successfully to: ${web_hook}`);
       await this._bot.start({
         onStart: (botInfo) => {
           console.log(`Bot started in web-hook mode! Username: ${botInfo.username}`);
@@ -79,6 +82,7 @@ export class CopBot {
       });
     } else {
       try {
+        await this._bot.api.getUpdates({ offset: -1 });
         await this._bot.start({
           onStart: (botInfo) => {
             console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
@@ -130,7 +134,10 @@ export class CopBot {
     if (!chat) {
       return;
     }
-
+    const msg = ctx.message?.text!;
+    if (msg === '/start') {
+      console.log('Start command received');
+    }
     const reply = new BotReply(ctx);
     const from = ctx.from;
     console.log(`Bot added to group ${chat.title} by ${from?.username}`);
