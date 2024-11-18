@@ -7,10 +7,9 @@ import { GeneralCommands } from './commands/genearl/GeneralCommands';
 import { UserCommands } from './commands/user/UserCommands';
 import { AdminCommands } from './commands/admin/AdminCommands';
 import * as http from 'http';
-import { EnsureUserAndGroup, SaveUserData } from '../decorators/Database';
-import { MessageValidator, RateLimit, RestrictToGroupChats } from '../decorators/Context';
+import { SaveUserData } from '../decorators/Database';
+import { MessageValidator, RateLimit } from '../decorators/Context';
 import { BotReply } from '../utils/chat/BotReply';
-import { ServiceProvider } from '../service/database/ServiceProvider';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -26,72 +25,15 @@ export class CopBot {
     return CopBot.instance;
   }
   async start() {
-    const port = Config.port || 3000;
-    const web_hook = Config.web_hook;
-    const isProduction = Config.environment === 'production';
-    if (isProduction) {
-      const server = http.createServer(async (req, res) => {
-        console.log('method', req.method);
-        console.log('url', req.url);
-
-        if (req.method === 'POST' && req.url === '/webhook') {
-          let body = '';
-          req.on('data', (chunk) => {
-            body += chunk;
-          });
-          req.on('end', async () => {
-            try {
-              const update = JSON.parse(body);
-              if (!update) {
-                console.error('Received empty body or malformed JSON.');
-                return (res.statusCode = 400);
-              }
-
-              console.log('Received webhook body:', update);
-               if (!update || !update.id) {
-                 throw new Error('Missing required field: id');
-               }
-              await this._bot.handleUpdate(update);
-              res.statusCode = 200;
-              res.end();
-            } catch (error: any) {
-              console.error('Error parsing JSON in webhook request:', error.message || error.stack);
-              res.statusCode = 500;
-              res.end('Internal Server Error');
-            }
-          });
-
-          req.on('error', (err) => {
-            console.error('Request error:', err);
-            res.statusCode = 400;
-            res.end('Bad Request');
-          });
-        } else {
-          res.statusCode = 404;
-          res.end();
-        }
-      });
-      server.listen(port, '0.0.0.0', () => {
-        console.log(`Bot started on port ${port}`);
-      });
-      await this._bot.api.setWebhook(`${web_hook}`);
-      console.log(`Webhook set successfully to: ${web_hook}`);
+    try {
       await this._bot.start({
         onStart: (botInfo) => {
-          console.log(`Bot started in Webhook mode! Username: ${botInfo.username}`);
+          console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
         },
       });
-    } else {
-      try {
-        await this._bot.start({
-          onStart: (botInfo) => {
-            console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
-          },
-        });
-      } catch (error) {
-        console.error('Error starting bot in long-polling mode:', error);
-        process.exit(1);
-      }
+    } catch (error) {
+      console.error('Error starting bot in long-polling mode:', error);
+      process.exit(1);
     }
   }
   @Catch()
