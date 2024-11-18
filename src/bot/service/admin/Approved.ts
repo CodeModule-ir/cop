@@ -1,20 +1,15 @@
 import { Context } from 'grammy';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
 export class ApprovedService {
-  static async updateApproved(ctx: Context, groupId: number, userId: number) {
+  static async updateApproved(groupId: number, userId: number) {
     const { groupService, userService } = await ApprovedService.getServices();
     let user = await userService.getByTelegramId(userId);
     let group = await groupService.getByGroupId(groupId);
-    const userData = { first_name: ctx!.message?.reply_to_message?.from?.first_name!, id: userId, username: ctx.message?.reply_to_message?.from?.username! };
-    if (!user) {
-      user = await userService.save(userData);
+    const approvedUsers = group!.approved_users ? [...group!.approved_users.map(Number)] : [];
+    if (approvedUsers.includes(userId)) {
+      return false;
     }
-    if (!group) {
-      group = await groupService.save(ctx);
-    }
-    const approvedGroups = user.approved_groups ? [...user.approved_groups.map(Number)] : [];
-    const approvedUsers = group.approved_users ? [...group.approved_users.map(Number)] : [];
-
+    const approvedGroups = user!.approved_groups ? [...user!.approved_groups.map(Number)] : [];
     if (!approvedUsers.includes(userId)) {
       approvedUsers.push(userId);
     }
@@ -22,32 +17,27 @@ export class ApprovedService {
       approvedGroups.push(groupId);
     }
     const updatedUser = await userService.update({
-      ...user,
+      ...user!,
       approved_groups: approvedGroups,
       role: 'approved_user',
     });
     const updatedGroup = await groupService.update({
-      ...group,
+      ...group!,
       approved_users: approvedUsers,
     });
     return { updatedUser, updatedGroup };
   }
-  static async updateDisapproved(ctx: Context, groupId: number, userId: number) {
+  static async updateDisapproved(groupId: number, userId: number) {
     const { groupService, userService } = await ApprovedService.getServices();
     // Fetch user and group data
     let user = await userService.getByTelegramId(userId);
     let group = await groupService.getByGroupId(groupId);
-    const userData = { first_name: ctx!.message?.reply_to_message?.from?.first_name!, id: userId, username: ctx.message?.reply_to_message?.from?.username! };
-    if (!user) {
-      user = await userService.save(userData);
-    }
-    if (!group) {
-      group = await groupService.save(ctx);
-    }
     // Update disapproved lists
-    const approvedGroups = user.approved_groups ? [...user.approved_groups] : [];
-    const approvedUsers = group.approved_users ? [...group.approved_users.map(Number)] : [];
-
+    const approvedGroups = user!.approved_groups ? [...user!.approved_groups.map(Number)] : [];
+    const approvedUsers = group!.approved_users ? [...group!.approved_users.map(Number)] : [];
+    if (!approvedUsers.includes(userId) || !approvedGroups.includes(groupId)) {
+      return false;
+    }
     // Remove group from user's approved groups
     const updatedApprovedGroups = approvedGroups.filter((id) => id !== groupId);
 
@@ -56,24 +46,20 @@ export class ApprovedService {
 
     // Update the user and group in the database
     const updatedUser = await userService.update({
-      ...user,
+      ...user!,
       approved_groups: updatedApprovedGroups,
       role: 'user',
     });
     const updatedGroup = await groupService.update({
-      ...group,
+      ...group!,
       approved_users: updatedApprovedUsers,
     });
 
     return { updatedUser, updatedGroup };
   }
-  static async getApprovedUsers(ctx: Context, groupId: number) {
+  static async getApprovedUsers(groupId: number) {
     const { groupService, userService } = await ApprovedService.getServices();
-    let group = await groupService.getByGroupId(groupId);
-
-    if (!group) {
-      group = await groupService.save(ctx);
-    }
+    let group = (await groupService.getByGroupId(groupId))!;
     const approvedUserIds = group.approved_users ? group.approved_users.map(Number) : [];
     const approvedUsers = [];
     for (const userId of approvedUserIds) {

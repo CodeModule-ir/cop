@@ -15,7 +15,9 @@ export class ReportCommand {
   static async report(ctx: Context) {
     const reply = new BotReply(ctx);
     const chatInfo = new ChatInfo(ctx);
-    const isAdmin = await chatInfo.isAdmin(ctx.message?.reply_to_message?.from!.id!);
+    const ReplyMessage = ctx.message?.reply_to_message!;
+    const replyUser = ReplyMessage.from!.id!;
+    const isAdmin = await chatInfo.isAdmin(replyUser);
     if (isAdmin) {
       await reply.textReply('This user is an admin and cannot be processed for this action.');
       return;
@@ -52,7 +54,7 @@ export class ReportCommand {
     await reply.replyToMessage(`${reportedUserName}${adminMentions}(${reportedUserId}) was reported to administrators.`);
 
     // Send the report to admins only after a delay, allowing time for cancellation
-    const delayForCancel = 300000; // 5 minutes (300,000 milliseconds)  delay for cancellation
+    const delayForCancel = 30_000;
     const reportTimeout = setTimeout(async () => {
       for (const admin of admins) {
         if (admin.user.is_bot) continue;

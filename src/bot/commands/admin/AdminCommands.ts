@@ -10,9 +10,17 @@ import { AdminService } from '../../service/admin/Admin';
 import { BlackListService } from '../../service/admin/Blacklist';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { GroupSettingsService } from '../../service/admin/Welcome';
-import { User } from 'grammy/types';
+import { OnlyAdminsCanUse } from '../../../decorators/User';
+import { RequireReply, RestrictToGroupChats } from '../../../decorators/Context';
+import { EnsureUserAndGroup } from '../../../decorators/Database';
+import { BotIsAdmin } from '../../../decorators/Bot';
 export class AdminCommands {
   /** Approved Commands */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'Admin Command',
     message: 'An unexpected error occurred while processing the "approved" command. Please try again later.',
@@ -26,9 +34,21 @@ export class AdminCommands {
       return;
     }
     const { groupId, userId } = validationResult;
-    await ApprovedService.updateApproved(ctx, groupId, userId);
-    await reply.textReply(`User with ID ${userId} has been successfully approved for group ${groupId}.`);
+    const isApproved = await ApprovedService.updateApproved(groupId, userId);
+    if (!isApproved) {
+      await reply.textReply(`This user has already been approved.`);
+    } else {
+      await reply.textReply(
+        `The user with ID ${userId} has been successfully approved to join the group ${groupId}. You can view the list of approved users using /approvedlist, and manage disapproved users with /disapproved.`
+      );
+    }
   }
+
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'Admin Command',
     message: 'An unexpected error occurred while processing the "disapproved" command. Please try again later.',
@@ -37,16 +57,20 @@ export class AdminCommands {
   static async disapproved(ctx: Context) {
     const reply = new BotReply(ctx);
     // Validate the context to extract required group and user IDs
-    const validationResult = await AdminValidationService.validateContext(ctx);
-
-    if (!validationResult) {
-      return;
-    }
-
+    const validationResult = (await AdminValidationService.validateContext(ctx))!;
     const { groupId, userId } = validationResult;
-    await ApprovedService.updateDisapproved(ctx, groupId, userId);
-    await reply.textReply(`User with ID ${userId} has been successfully disapproved for group ${groupId}.`);
+    const disapprovedUser = await ApprovedService.updateDisapproved(groupId, userId);
+    if (!disapprovedUser) {
+      await reply.textReply('This user is not currently approved, so they cannot be disapproved.');
+    } else {
+      await reply.textReply(`User with ID ${userId} has been successfully disapproved and removed from group ${groupId}.`);
+    }
   }
+
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'Admin Command',
     message: 'An unexpected error occurred while processing the "approvedlist" command. Please try again later.',
@@ -55,7 +79,7 @@ export class AdminCommands {
   static async approvedlist(ctx: Context) {
     const reply = new BotReply(ctx);
     const groupId = ctx.chat!.id;
-    const approvedUsers = await ApprovedService.getApprovedUsers(ctx, groupId);
+    const approvedUsers = await ApprovedService.getApprovedUsers(groupId);
     if (!approvedUsers.length) {
       await reply.textReply('There are currently no approved users in this group.');
       return;
@@ -66,6 +90,12 @@ export class AdminCommands {
     await reply.markdownReply(`Here is the list of approved users in this group:\n\n${approvedListMessage}`);
   }
   /** Ban Commands */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
+  @Catch()
   static async ban(ctx: Context) {
     const reply = new BotReply(ctx);
     const groupId = ctx.chat!.id;
@@ -74,23 +104,29 @@ export class AdminCommands {
       await ctx.api.banChatMember(groupId, ctx.message?.reply_to_message?.from?.id!);
       await reply.textReply(`User ${ctx.message?.reply_to_message?.from!.first_name} has been removed from the group and their information has been deleted.`);
       return;
-    } else {
-      await reply.textReply('User or group not found.');
-      return;
     }
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
+  @Catch()
   static async unban(ctx: Context) {
     const reply = new BotReply(ctx);
     const unBanUser = await BanService.unBan(ctx);
     if (unBanUser) {
-      await reply.textReply(`User ${ctx.message?.reply_to_message?.from?.first_name} has been unbanned and their information has been restored.`);
-      return;
-    } else {
-      await reply.textReply('Please reply to a message from the user you want to unban.');
+      await reply.textReply(`User ${ctx.message?.reply_to_message?.from?.first_name} has been unbanned.`);
       return;
     }
   }
   /** Warn Commands */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
+  @Catch()
   static async warn(ctx: Context) {
     const reply = new BotReply(ctx);
     const user = ctx.message?.reply_to_message?.from!;
@@ -101,11 +137,14 @@ export class AdminCommands {
     } else if (!isWarningLimitReached && warningApplied) {
       await reply.textReply(`User ${user.first_name} has been warned. They now have ${warnings} warnings.`);
       return;
-    } else {
-      await reply.textReply('User or group not found.');
-      return;
     }
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
+  @Catch()
   static async rmwarn(ctx: Context) {
     const reply = new BotReply(ctx);
     const user = ctx.message?.reply_to_message?.from!;
@@ -117,33 +156,50 @@ export class AdminCommands {
       await reply.textReply('User or group not found or no warnings to remove.');
     }
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @EnsureUserAndGroup()
   static async warns(ctx: Context) {
     const reply = new BotReply(ctx);
     const replyMessage = ctx.message?.reply_to_message;
     let user = ctx.message?.reply_to_message?.from!;
-    if (replyMessage?.forum_topic_created) {
+    if (!replyMessage) {
       user = ctx.from!;
     }
-    const { warnings } = await WarnService.getUserWarnById(ctx);
-
+    const { warnings } = await WarnService.getUserWarnById(ctx, user.id);
     if (warnings >= 0) {
-      await reply.textReply(`User ${user.first_name} currently has ${warnings} warnings.`);
+      return await reply.textReply(`User ${user.first_name} currently has ${warnings} warnings.`);
     } else {
-      await reply.textReply('User not found.');
+      return await reply.textReply('User not found.');
     }
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
+  @Catch()
   static async warnslist(ctx: Context) {
     const reply = new BotReply(ctx);
     const warns = await WarnService.getAllWarns(ctx);
     await reply.markdownReply(`${warns}`);
   }
   /** Mute Commands */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   @Catch()
   static async mute(ctx: Context) {
     const reply = new BotReply(ctx);
     const message = await MuteService.muteUser(ctx);
     return await reply.textReply(message);
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   @Catch()
   static async unmute(ctx: Context) {
     const reply = new BotReply(ctx);
@@ -151,6 +207,11 @@ export class AdminCommands {
     return await reply.textReply(message);
   }
   /** Admin Command  */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   @Catch()
   static async grant(ctx: Context) {
     const reply = new BotReply(ctx);
@@ -163,6 +224,11 @@ export class AdminCommands {
     const grantUser = await AdminService.grant(ctx);
     await reply.textReply(grantUser);
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   @Catch()
   static async revoke(ctx: Context) {
     const reply = new BotReply(ctx);
@@ -175,16 +241,23 @@ export class AdminCommands {
     const revokeUser = await AdminService.revoke(ctx);
     await reply.textReply(revokeUser);
   }
+
+  /** BlackList Command */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'BlackList',
     message: 'Failed to retrieve or send the blacklist.',
     statusCode: 500,
   })
-  /** BlackList Command */
   static async blacklist(ctx: Context) {
     const reply = new BotReply(ctx);
+    // Fetch the group info
+    const group = ctx.chat;
     const userId = ctx.from?.id!;
-    const groupId = ctx.chat?.id!;
+    const groupId = group?.id!;
     const admins = await ctx.getChatAdministrators();
     const isAdmin = admins.some((admin) => admin.user.id === userId);
     if (!isAdmin) {
@@ -193,19 +266,32 @@ export class AdminCommands {
     }
     await reply.textReply('I have sent you a message in your private chat with the blacklist.');
     const blackList = await BlackListService.getAll(ctx, groupId);
+    // Gather information about the group
+    const groupInfo = `
+    Group Title: ${group?.title || 'N/A'}\n
+Group ID: ${groupId}\n
+Group Type: ${group?.type || 'Unknown'}
+  `;
+
+    // Send the group info along with the blacklist
     if (blackList.length === 0) {
-      await ctx.api.sendMessage(userId, 'The blacklist is currently empty.');
+      await ctx.api.sendMessage(userId, `${groupInfo}\nThe blacklist is currently empty.`);
     } else {
-      await ctx.api.sendMessage(userId, `Blacklist:\n${blackList.join('\n')}`);
+      await ctx.api.sendMessage(userId, `${groupInfo}\nBlacklist:\n${blackList.join('\n')}`);
     }
     return;
   }
+
+  /** Add a Word to the Blacklist */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'BlackList',
     message: 'Failed to add word to the blacklist.',
     statusCode: 400,
   })
-  /** Add a Word to the Blacklist */
   static async abl(ctx: Context) {
     const reply = new BotReply(ctx);
     await ctx.deleteMessage();
@@ -216,36 +302,52 @@ export class AdminCommands {
       return;
     }
     await BlackListService.add(groupId, word, ctx);
-    await reply.send('Blacklist has been updated.');
+    await reply.sendToTopic('Blacklist has been updated.', ctx.message?.reply_to_message?.message_thread_id!);
   }
+
+  /** Remove the Last Word from the Blacklist */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'BlackList',
     message: 'Failed to remove word from the blacklist.',
     statusCode: 400,
   })
-  /** Remove the Last Word from the Blacklist */
   static async rmbl(ctx: Context) {
     const reply = new BotReply(ctx);
     await ctx.deleteMessage();
     const groupId = ctx.chat?.id!;
     const wordToRemove = ctx.message?.text?.split(' ')[1];
     await BlackListService.remove(groupId, ctx, wordToRemove);
-    await reply.send('Blacklist has been updated.');
+    await reply.sendToTopic('Blacklist has been updated.', ctx.message?.reply_to_message?.message_thread_id!);
   }
+
+  /** Clear the Entire Blacklist */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
   @Catch({
     category: 'BlackList',
     message: 'Failed to Clear the Entire Blacklist.',
     statusCode: 400,
   })
-  /** Clear the Entire Blacklist */
   static async clrbl(ctx: Context) {
     await ctx.deleteMessage();
     const reply = new BotReply(ctx);
     const groupId = ctx.chat?.id!;
     await BlackListService.clear(groupId, ctx);
-    await reply.send('The blacklist has been cleared.');
+    await reply.sendToTopic('The blacklist has been cleared.', ctx.message?.reply_to_message?.message_thread_id!);
   }
   /** Pin Command */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
+  @Catch()
   static async pin(ctx: Context) {
     const reply = new BotReply(ctx);
     const groupId = ctx.chat?.id!;
@@ -253,6 +355,12 @@ export class AdminCommands {
     await ctx.api.pinChatMessage(groupId, messageId);
     await reply.textReply('The message has been pinned.');
   }
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
+  @Catch()
   static async unpin(ctx: Context) {
     const reply = new BotReply(ctx);
     const groupId = ctx.chat?.id!;
@@ -261,6 +369,11 @@ export class AdminCommands {
     await reply.textReply('The pinned message has been unpinned.');
   }
   /** Purge Command */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @RequireReply()
+  @EnsureUserAndGroup()
   static async purge(ctx: Context) {
     const reply = new BotReply(ctx);
     const chatInfo = new ChatInfo(ctx);
@@ -302,9 +415,13 @@ export class AdminCommands {
     await reply.send('Deleting done.');
   }
   /** Group Setting Command */
+  @BotIsAdmin()
+  @RestrictToGroupChats()
+  @OnlyAdminsCanUse()
+  @EnsureUserAndGroup()
   static async welcome(ctx: Context) {
     const reply = new BotReply(ctx);
-    const input = ctx.message?.text!.split(/\s+/).slice(1);
+    const input = ctx.message?.text!.split(' ').slice(1);
     const action = input![0]?.toLowerCase();
     const welcomeContent = input!.join(' ');
     if (!action) {

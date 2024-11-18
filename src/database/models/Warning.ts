@@ -1,6 +1,6 @@
 import { PoolClient } from 'pg';
 import { Warning } from '../../types/database/TablesTypes';
-import { DatabaseService } from '../service/Databas';
+import { DatabaseService } from '../service/Database';
 export class WarningDatabaseService {
   private _db: DatabaseService;
   constructor(private _client: PoolClient) {

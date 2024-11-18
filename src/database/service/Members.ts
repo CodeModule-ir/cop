@@ -1,7 +1,7 @@
 import { PoolClient } from 'pg';
 import { Group } from '../../types/database/TablesTypes';
 import { GroupService } from '../models/Group';
-import { DatabaseService } from './Databas';
+import { DatabaseService } from './Database';
 import { Context } from 'grammy';
 
 export class MembersService {

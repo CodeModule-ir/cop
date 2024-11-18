@@ -16,6 +16,12 @@ export class BotReply {
   async send(message: string): Promise<void> {
     await this.ctx.reply(message);
   }
+  async sendToTopic(message: string, topicId: number) {
+    await this.ctx.api.sendMessage(this.ctx.chat!.id, message, {
+      reply_to_message_id: undefined, // Not replying to any specific message
+      message_thread_id: topicId, // The thread ID for the forum topic
+    });
+  }
   /**
    * Sends a plain text reply.
    * @param message - The plain text message to send.

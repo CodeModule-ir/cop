@@ -1,5 +1,6 @@
 import { Context } from 'grammy';
 import { BotReply } from '../../../utils/chat/BotReply';
+import { ChatInfo } from '../../../utils/chat/ChatInfo';
 
 export class AdminValidationService {
   /**
@@ -10,7 +11,7 @@ export class AdminValidationService {
    */
   static async validateContext(ctx: Context): Promise<{ groupId: number; userId: number } | null> {
     const reply = new BotReply(ctx);
-
+    const command = ctx.message?.text?.split('/')[1].split(' ')[0].toLowerCase().trim();
     // Check if the command is a reply to a user's message
     const replyMessage = ctx.message?.reply_to_message;
     if (!replyMessage) {
@@ -30,8 +31,14 @@ export class AdminValidationService {
       await reply.textReply('This command can only be used in a group or supergroup.');
       return null;
     }
-    if (ctx.message?.reply_to_message!.from?.is_bot) {
-      await reply.textReply('Why should I approve a robot?');
+    if (replyMessage.from?.id === ctx.me.id) {
+      await reply.textReply(`I can't ${command} myself. Please specify a different user to ${command}.`);
+      return null;
+    }
+    const chatinfo = new ChatInfo(ctx);
+    const isAdmin = await chatinfo.isAdmin(replyMessage.from?.id!);
+    if (isAdmin) {
+      await reply.textReply(`I can't ${command} an admin. Please provide a different user to ${command}.`);
       return null;
     }
     // Return validated groupId and userId

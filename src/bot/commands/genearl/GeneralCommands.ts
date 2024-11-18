@@ -1,7 +1,7 @@
 import { Context } from 'grammy';
 import { Catch } from '../../../decorators/Catch';
 import { BotReply } from '../../../utils/chat/BotReply';
-import * as botMessages from '../../../utils/jsons/botMessages.json';
+import { help, commands, start } from '../../../utils/jsons/botMessages.json';
 import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { DateCommand } from '../../service/general/date';
 import * as BotInfoJson from '../../../../docs/BotInfo.json';
@@ -18,21 +18,20 @@ import * as BotInfoJson from '../../../../docs/BotInfo.json';
  * Code for handling case-insensitivity bot/bot.ts
  */
 export class GeneralCommands {
-  @Catch()
   static getMessage(ctx: Context): { commands: string; help: string; start: string } {
     const chatInfo = new ChatInfo(ctx);
     const chattype = chatInfo.getChatType();
     if (chattype === 'private') {
       return {
-        help: botMessages.help.general,
-        commands: botMessages.commands.private,
-        start: botMessages.start.Private,
+        help: help.general,
+        commands: commands.private,
+        start: start.Private,
       };
     }
     return {
-      commands: botMessages.commands.public,
-      help: botMessages.help.general,
-      start: botMessages.start.gorup,
+      commands: commands.public,
+      help: help.general,
+      start: start.gorup,
     };
   }
   // === General Command Handlers ===
@@ -43,8 +42,9 @@ export class GeneralCommands {
   })
   public static async help(ctx: Context) {
     const reply = new BotReply(ctx);
-    const { help } = GeneralCommands.getMessage(ctx);
-    const sanitizedHelp = help.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+    const messages = GeneralCommands.getMessage(ctx);
+    console.log('help', messages.help);
+    const sanitizedHelp = messages.help.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
     await reply.markdownReply(sanitizedHelp);
   }
 
