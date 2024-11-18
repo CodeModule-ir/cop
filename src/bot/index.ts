@@ -52,6 +52,10 @@ export class CopBot {
               if (!update || !update.id) {
                 throw new Error('Missing required field: id');
               }
+              console.log('Received webhook body:', update);
+              if (update.message.text === '/start') {
+                await this._bot.api.sendMessage(update.message.chat.id, 'welcome to the bot!');
+              }
               await this._bot.handleUpdate(update);
               res.statusCode = 200;
               res.end();
@@ -109,6 +113,7 @@ export class CopBot {
   @RateLimit({ commandLimit: 3, timeFrame: 15000 })
   @Catch()
   async handleMessage(ctx: Context) {
+    
     const messageText = ctx.message?.text?.toLowerCase().trim();
     const msg = ctx.message?.text!;
     const reply = new BotReply(ctx);
