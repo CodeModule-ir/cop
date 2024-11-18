@@ -24,15 +24,21 @@ export class CopBot {
     }
     return CopBot.instance;
   }
-  async stop() {
+  // Stop the bot
+  async stop(): Promise<void> {
     await this._bot.stop();
   }
-  async start() {
-    const port = Config.port || 3000;
+
+  // Start the bot
+  async start(): Promise<void> {
+    const port = process.env.PORT || Config.port || 3000;
     const isProduction = Config.environment === 'production';
-    // Dummy server for Render (or similar platforms) to bind a port
+    const webhookURL = Config.web_hook || '';
+
+    // Create a simple server for Render or similar platforms
     http
       .createServer((_, res) => {
+        console.log('res;', res);
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('Bot is running');
       })
@@ -41,27 +47,33 @@ export class CopBot {
       });
 
     if (isProduction) {
+      console.log('Setting webhook...');
       try {
-        console.log('Starting bot in long-polling mode...');
-        await this._bot.api.getUpdates({ offset: -1 }); // Reset offset to avoid missing updates
+        await this._bot.api.getUpdates({ offset: -1 });
+        await this._bot.api.setWebhook(webhookURL);
+        console.log(`Webhook set to ${webhookURL}`);
+        await this._bot.start({
+          onStart: (botInfo) => {
+            console.log(`Bot started in web-hook mode! Username: ${botInfo.username}`);
+          },
+        });
+      } catch (err) {
+        console.error('Failed to set webhook:', err);
+        process.exit(1);
+      }
+    } else {
+      console.log('Running in long-polling mode...');
+      try {
+        await this._bot.api.deleteWebhook();
         await this._bot.start({
           onStart: (botInfo) => {
             console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
           },
         });
-      } catch (error) {
-        console.error('Error starting bot in long-polling mode:', error);
+      } catch (err) {
+        console.error('Error in long-polling mode:', err);
         process.exit(1);
       }
-    } else {
-      console.log('Starting bot in development mode...');
-      await this._bot.api.setWebhook(`${Config.web_hook}`);
-      console.log(`Webhook set successfully to: ${Config.web_hook}`);
-      await this._bot.start({
-        onStart: (botInfo) => {
-          console.log(`Bot started in webhook mode! Username: ${botInfo.username}`);
-        },
-      });
     }
   }
   @Catch()
@@ -69,21 +81,26 @@ export class CopBot {
     new GenerateCommand(this._bot).generate();
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
-    await this.start();
+
+    // Error handling
     this._bot.catch((err) => {
       console.error('Error in middleware:', err);
     });
-    console.log('Bot Is Start');
+
+    await this.start();
+    console.log('Bot is running');
+    new GenerateCommand(this._bot).generate();
   }
   @SaveUserData()
   @MessageValidator()
   @RateLimit({ commandLimit: 3, timeFrame: 15000 })
   @Catch()
   async handleMessage(ctx: Context) {
+    console.log('ctx.message:', ctx.message);
     const messageText = ctx.message?.text?.toLowerCase().trim();
     const msg = ctx.message?.text!;
     const reply = new BotReply(ctx);
-    const user = ctx.message?.reply_to_message!.from;
+    const user = ctx.message?.reply_to_message?.from;
     if (msg && msg.toLowerCase() === 'ask' && user) {
       const name = user.username ? `@${user.username}` : user.first_name;
       const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
