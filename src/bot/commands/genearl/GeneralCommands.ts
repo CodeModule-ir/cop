@@ -43,7 +43,6 @@ export class GeneralCommands {
   public static async help(ctx: Context) {
     const reply = new BotReply(ctx);
     const messages = GeneralCommands.getMessage(ctx);
-    console.log('help', messages.help);
     const sanitizedHelp = messages.help.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
     await reply.markdownReply(sanitizedHelp);
   }
