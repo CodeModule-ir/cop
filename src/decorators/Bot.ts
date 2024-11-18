@@ -1,7 +1,6 @@
 import { BotReply } from '../utils/chat/BotReply';
 import { BotInfo } from '../utils/chat/BotInfo';
 import { createDecorator } from '.';
-import * as ReplyBotMessage from '../utils/jsons/ReplyBotMessage.json';
 import { jokeMessage } from '../utils';
 export function BotIsAdmin() {
   return createDecorator(async (ctx, next, close) => {

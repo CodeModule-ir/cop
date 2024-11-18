@@ -1,4 +1,4 @@
-import { Bot, webhookCallback } from 'grammy';
+import { Bot } from 'grammy';
 import type { Context } from 'grammy';
 import { Catch } from '../decorators/Catch';
 import Config from '../config';
@@ -24,68 +24,26 @@ export class CopBot {
     }
     return CopBot.instance;
   }
+  async stop() {
+    await this._bot.stop();
+  }
   async start() {
     const port = Config.port || 3000;
-    const web_hook = Config.web_hook;
     const isProduction = Config.environment === 'production';
+    // Dummy server for Render (or similar platforms) to bind a port
+    http
+      .createServer((_, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Bot is running');
+      })
+      .listen(port, () => {
+        console.log(`Server running on port ${port}`);
+      });
+
     if (isProduction) {
-      const server = http.createServer(async (req, res) => {
-        console.log('method', req.method);
-        console.log('url', req.url);
-        console.log('headers', req.headers);
-        if (req.method === 'POST' && req.url === '/') {
-          let body = '';
-          req.on('data', (chunk) => {
-            body += chunk;
-          });
-          req.on('end', async () => {
-            try {
-              console.log('Webhook received:', body);
-
-              const update = JSON.parse(body);
-              if (!update) {
-                console.error('Received empty body or malformed JSON.');
-                return (res.statusCode = 400);
-              }
-
-              console.log('Received webhook body:', update);
-              if (!update || !update.id) {
-                throw new Error('Missing required field: id');
-              }
-              console.log('Received webhook body:', update);
-              if (update.message.text === '/start') {
-                await this._bot.api.sendMessage(update.message.chat.id, 'welcome to the bot!');
-              }
-              await this._bot.handleUpdate(update);
-              res.statusCode = 200;
-              res.end();
-            } catch (error: any) {
-              console.error('Error parsing JSON in webhook request:', error.message || error.stack);
-              res.statusCode = 500;
-              res.end('Internal Server Error');
-            }
-          });
-
-          req.on('error', (err) => {
-            console.error('Request error:', err);
-            res.statusCode = 400;
-            res.end('Bad Request');
-          });
-        }
-      });
-      server.listen(port, '0.0.0.0', () => {
-        console.log(`Bot started on port ${port}`);
-      });
-      await this._bot.api.setWebhook(`${web_hook}`);
-      console.log(`Webhook set successfully to: ${web_hook}`);
-      await this._bot.start({
-        onStart: (botInfo) => {
-          console.log(`Bot started in web-hook mode! Username: ${botInfo.username}`);
-        },
-      });
-    } else {
       try {
-        await this._bot.api.getUpdates({ offset: -1 });
+        console.log('Starting bot in long-polling mode...');
+        await this._bot.api.getUpdates({ offset: -1 }); // Reset offset to avoid missing updates
         await this._bot.start({
           onStart: (botInfo) => {
             console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
@@ -95,6 +53,15 @@ export class CopBot {
         console.error('Error starting bot in long-polling mode:', error);
         process.exit(1);
       }
+    } else {
+      console.log('Starting bot in development mode...');
+      await this._bot.api.setWebhook(`${Config.web_hook}`);
+      console.log(`Webhook set successfully to: ${Config.web_hook}`);
+      await this._bot.start({
+        onStart: (botInfo) => {
+          console.log(`Bot started in webhook mode! Username: ${botInfo.username}`);
+        },
+      });
     }
   }
   @Catch()
@@ -113,7 +80,6 @@ export class CopBot {
   @RateLimit({ commandLimit: 3, timeFrame: 15000 })
   @Catch()
   async handleMessage(ctx: Context) {
-    
     const messageText = ctx.message?.text?.toLowerCase().trim();
     const msg = ctx.message?.text!;
     const reply = new BotReply(ctx);

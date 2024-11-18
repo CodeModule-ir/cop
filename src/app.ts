@@ -20,6 +20,8 @@ async function main() {
       const db = ServiceProvider.getInstance();
       await db.close();
       logger.info('Database closed.');
+      await cop.stop();
+      logger.info('Bot Stoped.');
     } catch (error: any) {
       logger.error('Error during shutdown:', error);
     } finally {
