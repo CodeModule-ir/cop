@@ -1,6 +1,5 @@
 import { Bot, webhookCallback } from 'grammy';
 import type { Context } from 'grammy';
-import { Catch } from '../decorators/Catch';
 import Config from '../config';
 import { GenerateCommand } from './handlers/GenerateCommands';
 import { GeneralCommands } from './commands/genearl/GeneralCommands';
@@ -15,7 +14,7 @@ export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
   private constructor() {
-    this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 20 } });
+    this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 10 } });
   }
   // Public method to get the singleton instance of CopBot
   public static getInstance(): CopBot {
@@ -53,7 +52,12 @@ export class CopBot {
         const app = express();
         app.use(express.json());
 
-        app.post(webhookPath, webhookCallback(this._bot, 'express'));
+        app.post(webhookPath, (req, res) => {
+          webhookCallback(this._bot, 'express')(req, res).catch((err) => {
+            logger.error('Webhook processing error:', err);
+            res.sendStatus(500);
+          });
+        });
 
         const port = process.env.PORT || 3000;
         app.listen(port, async () => {
@@ -102,6 +106,7 @@ export class CopBot {
       const name = user.username ? `@${user.username}` : user.first_name;
       const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
       await reply.textReply(responseMessage);
+      return;
     }
     const command = messageText?.split(' ')[0]?.replace('/', '');
     if (command && ctx.message?.entities?.[0].type === 'bot_command') {
