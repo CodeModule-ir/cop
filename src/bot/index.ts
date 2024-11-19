@@ -30,27 +30,30 @@ export class CopBot {
 
   // Start the bot
   async start(): Promise<void> {
-    const startBot = async () => {
+    const startBot = async (mode: string) => {
       await this._bot.start({
         onStart: (botInfo) => {
-          console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
+          console.log(`Bot started in ${mode} mode! Username: ${botInfo.username}`);
         },
       });
     };
     const isProduction = Config.environment === 'production';
     const webhookURL = `${Config.web_hook}/bot/${Config.token}`;
+    const mode = isProduction ? 'webhook' : 'long-polling';
     console.log(`Environment: ${Config.environment}`);
     console.log(`Web hook Url: ${webhookURL}`);
     console.log(`Running in ${isProduction ? 'webhook' : 'long-polling'} mode`);
     if (isProduction) {
       console.log('Setting webhook...');
       try {
-        await startBot();
         console.log('Setting up webhook...');
         const _webhookService = new WebHookService(this._bot);
         await _webhookService.setupWebHook();
         _webhookService.startServer();
+        await startBot(mode);
+        const webhookInfo = await this._bot.api.getWebhookInfo();
         console.log(`Bot started in webhook mode`);
+        console.log('webhookInfo', webhookInfo);
       } catch (err) {
         console.error('Error setting up webhook:', err);
         process.exit(1);
@@ -59,7 +62,7 @@ export class CopBot {
       console.log('Running in long-polling mode...');
       try {
         await this._bot.api.deleteWebhook();
-        await startBot();
+        await startBot(mode);
       } catch (err) {
         console.error('Error in long-polling mode:', err);
         process.exit(1);
