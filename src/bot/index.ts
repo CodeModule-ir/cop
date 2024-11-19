@@ -129,8 +129,8 @@ export class CopBot {
       await reply.textReply(responseMessage);
     }
     const command = messageText?.split(' ')[0]?.replace('/', '');
-    console.log('command', command);
-    if (command) {
+    const botCommand = ctx.message?.entities?.[0].type === 'bot_command';
+    if (botCommand && command) {
       const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
       if (typeof handler === 'function') {
         await handler(ctx);
