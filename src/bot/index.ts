@@ -71,9 +71,14 @@ export class CopBot {
           } catch (err) {
             console.error('Failed to set webhook:', err);
             retries -= 1;
-            if (retries === 0) throw err;
+            if (retries === 0) {
+              console.error('Exhausted all retries to set the webhook');
+              throw err;
+            }
           }
         }
+        const webhookInfo = await this._bot.api.getWebhookInfo();
+        console.log('web hook info:', webhookInfo);
         await this._bot.start({
           onStart: (botInfo) => {
             console.log(`Bot started in web-hook mode! Username: ${botInfo.username}`);
@@ -114,7 +119,6 @@ export class CopBot {
   }
   @SaveUserData()
   @MessageValidator()
-  @RateLimit({ commandLimit: 3, timeFrame: 15000 })
   @Catch()
   async handleMessage(ctx: Context) {
     console.log('ctx.message.text:', ctx.message?.text);
