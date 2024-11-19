@@ -99,20 +99,23 @@ export class CopBot {
     console.log('ctx.chat', ctx.chat);
     console.log('ctx.message.from:', ctx.message?.from);
     const messageText = ctx.message?.text?.toLowerCase().trim();
-    const msg = ctx.message?.text!;
     const reply = new BotReply(ctx);
     const user = ctx.message?.reply_to_message?.from;
-    if (msg && msg.toLowerCase() === 'ask' && user) {
+    if (messageText === 'ask' && user) {
       const name = user.username ? `@${user.username}` : user.first_name;
       const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
       await reply.textReply(responseMessage);
       return;
     }
-    const command = messageText?.split(' ')[0]?.replace('/', '');
-    if (command && ctx.message?.entities?.[0].type === 'bot_command') {
-      const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
-      if (typeof handler === 'function') {
-        await handler(ctx);
+    if (ctx.message?.entities) {
+      const commandEntity = ctx.message.entities.find((entity) => entity.type === 'bot_command');
+      if (commandEntity) {
+        const command = messageText?.split(' ')[0]?.replace('/', '')!;
+        const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
+        if (typeof handler === 'function') {
+          await handler(ctx);
+          return;
+        }
       }
     }
   }
