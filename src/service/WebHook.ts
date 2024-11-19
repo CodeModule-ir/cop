@@ -42,6 +42,7 @@ export class WebHookService {
   }
   async setupWebHook() {
     try {
+      await this._bot.api.deleteWebhook();
       const webhookInfo = await this._bot.api.getWebhookInfo();
       if (webhookInfo.url !== this._web_hook_url) {
         await this._bot.api.setWebhook(this._web_hook_url);

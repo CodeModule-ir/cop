@@ -6,7 +6,6 @@ import { GenerateCommand } from './handlers/GenerateCommands';
 import { GeneralCommands } from './commands/genearl/GeneralCommands';
 import { UserCommands } from './commands/user/UserCommands';
 import { AdminCommands } from './commands/admin/AdminCommands';
-import * as http from 'http';
 import { SaveUserData } from '../decorators/Database';
 import { MessageValidator } from '../decorators/Context';
 import { BotReply } from '../utils/chat/BotReply';
@@ -31,6 +30,13 @@ export class CopBot {
 
   // Start the bot
   async start(): Promise<void> {
+    const startBot = async () => {
+      await this._bot.start({
+        onStart: (botInfo) => {
+          console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
+        },
+      });
+    };
     const isProduction = Config.environment === 'production';
     const webhookURL = `${Config.web_hook}/bot/${Config.token}`;
     console.log(`Environment: ${Config.environment}`);
@@ -39,6 +45,7 @@ export class CopBot {
     if (isProduction) {
       console.log('Setting webhook...');
       try {
+        await startBot();
         console.log('Setting up webhook...');
         const _webhookService = new WebHookService(this._bot);
         await _webhookService.setupWebHook();
@@ -52,11 +59,7 @@ export class CopBot {
       console.log('Running in long-polling mode...');
       try {
         await this._bot.api.deleteWebhook();
-        await this._bot.start({
-          onStart: (botInfo) => {
-            console.log(`Bot started in long-polling mode! Username: ${botInfo.username}`);
-          },
-        });
+        await startBot();
       } catch (err) {
         console.error('Error in long-polling mode:', err);
         process.exit(1);
