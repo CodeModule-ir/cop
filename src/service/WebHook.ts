@@ -6,7 +6,7 @@ export class WebHookService {
   private _app: Express;
   private _web_hook_url: string;
   private static _instance: WebHookService;
-  constructor(private _bot: Bot<Context>) {
+  private constructor(private _bot: Bot<Context>) {
     this._app = express();
     this._web_hook_url = `${Config.web_hook}/bot/${Config.token}`;
     this.initial();
