@@ -46,7 +46,9 @@ export class CopBot {
               let body = '';
               req.on('data', (chunk) => (body += chunk));
               req.on('end', () => {
-                console.log(`Incoming webhook data: ${body}`);
+                console.log('Webhook payload received:', body);
+                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                res.end('OK');
               });
             }
             res.writeHead(200, { 'Content-Type': 'text/plain' });
