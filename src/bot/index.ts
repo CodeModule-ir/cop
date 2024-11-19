@@ -14,10 +14,8 @@ import { WebHookService } from '../service/WebHook';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
-  private _webhookService: WebHookService;
   private constructor() {
     this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 20 } });
-    this._webhookService = new WebHookService(this._bot);
   }
   // Public method to get the singleton instance of CopBot
   public static getInstance(): CopBot {
@@ -42,9 +40,9 @@ export class CopBot {
       console.log('Setting webhook...');
       try {
         console.log('Setting up webhook...');
-        await this._webhookService.setupWebHook();
-        await this._webhookService.initial();
-        this._webhookService.startServer();
+        const _webhookService = new WebHookService(this._bot);
+        await _webhookService.setupWebHook();
+        _webhookService.startServer();
         console.log(`Bot started in webhook mode`);
       } catch (err) {
         console.error('Error setting up webhook:', err);
