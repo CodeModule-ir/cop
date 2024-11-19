@@ -8,14 +8,16 @@ import { UserCommands } from './commands/user/UserCommands';
 import { AdminCommands } from './commands/admin/AdminCommands';
 import * as http from 'http';
 import { SaveUserData } from '../decorators/Database';
-import { MessageValidator, RateLimit } from '../decorators/Context';
+import { MessageValidator } from '../decorators/Context';
 import { BotReply } from '../utils/chat/BotReply';
+import { WebHookService } from '../service/WebHook';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
-
+  private _webhookService: WebHookService;
   private constructor() {
     this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 20 } });
+    this._webhookService = new WebHookService(this._bot);
   }
   // Public method to get the singleton instance of CopBot
   public static getInstance(): CopBot {
@@ -31,61 +33,21 @@ export class CopBot {
 
   // Start the bot
   async start(): Promise<void> {
-    const port = process.env.PORT || Config.port || 3000;
     const isProduction = Config.environment === 'production';
-    const webhookURL = Config.web_hook;
+    const webhookURL = `${Config.web_hook}/bot/${Config.token}`;
     console.log(`Environment: ${Config.environment}`);
     console.log(`Web hook Url: ${webhookURL}`);
     console.log(`Running in ${isProduction ? 'webhook' : 'long-polling'} mode`);
     if (isProduction) {
       console.log('Setting webhook...');
       try {
-        http
-          .createServer(async (req, res) => {
-            if (req.method === 'POST') {
-              let body = '';
-              req.on('data', (chunk) => (body += chunk));
-              req.on('end', () => {
-                console.log('Webhook payload received:', body);
-                res.writeHead(200, { 'Content-Type': 'text/plain' });
-                res.end('OK');
-              });
-            }
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('OK');
-          })
-          .listen(port, () => {
-            console.log(`Webhook server running on port ${port}`);
-          });
-        await this._bot.api.deleteWebhook();
-        let retries = 3;
-        while (retries > 0) {
-          try {
-            const result = await this._bot.api.setWebhook(webhookURL, {
-              drop_pending_updates: true,
-            });
-            if (result) {
-              console.log(`Webhook successfully set to ${webhookURL}`);
-              break;
-            }
-          } catch (err) {
-            console.error('Failed to set webhook:', err);
-            retries -= 1;
-            if (retries === 0) {
-              console.error('Exhausted all retries to set the webhook');
-              throw err;
-            }
-          }
-        }
-        const webhookInfo = await this._bot.api.getWebhookInfo();
-        console.log('web hook info:', webhookInfo);
-        await this._bot.start({
-          onStart: (botInfo) => {
-            console.log(`Bot started in web-hook mode! Username: ${botInfo.username}`);
-          },
-        });
+        console.log('Setting up webhook...');
+        await this._webhookService.setupWebHook();
+        await this._webhookService.initial();
+        this._webhookService.startServer();
+        console.log(`Bot started in webhook mode`);
       } catch (err) {
-        console.error('Failed to set webhook:', err);
+        console.error('Error setting up webhook:', err);
         process.exit(1);
       }
     } else {

@@ -42,10 +42,12 @@
   "homepage": "https://github.com/CodeModule-ir/cop#readme",
   "dependencies": {
     "@medishn/gland-logger": "^1.0.5",
+    "express": "^4.21.1",
     "grammy": "^1.27.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/pg": "^8.11.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
