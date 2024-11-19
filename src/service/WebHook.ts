@@ -9,7 +9,6 @@ export class WebHookService {
   private constructor(private _bot: Bot<Context>) {
     this._app = express();
     this._web_hook_url = `${Config.web_hook}/bot/${Config.token}`;
-    this.initial();
   }
   public static getInstance(bot: Bot<Context>): WebHookService {
     if (!WebHookService._instance) {
@@ -21,7 +20,7 @@ export class WebHookService {
     try {
       const port = Config.port || 3000;
       this._app.listen(port, () => {
-        console.log(`Server running on http://localhost:${port}`);
+        console.log(`Server running on ${this._web_hook_url}`);
       });
     } catch (err) {
       console.error('Error starting server:', err);
