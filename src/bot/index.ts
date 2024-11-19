@@ -15,7 +15,7 @@ export class CopBot {
   private _bot: Bot<Context>;
 
   private constructor() {
-    this._bot = new Bot<Context>(Config.token);
+    this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 20 } });
   }
   // Public method to get the singleton instance of CopBot
   public static getInstance(): CopBot {
@@ -33,25 +33,45 @@ export class CopBot {
   async start(): Promise<void> {
     const port = process.env.PORT || Config.port || 3000;
     const isProduction = Config.environment === 'production';
-    const webhookURL = Config.web_hook || '';
-
-    // Create a simple server for Render or similar platforms
-    http
-      .createServer((_, res) => {
-        console.log('res;', res);
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Bot is running');
-      })
-      .listen(port, () => {
-        console.log(`Server running on port ${port}`);
-      });
-
+    const webhookURL = Config.web_hook;
+    console.log(`Environment: ${Config.environment}`);
+    console.log(`Web hook Url: ${webhookURL}`);
+    console.log(`Running in ${isProduction ? 'webhook' : 'long-polling'} mode`);
     if (isProduction) {
       console.log('Setting webhook...');
       try {
-        await this._bot.api.getUpdates({ offset: -1 });
-        await this._bot.api.setWebhook(webhookURL);
-        console.log(`Webhook set to ${webhookURL}`);
+        http
+          .createServer(async (req, res) => {
+            if (req.method === 'POST') {
+              let body = '';
+              req.on('data', (chunk) => (body += chunk));
+              req.on('end', () => {
+                console.log(`Incoming webhook data: ${body}`);
+              });
+            }
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('OK');
+          })
+          .listen(port, () => {
+            console.log(`Webhook server running on port ${port}`);
+          });
+        await this._bot.api.deleteWebhook();
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            const result = await this._bot.api.setWebhook(webhookURL, {
+              drop_pending_updates: true,
+            });
+            if (result) {
+              console.log(`Webhook successfully set to ${webhookURL}`);
+              break;
+            }
+          } catch (err) {
+            console.error('Failed to set webhook:', err);
+            retries -= 1;
+            if (retries === 0) throw err;
+          }
+        }
         await this._bot.start({
           onStart: (botInfo) => {
             console.log(`Bot started in web-hook mode! Username: ${botInfo.username}`);
@@ -89,14 +109,14 @@ export class CopBot {
 
     await this.start();
     console.log('Bot is running');
-    new GenerateCommand(this._bot).generate();
   }
   @SaveUserData()
   @MessageValidator()
   @RateLimit({ commandLimit: 3, timeFrame: 15000 })
   @Catch()
   async handleMessage(ctx: Context) {
-    console.log('ctx.message:', ctx.message);
+    console.log('ctx.message.text:', ctx.message?.text);
+    console.log('ctx.message.from:', ctx.message?.from);
     const messageText = ctx.message?.text?.toLowerCase().trim();
     const msg = ctx.message?.text!;
     const reply = new BotReply(ctx);
@@ -107,6 +127,7 @@ export class CopBot {
       await reply.textReply(responseMessage);
     }
     const command = messageText?.split(' ')[0]?.replace('/', '');
+    console.log('command', command);
     if (command) {
       const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
       if (typeof handler === 'function') {
