@@ -83,6 +83,7 @@ export class CopBot {
           const webhookInfo = await this._bot.api.getWebhookInfo();
           logger.info(`Webhook set: ${webhookInfo.url}`);
         });
+        await startBot(mode);
       } catch (err: any) {
         console.error('Error setting up webhook:', err);
         process.exit(1);
