@@ -49,7 +49,9 @@ export class CopBot {
         console.log('Setting up webhook...');
         const _webhookService = WebHookService.getInstance(this._bot);
         await _webhookService.setupWebHook();
+        await _webhookService.initial()
         _webhookService.startServer();
+        await startBot(mode);
         const webhookInfo = await this._bot.api.getWebhookInfo();
         console.log(`Bot started in webhook mode`);
         console.log('webhookInfo', webhookInfo);
@@ -70,9 +72,6 @@ export class CopBot {
   }
   @Catch()
   async initial(): Promise<void> {
-    await this._bot.init();
-    await this.start();
-    console.log('Bot is running');
     new GenerateCommand(this._bot).generate();
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
@@ -81,12 +80,16 @@ export class CopBot {
     this._bot.catch((err) => {
       console.error('Error in middleware:', err);
     });
+
+    await this.start();
+    console.log('Bot is running');
   }
   @SaveUserData()
   @MessageValidator()
   @Catch()
   async handleMessage(ctx: Context) {
     console.log('ctx.message.text:', ctx.message?.text);
+    console.log('ctx.chat', ctx.chat);
     console.log('ctx.message.from:', ctx.message?.from);
     const messageText = ctx.message?.text?.toLowerCase().trim();
     const msg = ctx.message?.text!;

@@ -21,7 +21,7 @@ async function main() {
       await db.close();
       logger.info('Database closed.');
       await cop.stop();
-      logger.info('Bot Stoped.');
+      logger.info('Bot stopped.');
     } catch (error: any) {
       logger.error('Error during shutdown:', error);
     } finally {
