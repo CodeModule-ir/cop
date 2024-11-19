@@ -118,6 +118,7 @@ export class CopBot {
         }
       }
     }
+    return;
   }
 
   @SaveUserData()
@@ -135,5 +136,6 @@ First of all, thanks to @${from?.username!} for inviting me to this awesome grou
 I'm here to help out and make sure everyone has a good time. Are you curious about what I can do? Just type the /help command.
     `;
     await reply.textReply(message);
+    return;
   }
 }
