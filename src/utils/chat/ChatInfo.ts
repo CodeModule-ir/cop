@@ -1,7 +1,5 @@
 import { Context } from 'grammy';
 import { BotReply } from './BotReply';
-import { RateLimiter } from '../RateLimiter';
-import { Catch } from '../../decorators/Catch';
 export class ChatInfo {
   constructor(private _ctx: Context) {}
 
