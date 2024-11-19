@@ -14,7 +14,7 @@ export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
   private constructor() {
-    this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 10 } });
+    this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 30 } });
   }
   // Public method to get the singleton instance of CopBot
   public static getInstance(): CopBot {
@@ -40,7 +40,7 @@ export class CopBot {
 
     const isProduction = Config.environment === 'production';
     const webhookPath = `/bot/${Config.token}`;
-    const webhookURL = `${Config.web_hook}${webhookPath}`;
+    const webhookURL = `https://51a3-20-208-130-133.ngrok-free.app${webhookPath}`;
     const mode = isProduction ? 'webhook' : 'long-polling';
 
     logger.info(`Environment: ${Config.environment}`);
@@ -49,14 +49,31 @@ export class CopBot {
 
     if (isProduction) {
       try {
+        await this._bot.api.deleteWebhook();
+        this._bot.api.getUpdates({ offset: -1 });
         const app = express();
         app.use(express.json());
+        app.post(webhookPath, async (req, res) => {
+          res.sendStatus(200);
+          const MAX_RETRIES = 3;
+          let retryCount = 0;
 
-        app.post(webhookPath, (req, res) => {
-          webhookCallback(this._bot, 'express')(req, res).catch((err) => {
-            console.error('Webhook processing error:', err);
-            res.sendStatus(500);
-          });
+          const processWebhook = async () => {
+            try {
+              // Process the webhook
+              await webhookCallback(this._bot, 'express')(req, res);
+            } catch (err) {
+              if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                const delay = Math.min(1000 * 2 ** retryCount, 30000);
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                await processWebhook();
+              } else {
+                console.error('Max retries reached. Webhook processing failed.');
+              }
+            }
+          };
+          await processWebhook();
         });
 
         const port = process.env.PORT || 3000;
@@ -84,7 +101,6 @@ export class CopBot {
     new GenerateCommand(this._bot).generate();
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
-
     this._bot.catch((err) => {
       console.error('Middleware error:', err);
     });
@@ -95,6 +111,10 @@ export class CopBot {
   @SaveUserData()
   @MessageValidator()
   async handleMessage(ctx: Context) {
+    if (!ctx.message?.text) {
+      console.warn('Message text is undefined');
+      return;
+    }
     console.log('ctx.message.text:', ctx.message?.text);
     console.log('ctx.chat', ctx.chat);
     console.log('ctx.message.from:', ctx.message?.from);
@@ -109,8 +129,11 @@ export class CopBot {
     }
     if (ctx.message?.entities) {
       const commandEntity = ctx.message.entities.find((entity) => entity.type === 'bot_command');
+      console.log('commandEntity', commandEntity);
+
       if (commandEntity) {
         const command = messageText?.split(' ')[0]?.replace('/', '')!;
+        console.log('command', command);
         const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
         if (typeof handler === 'function') {
           await handler(ctx);
@@ -123,6 +146,10 @@ export class CopBot {
 
   @SaveUserData()
   async handleJoinNewChat(ctx: Context) {
+    if (!ctx.message?.text) {
+      console.warn('Message text is undefined');
+      return;
+    }
     const chat = ctx.chat!;
     if (!chat) {
       return;
