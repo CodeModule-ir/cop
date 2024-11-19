@@ -21,7 +21,8 @@ export function Catch(customResponse?: ErrorResponse) {
         statusCode: error.statusCode || 500,
         category: 'General',
       };
-      logger.error(`[Category: ${errorResponse.category}] : ${error.message}`);
+      const category = typeof errorResponse.category === 'string' ? errorResponse.category : 'General';
+      logger.error(`[Category: ${category}] : ${error.message}`);
     }
   });
 }
