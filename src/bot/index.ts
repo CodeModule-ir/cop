@@ -54,7 +54,7 @@ export class CopBot {
 
         app.post(webhookPath, (req, res) => {
           webhookCallback(this._bot, 'express')(req, res).catch((err) => {
-            logger.error('Webhook processing error:', err);
+            console.error('Webhook processing error:', err);
             res.sendStatus(500);
           });
         });
@@ -66,16 +66,16 @@ export class CopBot {
           const webhookInfo = await this._bot.api.getWebhookInfo();
           logger.info(`Webhook set: ${webhookInfo.url}`);
         });
-      } catch (err) {
-        logger.error('Error setting up webhook:' + err);
+      } catch (err: any) {
+        console.error('Error setting up webhook:', err);
         process.exit(1);
       }
     } else {
       try {
         await this._bot.api.deleteWebhook();
         await startBot(mode);
-      } catch (err) {
-        logger.error('Error during long-polling mode:' + err);
+      } catch (err: any) {
+        console.error('Error during long-polling mode:', err);
         process.exit(1);
       }
     }
@@ -86,7 +86,7 @@ export class CopBot {
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
 
     this._bot.catch((err) => {
-      logger.error('Middleware error:' + err);
+      console.error('Middleware error:', err);
     });
 
     await this.start();

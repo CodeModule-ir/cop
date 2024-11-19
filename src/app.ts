@@ -11,8 +11,8 @@ async function main() {
 
     await botInstance.initial();
     logger.info('Bot initialized.');
-  } catch (err) {
-    logger.error('Error during initialization:' + err);
+  } catch (err: any) {
+    logger.error('Error during initialization:', err);
     process.exit(1);
   }
 
@@ -28,11 +28,11 @@ async function main() {
   });
 
   process.on('unhandledRejection', (reason) => {
-    logger.error('Unhandled Rejection:' + reason);
+    console.error('Unhandled Rejection:', reason);
   });
 
   process.on('uncaughtException', async (err) => {
-    logger.error('Uncaught Exception:' + err);
+    console.error('Uncaught Exception:', err);
     await shutdown(botInstance, 1);
   });
 }
@@ -44,7 +44,7 @@ async function shutdown(botInstance: CopBot, exitCode = 0) {
     logger.info('Database closed.');
     await botInstance.stop();
   } catch (err) {
-    logger.error('Error during shutdown:' + err);
+    console.error('Error during shutdown:', err);
   } finally {
     process.exit(exitCode);
   }
