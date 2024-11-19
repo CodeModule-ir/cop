@@ -1,4 +1,4 @@
-import { Bot } from 'grammy';
+import { Bot, webhookCallback } from 'grammy';
 import type { Context } from 'grammy';
 import { Catch } from '../decorators/Catch';
 import Config from '../config';
@@ -9,7 +9,8 @@ import { AdminCommands } from './commands/admin/AdminCommands';
 import { SaveUserData } from '../decorators/Database';
 import { MessageValidator } from '../decorators/Context';
 import { BotReply } from '../utils/chat/BotReply';
-import { WebHookService } from '../service/WebHook';
+import logger from '../utils/logger';
+import * as express from 'express';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -33,60 +34,62 @@ export class CopBot {
     const startBot = async (mode: string) => {
       await this._bot.start({
         onStart: (botInfo) => {
-          console.log(`Bot started in ${mode} mode! Username: ${botInfo.username}`);
+          logger.info(`Bot started in ${mode} mode! Username: ${botInfo.username}`);
         },
       });
     };
+
     const isProduction = Config.environment === 'production';
-    const webhookURL = `${Config.web_hook}/bot/${Config.token}`;
+    const webhookPath = `/bot/${Config.token}`;
+    const webhookURL = `${Config.web_hook}${webhookPath}`;
     const mode = isProduction ? 'webhook' : 'long-polling';
-    console.log(`Environment: ${Config.environment}`);
-    console.log(`Web hook Url: ${webhookURL}`);
-    console.log(`Running in ${isProduction ? 'webhook' : 'long-polling'} mode`);
+
+    logger.info(`Environment: ${Config.environment}`);
+    logger.info(`Webhook URL: ${webhookURL}`);
+    logger.info(`Running in ${mode} mode`);
+
     if (isProduction) {
-      console.log('Setting webhook...');
       try {
-        console.log('Setting up webhook...');
-        const _webhookService = WebHookService.getInstance(this._bot);
-        await _webhookService.setupWebHook();
-        await _webhookService.initial()
-        _webhookService.startServer();
-        await startBot(mode);
-        const webhookInfo = await this._bot.api.getWebhookInfo();
-        console.log(`Bot started in webhook mode`);
-        console.log('webhookInfo', webhookInfo);
+        const app = express();
+        app.use(express.json());
+
+        app.post(webhookPath, webhookCallback(this._bot, 'express'));
+
+        const port = process.env.PORT || 3000;
+        app.listen(port, async () => {
+          logger.info(`Webhook server running on port ${port}`);
+          await this._bot.api.setWebhook(webhookURL);
+          const webhookInfo = await this._bot.api.getWebhookInfo();
+          logger.info(`Webhook set: ${webhookInfo.url}`);
+        });
       } catch (err) {
-        console.error('Error setting up webhook:', err);
+        logger.error('Error setting up webhook:' + err);
         process.exit(1);
       }
     } else {
-      console.log('Running in long-polling mode...');
       try {
         await this._bot.api.deleteWebhook();
         await startBot(mode);
       } catch (err) {
-        console.error('Error in long-polling mode:', err);
+        logger.error('Error during long-polling mode:' + err);
         process.exit(1);
       }
     }
   }
-  @Catch()
   async initial(): Promise<void> {
     new GenerateCommand(this._bot).generate();
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
 
-    // Error handling
     this._bot.catch((err) => {
-      console.error('Error in middleware:', err);
+      logger.error('Middleware error:' + err);
     });
 
     await this.start();
-    console.log('Bot is running');
+    logger.info('Bot is running');
   }
   @SaveUserData()
   @MessageValidator()
-  @Catch()
   async handleMessage(ctx: Context) {
     console.log('ctx.message.text:', ctx.message?.text);
     console.log('ctx.chat', ctx.chat);
@@ -101,8 +104,7 @@ export class CopBot {
       await reply.textReply(responseMessage);
     }
     const command = messageText?.split(' ')[0]?.replace('/', '');
-    const botCommand = ctx.message?.entities?.[0].type === 'bot_command';
-    if (botCommand && command) {
+    if (command && ctx.message?.entities?.[0].type === 'bot_command') {
       const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
       if (typeof handler === 'function') {
         await handler(ctx);
