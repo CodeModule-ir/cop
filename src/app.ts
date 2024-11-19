@@ -3,50 +3,51 @@ import { ServiceProvider } from './service/database/ServiceProvider';
 import logger from './utils/logger';
 
 async function main() {
-  const cop = CopBot.getInstance();
+  const botInstance = CopBot.getInstance();
+
   try {
     await ServiceProvider.initialize();
-    logger.info('Initialized Database');
+    logger.info('Database initialized.');
 
-    await cop.initial();
-    logger.info('Bot initialized');
-  } catch (error: any) {
-    logger.error('Error during initialization:', error);
+    await botInstance.initial();
+    logger.info('Bot initialized.');
+  } catch (err) {
+    logger.error('Error during initialization:' + err);
     process.exit(1);
   }
+
+  // Graceful shutdown
   process.on('SIGTERM', async () => {
-    logger.info('SIGTERM signal received. Closing bot...');
-    try {
-      const db = ServiceProvider.getInstance();
-      await db.close();
-      logger.info('Database closed.');
-      await cop.stop();
-      logger.info('Bot stopped.');
-    } catch (error: any) {
-      logger.error('Error during shutdown:', error);
-    } finally {
-      logger.info('Shutting down bot process');
-      process.exit(0);
-    }
+    logger.info('SIGTERM signal received. Shutting down...');
+    await shutdown(botInstance);
   });
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+
+  process.on('SIGINT', async () => {
+    logger.info('SIGINT signal received. Shutting down...');
+    await shutdown(botInstance);
   });
-  process.on('uncaughtException', async (error: any) => {
-    logger.error('Uncaught Exception:', error);
-    try {
-      const db = ServiceProvider.getInstance();
-      await db.close();
-      logger.info('Database closed due to uncaught exception.');
-    } catch (shutdownError: any) {
-      logger.error('Error during shutdown:', shutdownError);
-    } finally {
-      process.exit(1);
-    }
+
+  process.on('unhandledRejection', (reason) => {
+    logger.error('Unhandled Rejection:' + reason);
+  });
+
+  process.on('uncaughtException', async (err) => {
+    logger.error('Uncaught Exception:' + err);
+    await shutdown(botInstance, 1);
   });
 }
 
-main().catch((error) => {
-  logger.error('Application error during startup:', error);
-  process.exit(1); // Exit if the main function fails
-});
+async function shutdown(botInstance: CopBot, exitCode = 0) {
+  try {
+    const db = ServiceProvider.getInstance();
+    await db.close();
+    logger.info('Database closed.');
+    await botInstance.stop();
+  } catch (err) {
+    logger.error('Error during shutdown:' + err);
+  } finally {
+    process.exit(exitCode);
+  }
+}
+
+main();
