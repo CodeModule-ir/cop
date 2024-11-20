@@ -40,7 +40,7 @@ export class CopBot {
 
     const isProduction = Config.environment === 'production';
     const webhookPath = `/bot/${Config.token}`;
-    const webhookURL = `https://51a3-20-208-130-133.ngrok-free.app${webhookPath}`;
+    const webhookURL = `${Config.web_hook}${webhookPath}`;
     const mode = isProduction ? 'webhook' : 'long-polling';
 
     logger.info(`Environment: ${Config.environment}`);
@@ -49,6 +49,10 @@ export class CopBot {
 
     if (isProduction) {
       try {
+        const result = await this._bot.api.deleteWebhook();
+        if (result) {
+          await this._bot.api.getUpdates({ offset: -1 });
+        }
         const app = express();
         app.use(express.json());
         app.post(webhookPath, async (req, res) => {
@@ -89,6 +93,8 @@ export class CopBot {
     } else {
       try {
         await this._bot.api.deleteWebhook();
+
+        this._bot.api.getUpdates({ offset: -1 });
         await startBot(mode);
       } catch (err: any) {
         console.error('Error during long-polling mode:', err);

@@ -14,10 +14,9 @@ export function RestrictToGroupChats() {
 
     try {
       if (chat.type === 'supergroup' || chat.type === 'group') {
-        return await next();
-      }
-
-      if (chat.type === 'private') {
+        await next();
+        return;
+      } else if (chat.type === 'private') {
         await reply.textReply('This command can only be used in group chats.');
         close();
       } else if (chat.type === 'channel') {
