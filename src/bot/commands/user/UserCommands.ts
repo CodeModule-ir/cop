@@ -187,8 +187,17 @@ export class UserCommands {
       await reply.textReply(`Here is the invite link for this group: ${chat.invite_link}`);
     } else {
       // If no link exists, try to generate a new one (requires admin rights)
-      const inviteLink = await ctx.api.exportChatInviteLink(ctx.chat!.id);
-      await reply.textReply(`Here is the invite link for this group: ${inviteLink}`);
+      if (chat.permissions?.can_change_info) {
+        try {
+          // Try to export a new invite link
+          const inviteLink = await ctx.api.exportChatInviteLink(ctx.chat!.id);
+          await reply.textReply(`Here is the invite link for this group: ${inviteLink}`);
+        } catch (err: any) {
+          await reply.textReply('Sorry, I do not have permission to generate the invite link.');
+        }
+      } else {
+        await reply.textReply('I do not have enough permissions to generate an invite link.');
+      }
     }
   }
   /**
