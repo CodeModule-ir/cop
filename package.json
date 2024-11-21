@@ -2,7 +2,7 @@
   "name": "cop",
   "version": "4.0.1",
   "description": "A Telegram bot for managing Telegram groups efficiently.",
-  "main": "src/app.js",
+  "main": "src/app.ts",
   "type": "module",
   "files": [
     "dist",
