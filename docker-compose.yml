@@ -11,16 +11,18 @@ services:
     networks:
       - cop-net
     restart: unless-stopped
+    ports:
+      - "3000:3000" 
 
   db:
-    image: postgres:16 
+    image: postgres:16
     container_name: cop-db
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD} 
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER} 
+      POSTGRES_USER: ${DB_USER}
     volumes:
-      - db-data:/var/lib/postgresql/data 
+      - db-data:/var/lib/postgresql/data
     networks:
       - cop-net
     restart: unless-stopped

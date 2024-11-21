@@ -6,7 +6,6 @@ import { ChatInfo } from '../../../utils/chat/ChatInfo';
 import { DateCommand } from '../../service/general/date';
 import * as BotInfoJson from '../../../../docs/BotInfo.json';
 import { ReplyToBot } from '../../../decorators/Bot';
-import { RestrictToGroupChats } from '../../../decorators/Context';
 import { jokeMessage } from '../../../utils';
 /**
  * Reason for lowercase command names:
@@ -96,7 +95,7 @@ export class GeneralCommands {
   static async commands(ctx: Context) {
     const reply = new BotReply(ctx);
     const { commands } = GeneralCommands.getMessage(ctx);
-    await reply.textReply(commands);
+    await reply.htmlReply(commands);
   }
   @ReplyToBot()
   @Catch({

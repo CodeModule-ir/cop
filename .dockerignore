@@ -5,7 +5,6 @@ dist
 Dockerfile
 *.md
 tests
-__tests__
 .git
 .gitignore
 archive
