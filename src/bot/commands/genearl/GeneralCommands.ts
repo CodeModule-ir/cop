@@ -103,8 +103,8 @@ export class GeneralCommands {
     category: 'Bot',
     statusCode: 500,
   })
-  /** viewSupportContact */
-  public static async viewsupportcontact(ctx: Context) {
+  /** support */
+  public static async support(ctx: Context) {
     const reply = new BotReply(ctx);
 
     // Contact information from BotInfo.json

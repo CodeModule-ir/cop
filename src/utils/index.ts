@@ -6,7 +6,7 @@ export const COMMANDS: string[] = [
   'commands',
   'date',
   'joke',
-  'viewsupportcontact',
+  'support',
   'botinfo',
   /** Users Commands */
   'rules',
