@@ -49,10 +49,7 @@ export class CopBot {
 
     if (isProduction) {
       try {
-        const result = await this._bot.api.deleteWebhook();
-        if (result) {
-          await this._bot.api.getUpdates({ offset: -1 });
-        }
+        await this._bot.api.deleteWebhook();
         const app = express();
         app.use(express.json());
         app.post(webhookPath, async (req, res) => {
@@ -81,10 +78,16 @@ export class CopBot {
         const port = process.env.PORT || 3000;
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
-          await this._bot.api.setWebhook(webhookURL);
-          const webhookInfo = await this._bot.api.getWebhookInfo();
+          let webhookInfo = await this._bot.api.getWebhookInfo();
           console.log(`Webhook Info: `, webhookInfo);
-          logger.info(`Webhook set: ${webhookInfo.url}`);
+          logger.info(`Current Webhook: ${webhookInfo.url}`);
+          if (!webhookInfo.url) {
+            logger.info('Setting webhook...');
+            await this._bot.api.setWebhook(webhookURL);
+            webhookInfo = await this._bot.api.getWebhookInfo();
+            console.log(`Updated Webhook Info: `, webhookInfo);
+            logger.info(`Webhook set: ${webhookInfo.url}`);
+          }
         });
         await startBot(mode);
       } catch (err: any) {
@@ -94,8 +97,6 @@ export class CopBot {
     } else {
       try {
         await this._bot.api.deleteWebhook();
-
-        this._bot.api.getUpdates({ offset: -1 });
         await startBot(mode);
       } catch (err: any) {
         console.error('Error during long-polling mode:', err);
