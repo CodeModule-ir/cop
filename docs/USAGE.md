@@ -1,59 +1,89 @@
 # Usage Guide
+
 This document provides detailed instructions on how to use the Code Module Cop bot for managing Telegram groups.
 
 ## Commands
-### General Commands
-- /start: Start interacting with the bot and receive a welcome message.
-- /help: Get assistance and see the list of available commands.
-## Moderation Commands
-- /warn [reason]: Issue a warning to a user. If a user accumulates three warnings, they will be automatically banned.
-- /rmWarn: Removes warnings from users.
-- /mute [time]: Mute a user for a specified duration. Time can be specified in minutes (m), hours (h), or indefinitely.
-- /unMute: Unsilences users.
-- /ban: Ban a user from the group permanently.
-- /unBan: Removes users from the banned list.
-- /purge: Deletes messages that have been replicated.
-## Role Management Commands
-- /approved: Grants users special permissions, such as using forbidden words and pinning messages.
-- /unApproved: Revokes special permissions from users.
-- /approvedList: Return All Approved user
-### Group Management Commands
-- /lock: Locks the group with additional options to lock gifs, stickers, or forwards.
-- /unLock: Unlocks the group with additional options to unlock gifs or stickers.
-- /blacklist: Returns the current blacklist.
-- /abl [word]: Adds a letter or word to the blacklist (e.g., /abl test).
-- /rmbl [word]: Removes a word from the blacklist (e.g., /rmbl test).
-### Information Commands
-- /date: Provides today’s date in Gregorian and solar calendars.
-- /future: Sends a predefined message about future plans.
-- /rules: Returns the group's rules and allows adding (/rules test) or deleting all rules (/rules r).
-## Examples
-### Mute a User for 10 Minutes
 
-#### To mute a user for 10 minutes, use:
+### General Commands
+- **/start**: Start interacting with the bot.
+- **/help**: Get help and see the list of available commands.
+- **/commands**: List all commands of the bot.
+- **/date**: Get the current date and time.
+- **/joke**: Get a random joke.
+- **/viewsupportcontact**: View support contact details.
+- **/botinfo**: Get information about the bot.
+
+### Group Management Commands
+- **/rules**: View the group rules.
+- **/codetime**: Says a random word sarcastically or offensively to you or people in the group.
+- **/future**: Get insights about the future.
+- **/groupinfo**: View information about the group.
+- **/report**: Report an issue or a user.
+- **/cancel**: Cancel the current report.
+- **/link**: Generate or view group links.
+- **/adminlist**: View the list of group admins.
+- **/grant**: Grant admin privileges to a user.
+- **/revoke**: Revoke admin privileges from a user.
+- **/pin**: Pin a message in the group.
+- **/unpin**: Unpin the pinned message.
+- **/purge**: Delete a range of messages.
+- **/welcome**: Returns the current group welcome message.
+
+### Moderation Commands
+- **/approved**: Approve a user for special privileges.
+- **/disapproved**: Remove approval for a user.
+- **/approvedlist**: View the list of approved users.
+- **/ban**: Ban a user from the group.
+- **/unban**: Unban a previously banned user.
+- **/warn**: Issue a warning to a user.
+- **/rmwarn**: Remove a warning from a user.
+- **/warns**: Check warnings for a user.
+- **/warnslist**: View the list of all warnings.
+- **/mute**: Mute a user in the group.
+- **/unmute**: Unmute a previously muted user.
+
+### Blacklist Commands
+- **/blacklist**: Add a word or phrase to the blacklist.
+- **/abl**: Add multiple words to the blacklist.
+- **/rmbl**: Remove a word or phrase from the blacklist.
+- **/clrbl**: Clear the blacklist.
+
+### Shahin and Aran-Specific Commands
+- **/shahin**: Trigger Shahin-specific functionality.
+- **/aran**: Trigger Aran-specific functionality.
+
+---
+
+## Example Commands
+
+### Mute a User for 10 Minutes
+To mute a user for 10 minutes:
 
 ```plaintext
 /mute 10m
 (You must reply to the user you want to mute.)
 ```
-#### Issue a Warning to a User
-To issue a warning to a user with a reason, use:
+
+### Issue a Warning to a User
+To issue a warning to a user with a reason:
 
 ```plaintext
 /warn Spamming the chat
 (You must reply to the user you want to warn.)
 ```
-#### Ban a User
-To ban a user from the group, use:
+
+### Ban a User
+To ban a user from the group:
 
 ```plaintext
 /ban
 (You must reply to the user you want to ban.)
 ```
-#### Unban a User
-To unban a user from the group, use:
+
+### Unban a User
+To unban a user from the group:
 
 ```plaintext
-/unBan
+/unban
 (You must specify the user to unban.)
 ```
