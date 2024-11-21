@@ -49,7 +49,6 @@ export class CopBot {
 
     if (isProduction) {
       try {
-        await this._bot.api.deleteWebhook();
         const app = express();
         app.use(express.json());
         app.post(webhookPath, async (req, res) => {
