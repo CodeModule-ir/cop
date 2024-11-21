@@ -14,7 +14,7 @@ export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
   private constructor() {
-    this._bot = new Bot<Context>(Config.token, { client: { timeoutSeconds: 30 } });
+    this._bot = new Bot<Context>(Config.token);
   }
   // Public method to get the singleton instance of CopBot
   public static getInstance(): CopBot {
@@ -80,22 +80,44 @@ export class CopBot {
           let webhookInfo = await this._bot.api.getWebhookInfo();
           console.log(`Webhook Info: `, webhookInfo);
           logger.info(`Current Webhook: ${webhookInfo.url}`);
-          if (!webhookInfo.url) {
-            logger.info('Setting webhook...');
-            await this._bot.api.setWebhook(webhookURL);
-            webhookInfo = await this._bot.api.getWebhookInfo();
-            console.log(`Updated Webhook Info: `, webhookInfo);
-            logger.info(`Webhook set: ${webhookInfo.url}`);
-          }
+          const MAX_RETRIES = 5;
+          let retries = 0;
+
+          const trySetWebhook = async () => {
+            try {
+              if (!webhookInfo.url) {
+                logger.info('Webhook is not set. Trying to set the webhook...');
+                await this._bot.api.setWebhook(webhookURL);
+                webhookInfo = await this._bot.api.getWebhookInfo();
+                console.log(`Updated Webhook Info: `, webhookInfo);
+                logger.info(`Webhook set: ${webhookInfo.url}`);
+              } else {
+                logger.info('Webhook is already set.');
+              }
+            } catch (error: any) {
+              retries++;
+              logger.error(`Error setting webhook (Attempt ${retries}): ${error.message}`);
+              if (retries < MAX_RETRIES) {
+                const delay = Math.min(1000 * 2 ** retries, 30000); // Exponential backoff
+                logger.info(`Retrying in ${delay / 1000} seconds...`);
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                await trySetWebhook();
+              } else {
+                logger.error('Max retries reached. Could not set webhook.');
+                process.exit(1); // Exit after maximum retries reached
+              }
+            }
+          };
+
+          await trySetWebhook();
+          await startBot(mode);
         });
-        await startBot(mode);
       } catch (err: any) {
         console.error('Error setting up webhook:', err);
         process.exit(1);
       }
     } else {
       try {
-        await this._bot.api.deleteWebhook();
         await startBot(mode);
       } catch (err: any) {
         console.error('Error during long-polling mode:', err);
@@ -136,9 +158,9 @@ export class CopBot {
     if (ctx.message?.entities) {
       const commandEntity = ctx.message.entities.find((entity) => entity.type === 'bot_command');
       console.log('commandEntity', commandEntity);
-
       if (commandEntity) {
-        const command = messageText?.split(' ')[0]?.replace('/', '')!;
+        let command = messageText?.split(' ')[0]?.replace('/', '')!;
+        command = command.includes('@') ? command.split('@')[0] : command;
         console.log('command', command);
         const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
         if (typeof handler === 'function') {
