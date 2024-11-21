@@ -1,8 +1,9 @@
 {
   "name": "cop",
   "version": "4.0.1",
-  "description": "A Telegram bot for managing Telegram groups",
-  "main": "/src/app.js",
+  "description": "A Telegram bot for managing Telegram groups efficiently.",
+  "main": "src/app.js",
+  "type": "module",
   "files": [
     "dist",
     "src",
@@ -19,28 +20,31 @@
     "docker:restart:all": "npm run docker:down && npm run docker:start",
     "docker:prune": "docker system prune --volumes --force",
     "build": "tsc",
-    "test": "mocha --config .mochar.json",
     "clean": "rm -rf dist",
-    "main": "npm run build & node --env-file=.env dist/app.js",
+    "main": "npm run build && node --env-file=.env dist/app.js",
     "start": "NODE_ENV=development node --trace-uncaught -r ts-node/register --env-file=.env src/app.ts",
     "start:deploy": "NODE_ENV=production node --trace-uncaught -r ts-node/register src/app.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CodeModule-ir/cop.git"
+    "url": "https://github.com/CodeModule-ir/cop.git"
   },
   "keywords": [
-    "CodeModule",
-    "Bot",
-    "telegram-bot"
+    "code-module",
+    "telegram-bot",
+    "telegram-group-management",
+    "bot",
+    "typescript"
   ],
-  "author": "mahdi",
+  "author": "Mahdi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/CodeModule-ir/cop/issues"
+    "url": "https://github.com/CodeModule-ir/cop/issues",
+    "email": "codemoduletm@gmail.com"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.0.0",
+    "npm": ">=6.0.0"
   },
   "homepage": "https://github.com/CodeModule-ir/cop#readme",
   "dependencies": {
