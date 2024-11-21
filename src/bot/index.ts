@@ -83,7 +83,7 @@ export class CopBot {
           logger.info(`Webhook server running on port ${port}`);
           await this._bot.api.setWebhook(webhookURL);
           const webhookInfo = await this._bot.api.getWebhookInfo();
-          console.log(`Webhook Info: ${webhookInfo}`);
+          console.log(`Webhook Info: `, webhookInfo);
           logger.info(`Webhook set: ${webhookInfo.url}`);
         });
         await startBot(mode);
