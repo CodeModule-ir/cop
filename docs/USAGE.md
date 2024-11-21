@@ -5,15 +5,17 @@ This document provides detailed instructions on how to use the Code Module Cop b
 ## Commands
 
 ### General Commands
+
 - **/start**: Start interacting with the bot.
 - **/help**: Get help and see the list of available commands.
 - **/commands**: List all commands of the bot.
 - **/date**: Get the current date and time.
 - **/joke**: Get a random joke.
-- **/viewsupportcontact**: View support contact details.
+- **/support**: View support contact details.
 - **/botinfo**: Get information about the bot.
 
 ### Group Management Commands
+
 - **/rules**: View the group rules.
 - **/codetime**: Says a random word sarcastically or offensively to you or people in the group.
 - **/future**: Get insights about the future.
@@ -30,6 +32,7 @@ This document provides detailed instructions on how to use the Code Module Cop b
 - **/welcome**: Returns the current group welcome message.
 
 ### Moderation Commands
+
 - **/approved**: Approve a user for special privileges.
 - **/disapproved**: Remove approval for a user.
 - **/approvedlist**: View the list of approved users.
@@ -43,12 +46,14 @@ This document provides detailed instructions on how to use the Code Module Cop b
 - **/unmute**: Unmute a previously muted user.
 
 ### Blacklist Commands
+
 - **/blacklist**: Add a word or phrase to the blacklist.
 - **/abl**: Add multiple words to the blacklist.
 - **/rmbl**: Remove a word or phrase from the blacklist.
 - **/clrbl**: Clear the blacklist.
 
 ### Shahin and Aran-Specific Commands
+
 - **/shahin**: Trigger Shahin-specific functionality.
 - **/aran**: Trigger Aran-specific functionality.
 
@@ -57,6 +62,7 @@ This document provides detailed instructions on how to use the Code Module Cop b
 ## Example Commands
 
 ### Mute a User for 10 Minutes
+
 To mute a user for 10 minutes:
 
 ```plaintext
@@ -65,6 +71,7 @@ To mute a user for 10 minutes:
 ```
 
 ### Issue a Warning to a User
+
 To issue a warning to a user with a reason:
 
 ```plaintext
@@ -73,6 +80,7 @@ To issue a warning to a user with a reason:
 ```
 
 ### Ban a User
+
 To ban a user from the group:
 
 ```plaintext
@@ -81,6 +89,7 @@ To ban a user from the group:
 ```
 
 ### Unban a User
+
 To unban a user from the group:
 
 ```plaintext
