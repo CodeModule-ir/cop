@@ -348,7 +348,6 @@ Group Type: ${group?.type || 'Unknown'}
   }
   /** Pin Command */
   @RestrictToGroupChats()
-  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -362,7 +361,6 @@ Group Type: ${group?.type || 'Unknown'}
     await reply.textReply('The message has been pinned.');
   }
   @RestrictToGroupChats()
-  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
@@ -377,7 +375,6 @@ Group Type: ${group?.type || 'Unknown'}
   }
   /** Purge Command */
   @RestrictToGroupChats()
-  @ReplyToBot()
   @BotIsAdmin()
   @OnlyAdminsCanUse()
   @RequireReply()
