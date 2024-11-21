@@ -95,7 +95,7 @@ export class GeneralCommands {
   static async commands(ctx: Context) {
     const reply = new BotReply(ctx);
     const { commands } = GeneralCommands.getMessage(ctx);
-    await reply.htmlReply(commands);
+    await reply.markdownReply(commands);
   }
   @ReplyToBot()
   @Catch({
