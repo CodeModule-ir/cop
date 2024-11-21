@@ -11,13 +11,21 @@ class Config {
   private constructor() {
     // Ensure that the token is available in the environment
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    const web_hook = process.env.WEB_HOOK!;
+    const web_hook = process.env.WEB_HOOK;
+    const port = process.env.PORT;
+    const nodeEnv = process.env.NODE_ENV || 'development';
     if (!token) {
       throw new Error('Telegram bot token is missing. Please set TELEGRAM_BOT_TOKEN in the environment.');
     }
-    const port = process.env.PORT!;
+    if (!web_hook) {
+      throw new Error('Web hook URL is missing. Please set WEB_HOOK in the environment.');
+    }
+
+    if (!token) {
+      throw new Error('Telegram bot token is missing. Please set TELEGRAM_BOT_TOKEN in the environment.');
+    }
     // Set the environment, defaulting to development if not set
-    const environment: 'development' | 'production' = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+    const environment: 'development' | 'production' = nodeEnv === 'production' ? 'production' : 'development';
 
     // Database configuration with environment variables
     const dbUser = process.env.DB_USER!;
@@ -26,6 +34,8 @@ class Config {
     const dbPassword = process.env.DB_PASSWORD!;
     const dbPort = parseInt(process.env.DB_PORT!, 10);
     const dbUrl = environment === 'production' ? process.env.DATABASE_URL! : process.env.DB_URL!;
+
+    // Initialize the config properties
     this.token = token;
     this.environment = environment;
     this.port = Number(port);
