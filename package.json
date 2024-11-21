@@ -2,8 +2,7 @@
   "name": "cop",
   "version": "4.0.1",
   "description": "A Telegram bot for managing Telegram groups efficiently.",
-  "main": "src/app.ts",
-  "type": "module",
+  "main": "/src/app.js",
   "files": [
     "dist",
     "src",
@@ -27,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CodeModule-ir/cop.git"
+    "url": "git+https://github.com/CodeModule-ir/cop.git"
   },
   "keywords": [
     "code-module",
