@@ -32,3 +32,4 @@ volumes:
 
 networks:
   cop-net:
+    driver: bridge
