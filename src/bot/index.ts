@@ -78,7 +78,6 @@ export class CopBot {
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
           let webhookInfo = await this._bot.api.getWebhookInfo();
-          console.log(`Webhook Info: `, webhookInfo);
           logger.info(`Current Webhook: ${webhookInfo.url}`);
           const MAX_RETRIES = 5;
           let retries = 0;
@@ -89,7 +88,6 @@ export class CopBot {
                 logger.info('Webhook is not set. Trying to set the webhook...');
                 await this._bot.api.setWebhook(webhookURL);
                 webhookInfo = await this._bot.api.getWebhookInfo();
-                console.log(`Updated Webhook Info: `, webhookInfo);
                 logger.info(`Webhook set: ${webhookInfo.url}`);
               } else {
                 logger.info('Webhook is already set.');
@@ -139,37 +137,39 @@ export class CopBot {
   @SaveUserData()
   @MessageValidator()
   async handleMessage(ctx: Context) {
-    if (!ctx.message?.text) {
-      console.warn('Message text is undefined');
-      return;
-    }
-    console.log('ctx.message.text:', ctx.message?.text);
-    console.log('ctx.chat', ctx.chat);
-    console.log('ctx.message.from:', ctx.message?.from);
-    const messageText = ctx.message?.text?.toLowerCase().trim();
-    const reply = new BotReply(ctx);
-    const user = ctx.message?.reply_to_message?.from;
-    if (messageText === 'ask' && user) {
-      const name = user.username ? `@${user.username}` : user.first_name;
-      const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
-      await reply.textReply(responseMessage);
-      return;
-    }
-    if (ctx.message?.entities) {
-      const commandEntity = ctx.message.entities.find((entity) => entity.type === 'bot_command');
-      console.log('commandEntity', commandEntity);
-      if (commandEntity) {
-        let command = messageText?.split(' ')[0]?.replace('/', '')!;
-        command = command.includes('@') ? command.split('@')[0] : command;
-        console.log('command', command);
-        const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
-        if (typeof handler === 'function') {
-          await handler(ctx);
-          return;
+    try {
+      if (!ctx.message?.text) {
+        logger.warn('Message text is undefined');
+        return;
+      }
+      const messageText = ctx.message?.text?.toLowerCase().trim();
+      const reply = new BotReply(ctx);
+      const user = ctx.message?.reply_to_message?.from;
+
+      if (messageText === 'ask' && user) {
+        const name = user.username ? `@${user.username}` : user.first_name;
+        const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
+        await reply.textReply(responseMessage);
+      }
+
+      if (ctx.message?.entities) {
+        const commandEntity = ctx.message.entities.find((entity) => entity.type === 'bot_command');
+        if (commandEntity) {
+          let command = messageText?.split(' ')[0]?.replace('/', '')!;
+          logger.debug(`Processing command: ${command} `);
+          command = command.includes('@') ? command.split('@')[0] : command;
+          const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
+          if (typeof handler === 'function') {
+            await handler(ctx);
+            return;
+          }
         }
       }
+    } catch (err: any) {
+      logger.error('Error in handleMessage:', err.message);
+      const reply = new BotReply(ctx);
+      await reply.textReply('An unexpected error occurred.');
     }
-    return;
   }
 
   @SaveUserData()
@@ -184,7 +184,6 @@ export class CopBot {
     }
     const reply = new BotReply(ctx);
     const from = ctx.from;
-    console.log(`Bot added to group ${chat.title} by ${from?.username}`);
     const message = `
       Hello ${ctx.chat?.title}!
 First of all, thanks to @${from?.username!} for inviting me to this awesome group!
