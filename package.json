@@ -48,6 +48,7 @@
   },
   "homepage": "https://github.com/CodeModule-ir/cop#readme",
   "dependencies": {
+    "@grammyjs/ratelimiter": "^1.2.1",
     "@medishn/logger": "^2.0.0",
     "express": "^4.21.1",
     "grammy": "^1.27.0",
