@@ -24,6 +24,6 @@ export function ReplyToBot() {
       close();
       return;
     }
-    return next();
+    await next();
   });
 }

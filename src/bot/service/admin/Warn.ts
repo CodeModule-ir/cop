@@ -50,7 +50,7 @@ export class WarnService {
       // Reset the warnings count and clear the user from the group's warning list
       const updatedGroup = {
         ...group,
-        warnings: group.warnings.filter((id) => Number(id) !== Number(user.telegram_id)),
+        warnings: group.warnings.filter((id: number) => Number(id) !== Number(user.telegram_id)),
       };
       const updatedUser = {
         ...user,
@@ -109,6 +109,8 @@ export class WarnService {
     const userId = replyMessage!.id!;
     const chat = ctx.chat;
     const groupId = chat?.id!;
+
+    // Initialize services
     const services = ServiceProvider.getInstance();
     const [groupService, userService, warnService] = await Promise.all([services.getGroupService(), services.getUserService(), services.getWarnsService()]);
     let group = await groupService.getByGroupId(groupId);
@@ -138,6 +140,7 @@ export class WarnService {
         });
       }
     }
+    console.log('usersWithWarnings', JSON.stringify(usersWithWarnings, null, 2));
 
     // Generate structured output
     let output = `**Group Warning Report**\n`;
@@ -150,8 +153,6 @@ export class WarnService {
       output += `   Warnings: ${user.warnings}\n`;
       output += `   Last Reason: ${user.reason}\n`;
     });
-
-    // Add summary
     output += `\n---\nTotal Users with Warnings: ${usersWithWarnings.length}\n`;
 
     return output;

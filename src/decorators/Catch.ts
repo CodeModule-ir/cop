@@ -6,6 +6,7 @@ export function Catch(customResponse?: ErrorResponse) {
   return createDecorator(async (ctx, next) => {
     try {
       await next();
+      return;
     } catch (error: any) {
       if (isGrammyError(error)) {
         if (error.error_code === 400 && error.description === 'Bad Request: message to be replied not found') {

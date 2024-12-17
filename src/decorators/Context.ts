@@ -1,6 +1,5 @@
 import { BotReply } from '../utils/chat/BotReply';
 import { MessagesService } from '../service/messages';
-import { RateLimitConfig } from '../types/CommandTypes';
 import { createDecorator } from './index';
 /**
  * A decorator to restrict commands to group chats.
@@ -14,7 +13,6 @@ export function RestrictToGroupChats() {
     try {
       if (chat.type === 'supergroup' || chat.type === 'group') {
         await next();
-        return;
       } else if (chat.type === 'private') {
         await reply.textReply('This command can only be used in group chats.');
         close();
