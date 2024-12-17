@@ -69,10 +69,10 @@ export class ServiceProvider {
       const client = await this.getPoolClint();
       await client.query('SELECT NOW()');
       client.release();
-      console.log('Database is healthy.');
+      logger.info('Database is healthy.');
       return true;
     } catch (err: any) {
-      console.error('Database health check failed:', err.message);
+      logger.error('Database health check failed:', err.message);
       return false;
     }
   }
