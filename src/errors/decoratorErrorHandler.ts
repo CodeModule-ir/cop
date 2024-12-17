@@ -1,6 +1,8 @@
 import { GrammyError } from 'grammy';
 import logger from '../utils/logger';
-
+export function isGrammyError(error: any): error is GrammyError {
+  return error && error.error_code !== undefined && error.description !== undefined;
+}
 export function handleDecoratorError(error: any) {
   if (error instanceof GrammyError) {
     handleGrammyError(error);

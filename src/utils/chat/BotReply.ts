@@ -8,36 +8,23 @@ export class BotReply {
   constructor(ctx: Context) {
     this.ctx = ctx;
   }
-  /**
-   * Sends a generic reply without any special formatting.
-   * @param message - The message to send.
-   */
   @Catch()
   async send(message: string): Promise<void> {
     await this.ctx.reply(message);
   }
   async sendToTopic(message: string, topicId: number) {
     await this.ctx.api.sendMessage(this.ctx.chat!.id, message, {
-      reply_to_message_id: undefined, // Not replying to any specific message
+      reply_to_message_id: undefined,
       message_thread_id: topicId, // The thread ID for the forum topic
     });
   }
-  /**
-   * Sends a plain text reply.
-   * @param message - The plain text message to send.
-   * @param options - Additional options such as reply markup.
-   */
   @Catch()
   async textReply(message: string, options: { reply_markup?: InlineKeyboard } = {}): Promise<void> {
     await this.ctx.reply(message, {
       reply_markup: options.reply_markup,
-      reply_to_message_id: this.ctx.message?.message_id, // Corrected the key to `reply_to_message_id`
+      reply_to_message_id: this.ctx.message?.message_id,
     });
   }
-  /**
-   * Sends a plain text reply to a specific message.
-   * @param message - The message to send.
-   */
   @Catch()
   async replyToMessage(message: string): Promise<void> {
     await this.ctx.reply(message, {
@@ -47,11 +34,6 @@ export class BotReply {
       },
     });
   }
-  /**
-   * Sends a reply with Markdown formatting.
-   * @param message - Markdown message to send.
-   * @param replyToMessage - Whether to reply to the user's message.
-   */
   @Catch()
   async markdownReply(message: string): Promise<void> {
     await this.ctx.reply(message, {
@@ -61,12 +43,6 @@ export class BotReply {
       },
     });
   }
-
-  /**
-   * Sends a reply with HTML formatting.
-   * @param message - HTML formatted message to send.
-   * @param replyToMessage - Whether to reply to the user's message.
-   */
   @Catch()
   async htmlReply(message: string): Promise<void> {
     await this.ctx.reply(message, {

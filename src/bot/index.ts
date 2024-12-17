@@ -2,14 +2,11 @@ import { Bot, webhookCallback } from 'grammy';
 import type { Context } from 'grammy';
 import Config from '../config';
 import { GenerateCommand } from './handlers/GenerateCommands';
-import { GeneralCommands } from './commands/genearl/GeneralCommands';
-import { UserCommands } from './commands/user/UserCommands';
-import { AdminCommands } from './commands/admin/AdminCommands';
 import { SaveUserData } from '../decorators/Database';
 import { MessageValidator } from '../decorators/Context';
+import * as express from 'express';
 import { BotReply } from '../utils/chat/BotReply';
 import logger from '../utils/logger';
-import * as express from 'express';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -53,25 +50,13 @@ export class CopBot {
         app.use(express.json());
         app.post(webhookPath, async (req, res) => {
           res.sendStatus(200);
-          const MAX_RETRIES = 3;
-          let retryCount = 0;
-
-          const processWebhook = async () => {
+          setImmediate(async () => {
             try {
-              // Process the webhook
               await webhookCallback(this._bot, 'express')(req, res);
-            } catch (err) {
-              if (retryCount < MAX_RETRIES) {
-                retryCount++;
-                const delay = Math.min(1000 * 2 ** retryCount, 30000);
-                await new Promise((resolve) => setTimeout(resolve, delay));
-                await processWebhook();
-              } else {
-                console.error('Max retries reached. Webhook processing failed.');
-              }
+            } catch (error: any) {
+              logger.error(`Error processing update:${error}`);
             }
-          };
-          await processWebhook();
+          });
         });
 
         const port = process.env.PORT || 3000;
@@ -85,7 +70,7 @@ export class CopBot {
           const trySetWebhook = async () => {
             try {
               if (!webhookInfo.url) {
-                logger.info('Webhook is not set. Trying to set the webhook...');
+                logger.warn('Webhook is not set. Trying to set the webhook...');
                 await this._bot.api.setWebhook(webhookURL);
                 webhookInfo = await this._bot.api.getWebhookInfo();
                 logger.info(`Webhook set: ${webhookInfo.url}`);
@@ -97,7 +82,7 @@ export class CopBot {
               logger.error(`Error setting webhook (Attempt ${retries}): ${error.message}`);
               if (retries < MAX_RETRIES) {
                 const delay = Math.min(1000 * 2 ** retries, 30000); // Exponential backoff
-                logger.info(`Retrying in ${delay / 1000} seconds...`);
+                logger.warn(`Retrying in ${delay / 1000} seconds...`);
                 await new Promise((resolve) => setTimeout(resolve, delay));
                 await trySetWebhook();
               } else {
@@ -130,48 +115,11 @@ export class CopBot {
     this._bot.catch((err) => {
       console.error('Middleware error:', err);
     });
-
     await this.start();
     logger.info('Bot is running');
   }
-  @SaveUserData()
   @MessageValidator()
-  async handleMessage(ctx: Context) {
-    try {
-      if (!ctx.message?.text) {
-        logger.warn('Message text is undefined');
-        return;
-      }
-      const messageText = ctx.message?.text?.toLowerCase().trim();
-      const reply = new BotReply(ctx);
-      const user = ctx.message?.reply_to_message?.from;
-
-      if (messageText === 'ask' && user) {
-        const name = user.username ? `@${user.username}` : user.first_name;
-        const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
-        await reply.textReply(responseMessage);
-      }
-
-      if (ctx.message?.entities) {
-        const commandEntity = ctx.message.entities.find((entity) => entity.type === 'bot_command');
-        if (commandEntity) {
-          let command = messageText?.split(' ')[0]?.replace('/', '')!;
-          logger.debug(`Processing command: ${command} `);
-          command = command.includes('@') ? command.split('@')[0] : command;
-          const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
-          if (typeof handler === 'function') {
-            await handler(ctx);
-            return;
-          }
-        }
-      }
-    } catch (err: any) {
-      logger.error('Error in handleMessage:', err.message);
-      const reply = new BotReply(ctx);
-      await reply.textReply('An unexpected error occurred.');
-    }
-  }
-
+  async handleMessage(ctx: Context) {}
   @SaveUserData()
   async handleJoinNewChat(ctx: Context) {
     if (!ctx.message?.text) {

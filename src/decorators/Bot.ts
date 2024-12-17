@@ -22,6 +22,7 @@ export function ReplyToBot() {
       const randomMessage = jokeMessage();
       await reply.textReply(randomMessage);
       close();
+      return;
     }
     return next();
   });

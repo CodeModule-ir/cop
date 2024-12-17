@@ -18,12 +18,12 @@ async function main() {
 
   // Graceful shutdown
   process.on('SIGTERM', async () => {
-    logger.info('SIGTERM signal received. Shutting down...');
+    logger.warn('SIGTERM signal received. Shutting down...');
     await shutdown(botInstance);
   });
 
   process.on('SIGINT', async () => {
-    logger.info('SIGINT signal received. Shutting down...');
+    logger.warn('SIGINT signal received. Shutting down...');
     await shutdown(botInstance);
   });
 
