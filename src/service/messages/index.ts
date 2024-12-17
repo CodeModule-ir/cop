@@ -2,6 +2,8 @@ import { Context } from 'grammy';
 import { ServiceProvider } from '../database/ServiceProvider';
 import { BotReply } from '../../utils/chat/BotReply';
 import { ChatInfo } from '../../utils/chat/ChatInfo';
+import logger from '../../utils/logger';
+import { MessageEntity } from 'grammy/types';
 export class MessagesService {
   private _reply: BotReply;
   private _chatInfo: ChatInfo;
@@ -9,7 +11,16 @@ export class MessagesService {
     this._reply = new BotReply(_ctx);
     this._chatInfo = new ChatInfo(_ctx);
   }
+  private isText(): boolean {
+    if (!this._ctx.message?.text) {
+      logger.warn('Message text is undefined');
+      return false;
+    }
+    return true;
+  }
+
   async isCode() {
+    if (!this.isText()) return;
     const entities = this._ctx.message!.entities;
     entities?.forEach((e) => {
       if (e.type === 'pre' && e.language) {
@@ -18,6 +29,7 @@ export class MessagesService {
     });
   }
   async isNewUser() {
+    if (!this.isText()) return;
     if (this._ctx.message?.new_chat_members?.length! > 0) {
       const users = this._ctx.message!.new_chat_members!;
       const chat = this._ctx.chat;
@@ -39,8 +51,8 @@ export class MessagesService {
       }
     }
   }
-  Spam() {}
   async userIsLeftGroup() {
+    if (!this.isText()) return;
     if (this._ctx.message?.left_chat_member) {
       const user = this._ctx.message.left_chat_member!;
 
@@ -53,6 +65,7 @@ export class MessagesService {
   }
 
   async checkAndHandleBlacklistedWords() {
+    if (!this.isText()) return;
     const groupId = this._ctx.chat?.id;
     if (!groupId) {
       return;
@@ -153,5 +166,70 @@ We appreciate your understanding and cooperation in keeping the community welcom
       warningMessage += `\n\n⚠️ Forbidden word detected on line ${lineNumber}.`;
     }
     return warningMessage;
+  }
+  async askCommand() {
+    if (!this.isText()) return;
+    const messageText = this._ctx.message?.text?.toLowerCase().trim();
+    if (messageText !== 'ask' || !this._ctx.message?.reply_to_message?.from) {
+      return;
+    }
+    const user = this._ctx.message?.reply_to_message?.from!;
+    const name = user.username ? `@${user.username}` : user.first_name;
+    const responseMessage = `Dear ${name}, ask your question correctly.\nIf you want to know how to do this, read the article below:\ndontasktoask.ir`;
+    logger.debug(`Sending ask command response to ${name}`);
+    await this._reply.textReply(responseMessage);
+  }
+  async executeCommand() {
+    if (!this.isText()) return;
+    const isCommand = this.checkIfCommand();
+    if (!isCommand) {
+      logger.debug('Non-command message received. Ignoring.');
+      return;
+    }
+    const messageText = this._ctx.message?.text?.toLowerCase().trim()!;
+    const command = this.parseCommand(messageText, this._ctx.message?.entities)!;
+    logger.debug(`Attempting to execute the command: ${command}`);
+    const [GeneralCommands, UserCommands, AdminCommands] = await Promise.all([
+      import('../../bot/commands/genearl/GeneralCommands').then((module) => module.GeneralCommands),
+      import('../../bot/commands/user/UserCommands').then((module) => module.UserCommands),
+      import('../../bot/commands/admin/AdminCommands').then((module) => module.AdminCommands),
+    ]);
+    const handler = (GeneralCommands as any)[command] || (UserCommands as any)[command] || (AdminCommands as any)[command];
+
+    if (typeof handler === 'function') {
+      try {
+        await handler(this._ctx);
+      } catch (err: any) {
+        logger.error(`Handler for command "${command}" threw an error: ${err.message}`);
+        await this._reply.textReply('An error occurred while processing your command.');
+      }
+    } else {
+      logger.warn(`No handler found for command: ${command}`);
+      await this._reply.textReply(`Unknown command: ${command}`);
+    }
+  }
+  private checkIfCommand(): boolean {
+    const isCommand = this._ctx.message?.entities?.some((entity) => entity.type === 'bot_command');
+    if (!isCommand) {
+      logger.debug('Message does not contain a command entity.');
+      return false;
+    }
+    return true;
+  }
+  private parseCommand(messageText: string, entities?: MessageEntity[]): string | null {
+    if (entities) {
+      const commandEntity = entities.find((entity) => entity.type === 'bot_command');
+
+      if (commandEntity) {
+        let command = messageText.split(' ')[0].replace('/', '');
+        command = command.includes('@') ? command.split('@')[0] : command;
+
+        logger.debug(`Parsed command: ${command}`);
+        return command;
+      }
+    }
+
+    logger.warn('No command entity found in the message.');
+    return null;
   }
 }

@@ -1,8 +1,8 @@
 import { BotReply } from '../utils/chat/BotReply';
 import { MessagesService } from '../service/messages';
-import { createDecorator } from '.';
 import { RateLimitConfig } from '../types/CommandTypes';
 import { RateLimiter } from '../utils/RateLimiter';
+import { createDecorator } from './index';
 /**
  * A decorator to restrict commands to group chats.
  * Provides user feedback for invalid chat types.
@@ -36,8 +36,15 @@ export function RestrictToGroupChats() {
 export function MessageValidator() {
   return createDecorator(async (ctx, next) => {
     const messageService = new MessagesService(ctx);
-    await Promise.all([messageService.isNewUser(), messageService.isCode(), messageService.checkAndHandleBlacklistedWords(), messageService.userIsLeftGroup()]);
-    next();
+    await Promise.all([
+      messageService.isNewUser(),
+      messageService.isCode(),
+      messageService.checkAndHandleBlacklistedWords(),
+      messageService.userIsLeftGroup(),
+      messageService.askCommand(),
+      messageService.executeCommand(),
+    ]);
+    await next();
   });
 }
 /**

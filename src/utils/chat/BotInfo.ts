@@ -1,5 +1,4 @@
 import { Context } from 'grammy';
-
 export class BotInfo {
   constructor(private _ctx: Context) {
     this._ctx = _ctx;
@@ -17,3 +16,4 @@ export class BotInfo {
     return ['administrator', 'creator'].includes(chatMember.status);
   }
 }
+
