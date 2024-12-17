@@ -13,6 +13,10 @@ export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
   private healthCheckInterval: NodeJS.Timeout | null = null;
+  private isProduction = Config.environment === 'production';
+  private webhookPath = `/bot/${Config.token}`;
+  private webhookURL = `${Config.web_hook}${this.webhookPath}`;
+  private mode = this.isProduction ? 'webhook' : 'long-polling';
   private constructor() {
     this._bot = new Bot<Context>(Config.token);
   }
@@ -42,21 +46,15 @@ export class CopBot {
         },
       });
     };
-
-    const isProduction = Config.environment === 'production';
-    const webhookPath = `/bot/${Config.token}`;
-    const webhookURL = `${Config.web_hook}${webhookPath}`;
-    const mode = isProduction ? 'webhook' : 'long-polling';
-
     logger.info(`Environment: ${Config.environment}`);
-    logger.info(`Webhook URL: ${webhookURL}`);
-    logger.info(`Running in ${mode} mode`);
+    logger.info(`Webhook URL: ${this.webhookURL}`);
+    logger.info(`Running in ${this.mode} mode`);
 
-    if (isProduction) {
+    if (this.isProduction) {
       try {
         const app = express();
         app.use(express.json());
-        app.post(webhookPath, async (req, res) => {
+        app.post(this.webhookPath, async (req, res) => {
           res.sendStatus(200);
           try {
             await webhookCallback(this._bot, 'express')(req, res);
@@ -83,8 +81,8 @@ export class CopBot {
         const port = process.env.PORT || 3000;
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
-          await this.setupWebhook(webhookURL);
-          await startBot(mode);
+          await this.setupWebhook(this.webhookURL);
+          await startBot(this.mode);
         });
       } catch (err: any) {
         console.error('Error setting up webhook:', err);
@@ -92,7 +90,7 @@ export class CopBot {
       }
     } else {
       try {
-        await startBot(mode);
+        await startBot(this.mode);
       } catch (err: any) {
         console.error('Error during long-polling mode:', err);
         process.exit(1);
@@ -125,7 +123,12 @@ export class CopBot {
           logger.warn('Database health check failed. Attempting to reconnect...');
           await ServiceProvider.initialize();
         }
-        logger.info('Bot is live');
+        const webhookInfo = await this._bot.api.getWebhookInfo();
+        if (!webhookInfo.url || webhookInfo.url !== this.webhookURL) {
+          logger.warn('Webhook mismatch detected. Resetting webhook...');
+          await this.setupWebhook(this.webhookURL);
+        }
+        logger.info('Health check passed: Bot is live');
       } catch (error: any) {
         logger.error(`Health check failed: ${error.message}`);
       }
