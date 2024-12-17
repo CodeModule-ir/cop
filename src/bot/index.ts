@@ -12,6 +12,7 @@ import { ServiceProvider } from '../service/database/ServiceProvider';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
+  private healthCheckInterval: NodeJS.Timeout | null = null;
   private constructor() {
     this._bot = new Bot<Context>(Config.token);
   }
@@ -24,6 +25,9 @@ export class CopBot {
   }
   // Stop the bot
   async stop(): Promise<void> {
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+    }
     await this._bot.stop();
   }
 
@@ -32,7 +36,7 @@ export class CopBot {
     const startBot = async (mode: string) => {
       await this._bot.start({
         drop_pending_updates: true,
-        timeout: 60,
+        timeout: 300,
         onStart: (botInfo) => {
           logger.info(`Bot started in ${mode} mode! Username: ${botInfo.username}`);
         },
@@ -79,37 +83,7 @@ export class CopBot {
         const port = process.env.PORT || 3000;
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
-          let webhookInfo = await this._bot.api.getWebhookInfo();
-          logger.info(`Current Webhook: ${webhookInfo.url}`);
-          const MAX_RETRIES = 5;
-          let retries = 0;
-
-          const trySetWebhook = async () => {
-            try {
-              if (!webhookInfo.url) {
-                logger.warn('Webhook is not set. Trying to set the webhook...');
-                await this._bot.api.setWebhook(webhookURL, { drop_pending_updates: true });
-                webhookInfo = await this._bot.api.getWebhookInfo();
-                logger.info(`Webhook set: ${webhookInfo.url}`);
-              } else {
-                logger.info('Webhook is already set.');
-              }
-            } catch (error: any) {
-              retries++;
-              logger.error(`Error setting webhook (Attempt ${retries}): ${error.message}`);
-              if (retries < MAX_RETRIES) {
-                const delay = Math.min(1000 * 2 ** retries, 30000); // Exponential backoff
-                logger.warn(`Retrying in ${delay / 1000} seconds...`);
-                await new Promise((resolve) => setTimeout(resolve, delay));
-                await trySetWebhook();
-              } else {
-                logger.error('Max retries reached. Could not set webhook.');
-                process.exit(1); // Exit after maximum retries reached
-              }
-            }
-          };
-
-          await trySetWebhook();
+          await this.setupWebhook(webhookURL);
           await startBot(mode);
         });
       } catch (err: any) {
@@ -137,15 +111,38 @@ export class CopBot {
     this._bot.catch(async (error: BotError<Context>) => {
       if (error.message.includes('timeout')) {
         await error.ctx.reply('The request took too long to process. Please try again later.');
+        await this.start();
       }
       logger.error(`Bot error occurred: ${error.error}`);
     });
     await this.start();
+    // Set up periodic health checks and keep-alives
+    this.healthCheckInterval = setInterval(async () => {
+      try {
+        await this._bot.api.getMe(); // Ping Telegram to keep the connection alive
+        const isHealthy = await ServiceProvider.getInstance().healthCheck();
+        if (!isHealthy) {
+          logger.warn('Database health check failed. Attempting to reconnect...');
+          await ServiceProvider.initialize();
+        }
+        logger.info('Bot is live');
+      } catch (error: any) {
+        logger.error(`Health check failed: ${error.message}`);
+      }
+    }, 5 * 60 * 1000); // Every 5 minutes
     logger.info('Bot is running');
   }
   @MessageValidator()
   @SaveUserData()
-  async handleMessage(ctx: Context) {}
+  async handleMessage(ctx: Context) {
+    try {
+      const client = await ServiceProvider.getInstance().getConnectionPool().getClient();
+      client.release();
+    } catch (err: any) {
+      logger.error(`Database error in handleMessage: ${err.message}`);
+      await ctx.reply('Error processing your request. Please try again later.');
+    }
+  }
   @SaveUserData()
   async handleJoinNewChat(ctx: Context) {
     if (!ctx.message?.text) {
@@ -165,5 +162,39 @@ I'm here to help out and make sure everyone has a good time. Are you curious abo
     `;
     await reply.textReply(message);
     return;
+  }
+  private async setupWebhook(webhookURL: string): Promise<void> {
+    const MAX_RETRIES = 5;
+    let retries = 0;
+
+    while (retries < MAX_RETRIES) {
+      try {
+        // Delete existing webhook to ensure a clean state
+        await this._bot.api.deleteWebhook({ drop_pending_updates: true });
+
+        // Set the new webhook
+        const setWebhookResponse = await this._bot.api.setWebhook(webhookURL, { drop_pending_updates: true });
+        logger.info(`Set Webhook Response: ${JSON.stringify(setWebhookResponse, null, 2)}`);
+
+        // Verify webhook was set
+        const webhookInfo = await this._bot.api.getWebhookInfo();
+        logger.info(`Webhook Info: ${JSON.stringify(webhookInfo, null, 2)}`);
+
+        if (webhookInfo.url === webhookURL) {
+          logger.info('Webhook set successfully.');
+          return;
+        } else {
+          logger.warn(`Webhook URL mismatch. Expected: ${webhookURL}, Got: ${webhookInfo.url}`);
+        }
+      } catch (error: any) {
+        retries++;
+        logger.error(`Error setting webhook (Attempt ${retries}): ${error.message}`);
+        if (retries === MAX_RETRIES) {
+          logger.error('Max retries reached. Could not set webhook.');
+          process.exit(1);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** retries));
+      }
+    }
   }
 }
