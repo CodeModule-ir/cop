@@ -72,6 +72,9 @@ export class ConnectionPool {
     return new Pool({
       connectionString,
       ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
+      connectionTimeoutMillis: 500,
+      max: 10,
+      idleTimeoutMillis: 500,
     });
   }
 }

@@ -28,11 +28,11 @@ async function main() {
   });
 
   process.on('unhandledRejection', (reason) => {
-    console.error('Unhandled Rejection:', reason);
+    logger.error(`${reason}:`, 'Unhandled Rejection');
   });
 
-  process.on('uncaughtException', async (err) => {
-    console.error('Uncaught Exception:', err);
+  process.on('uncaughtException', async (err: any) => {
+    logger.error(`${err}:`, 'Uncaught Exception');
     await shutdown(botInstance, 1);
   });
 }
@@ -41,7 +41,7 @@ async function shutdown(botInstance: CopBot, exitCode = 0) {
   try {
     const db = ServiceProvider.getInstance();
     await db.close();
-    logger.info('Database closed.');
+    logger.warn('Database closed.');
     await botInstance.stop();
   } catch (err) {
     console.error('Error during shutdown:', err);
