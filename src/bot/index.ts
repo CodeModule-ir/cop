@@ -1,4 +1,4 @@
-import { Bot, webhookCallback } from 'grammy';
+import { Bot, webhookCallback, BotError } from 'grammy';
 import type { Context } from 'grammy';
 import Config from '../config';
 import { GenerateCommand } from './handlers/GenerateCommands';
@@ -7,6 +7,7 @@ import { MessageValidator } from '../decorators/Context';
 import * as express from 'express';
 import { BotReply } from '../utils/chat/BotReply';
 import logger from '../utils/logger';
+import { limit } from '@grammyjs/ratelimiter';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -29,6 +30,8 @@ export class CopBot {
   async start(): Promise<void> {
     const startBot = async (mode: string) => {
       await this._bot.start({
+        drop_pending_updates: true,
+        timeout: 60,
         onStart: (botInfo) => {
           logger.info(`Bot started in ${mode} mode! Username: ${botInfo.username}`);
         },
@@ -93,7 +96,6 @@ export class CopBot {
           };
 
           await trySetWebhook();
-          await startBot(mode);
         });
       } catch (err: any) {
         console.error('Error setting up webhook:', err);
@@ -112,13 +114,19 @@ export class CopBot {
     new GenerateCommand(this._bot).generate();
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
-    this._bot.catch((err) => {
-      console.error('Middleware error:', err);
+    this._bot.catch((error: BotError<Context>) => {
+      logger.error(`Bot error occurred: ${error.error}`);
     });
+    this._bot.use(
+      limit({
+        onLimitExceeded: (ctx) => ctx.reply('Too many requests! Please slow down.'),
+      })
+    );
     await this.start();
     logger.info('Bot is running');
   }
   @MessageValidator()
+  @SaveUserData()
   async handleMessage(ctx: Context) {}
   @SaveUserData()
   async handleJoinNewChat(ctx: Context) {
