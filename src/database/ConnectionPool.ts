@@ -23,10 +23,7 @@ export class ConnectionPool {
       if (error.code === '3D000') {
         console.log(`Database does not exist. Creating database ${Config.database.databaseName}...`);
         await this.createDatabase();
-        await this._pool.end(); // End the current pool connection
-        const newConnectionString = this.getConnectionString();
-        this._pool = this.initializePool(newConnectionString);
-        console.log('Retrying connection after creating the database...');
+        await this.reinitializePool();
         await this._pool.connect();
       } else {
         console.error('Unexpected error connecting to the database:', error);
@@ -72,9 +69,15 @@ export class ConnectionPool {
     return new Pool({
       connectionString,
       ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
-      connectionTimeoutMillis: 500,
-      max: 10,
-      idleTimeoutMillis: 500,
+      connectionTimeoutMillis: 60000,
+      max: 15,
+      idleTimeoutMillis: 60000,
     });
+  }
+  private async reinitializePool() {
+    await this._pool.end(); // Close old connections
+    const newConnectionString = this.getConnectionString();
+    this._pool = this.initializePool(newConnectionString);
+    console.warn('Connection pool reinitialized.');
   }
 }

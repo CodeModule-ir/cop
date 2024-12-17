@@ -37,9 +37,9 @@ export class AdminCommands {
     const { groupId, userId } = validationResult;
     const isApproved = await ApprovedService.updateApproved(groupId, userId);
     if (!isApproved) {
-      await reply.textReply(`This user has already been approved.`);
+      return await reply.textReply(`This user has already been approved.`);
     } else {
-      await reply.textReply(
+      return await reply.textReply(
         `The user with ID ${userId} has been successfully approved to join the group ${groupId}. You can view the list of approved users using /approvedlist, and manage disapproved users with /disapproved.`
       );
     }
@@ -63,9 +63,9 @@ export class AdminCommands {
     const { groupId, userId } = validationResult;
     const disapprovedUser = await ApprovedService.updateDisapproved(groupId, userId);
     if (!disapprovedUser) {
-      await reply.textReply('This user is not currently approved, so they cannot be disapproved.');
+      return await reply.textReply('This user is not currently approved, so they cannot be disapproved.');
     } else {
-      await reply.textReply(`User with ID ${userId} has been successfully disapproved and removed from group ${groupId}.`);
+      return await reply.textReply(`User with ID ${userId} has been successfully disapproved and removed from group ${groupId}.`);
     }
   }
 
@@ -90,7 +90,7 @@ export class AdminCommands {
     const approvedListMessage = approvedUsers.map((user) => `• **ID:** ${user.telegram_id}\n  **Name:** ${user.first_name}`).join('\n\n');
 
     // Send a formatted message with the list of approved users
-    await reply.markdownReply(`Here is the list of approved users in this group:\n\n${approvedListMessage}`);
+    return await reply.markdownReply(`Here is the list of approved users in this group:\n\n${approvedListMessage}`);
   }
   /** Ban Commands */
   @RestrictToGroupChats()
@@ -158,9 +158,9 @@ export class AdminCommands {
     const { warningRemoved, warnings } = await WarnService.removeWarn(ctx);
 
     if (warningRemoved) {
-      await reply.textReply(`User ${user.first_name} now has ${warnings} warnings after the removal.`);
+      return await reply.textReply(`User ${user.first_name} now has ${warnings} warnings after the removal.`);
     } else {
-      await reply.textReply('User or group not found or no warnings to remove.');
+      return await reply.textReply('User or group not found or no warnings to remove.');
     }
   }
   @RestrictToGroupChats()
@@ -190,7 +190,7 @@ export class AdminCommands {
   static async warnslist(ctx: Context) {
     const reply = new BotReply(ctx);
     const warns = await WarnService.getAllWarns(ctx);
-    await reply.markdownReply(`${warns}`);
+    return await reply.markdownReply(`${warns}`);
   }
   /** Mute Commands */
   @RestrictToGroupChats()
@@ -228,7 +228,7 @@ export class AdminCommands {
   static async grant(ctx: Context) {
     const reply = new BotReply(ctx);
     const grantUser = await AdminService.grant(ctx);
-    await reply.textReply(grantUser);
+    return await reply.textReply(grantUser);
   }
   @RestrictToGroupChats()
   @ReplyToBot()
@@ -240,7 +240,7 @@ export class AdminCommands {
   static async revoke(ctx: Context) {
     const reply = new BotReply(ctx);
     const revokeUser = await AdminService.revoke(ctx);
-    await reply.textReply(revokeUser);
+    return await reply.textReply(revokeUser);
   }
 
   /** BlackList Command */
@@ -277,11 +277,10 @@ Group Type: ${group?.type || 'Unknown'}
 
     // Send the group info along with the blacklist
     if (blackList.length === 0) {
-      await ctx.api.sendMessage(userId, `${groupInfo}\nThe blacklist is currently empty.`);
+      return await ctx.api.sendMessage(userId, `${groupInfo}\nThe blacklist is currently empty.`);
     } else {
-      await ctx.api.sendMessage(userId, `${groupInfo}\nBlacklist:\n${blackList.join('\n')}`);
+      return await ctx.api.sendMessage(userId, `${groupInfo}\nBlacklist:\n${blackList.join('\n')}`);
     }
-    return;
   }
 
   /** Add a Word to the Blacklist */
@@ -305,7 +304,7 @@ Group Type: ${group?.type || 'Unknown'}
       return;
     }
     await BlackListService.add(groupId, word, ctx);
-    await reply.sendToTopic('Blacklist has been updated.', ctx.message?.reply_to_message?.message_thread_id!);
+    return await reply.sendToTopic('Blacklist has been updated.', ctx.message?.reply_to_message?.message_thread_id!);
   }
 
   /** Remove the Last Word from the Blacklist */
@@ -325,7 +324,7 @@ Group Type: ${group?.type || 'Unknown'}
     const groupId = ctx.chat?.id!;
     const wordToRemove = ctx.message?.text?.split(' ')[1];
     await BlackListService.remove(groupId, ctx, wordToRemove);
-    await reply.sendToTopic('Blacklist has been updated.', ctx.message?.reply_to_message?.message_thread_id!);
+    return await reply.sendToTopic('Blacklist has been updated.', ctx.message?.reply_to_message?.message_thread_id!);
   }
 
   /** Clear the Entire Blacklist */
@@ -344,7 +343,7 @@ Group Type: ${group?.type || 'Unknown'}
     const reply = new BotReply(ctx);
     const groupId = ctx.chat?.id!;
     await BlackListService.clear(groupId, ctx);
-    await reply.sendToTopic('The blacklist has been cleared.', ctx.message?.reply_to_message?.message_thread_id!);
+    return await reply.sendToTopic('The blacklist has been cleared.', ctx.message?.reply_to_message?.message_thread_id!);
   }
   /** Pin Command */
   @RestrictToGroupChats()
@@ -371,7 +370,7 @@ Group Type: ${group?.type || 'Unknown'}
     const groupId = ctx.chat?.id!;
     const messageId = ctx.message?.reply_to_message?.message_id!;
     await ctx.api.unpinChatMessage(groupId, messageId);
-    await reply.textReply('The pinned message has been unpinned.');
+    return await reply.textReply('The pinned message has been unpinned.');
   }
   /** Purge Command */
   @RestrictToGroupChats()
@@ -417,7 +416,7 @@ Group Type: ${group?.type || 'Unknown'}
     };
 
     await deleteMessagesInBatches(messagesToDelete);
-    await reply.send('Deleting done.');
+    return await reply.send('Deleting done.');
   }
   /** Group Setting Command */
   @RestrictToGroupChats()
@@ -459,6 +458,6 @@ Group Type: ${group?.type || 'Unknown'}
     }
 
     // Default response if no valid action is detected
-    await reply.textReply('Invalid usage of the /welcome command. Use "/welcome" to view the current message, "/welcome r" to remove it, or "/welcome [message]" to set a new welcome message.');
+    return await reply.textReply('Invalid usage of the /welcome command. Use "/welcome" to view the current message, "/welcome r" to remove it, or "/welcome [message]" to set a new welcome message.');
   }
 }
