@@ -53,7 +53,7 @@ export class BlackListService {
       }
     } else {
       // Remove the specified word
-      group.black_list = group.black_list.filter((item) => item !== word);
+      group.black_list = group.black_list.filter((item:string) => item !== word);
     }
     await groupService.update({
       ...group,

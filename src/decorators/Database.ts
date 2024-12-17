@@ -26,8 +26,6 @@ export function EnsureUserAndGroup(userSource: 'from' | 'reply' = 'reply') {
   return createDecorator(async (ctx: Context, next, close) => {
     try {
       const service = ServiceProvider.getInstance();
-      const userService = await service.getUserService();
-      const groupService = await service.getGroupService();
       const userContext = userSource === 'reply' && ctx.message?.reply_to_message?.from && !ctx.message.reply_to_message.forum_topic_created ? ctx.message.reply_to_message.from : ctx.from;
       const userId = userContext?.id;
       const groupId = ctx.chat?.id;
@@ -41,14 +39,7 @@ export function EnsureUserAndGroup(userSource: 'from' | 'reply' = 'reply') {
         id: userId,
         username: userContext!.username!,
       };
-      let user = await userService.getByTelegramId(userId);
-      if (!user) {
-        user = await userService.save(userData);
-      }
-      let group = await groupService.getByGroupId(groupId);
-      if (!group) {
-        group = await groupService.save(ctx);
-      }
+      await Promise.all([service.getUserService().then((userService) => userService.save(userData)), service.getGroupService().then((groupService) => groupService.save(ctx))]);
       await next();
     } catch (error) {
       console.error('Error in EnsureUserAndGroup decorator:', error);

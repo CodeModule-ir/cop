@@ -47,9 +47,6 @@ export class ConnectionPool {
     try {
       await client.query(`CREATE DATABASE "${databaseName}"`);
       console.log(`Database "${databaseName}" created successfully.`);
-    } catch (error: any) {
-      console.error('Failed to create database:', error.message);
-      throw error; // Re-throw the error for better logging and troubleshooting
     } finally {
       await client.end();
     }
@@ -69,9 +66,10 @@ export class ConnectionPool {
     return new Pool({
       connectionString,
       ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
-      connectionTimeoutMillis: 60000,
-      max: 15,
-      idleTimeoutMillis: 60000,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 30000,
+      keepAlive: true,
     });
   }
   private async reinitializePool() {

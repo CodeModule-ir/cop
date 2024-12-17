@@ -5,6 +5,7 @@ import { GroupService } from '../../database/models/Group';
 import { UserService } from '../../database/models/User';
 import { GroupRuleService } from '../../database/models/GroupRule';
 import { WarningDatabaseService } from '../../database/models/Warning';
+import logger from '../../utils/logger';
 
 export class ServiceProvider {
   private static instance: ServiceProvider;
@@ -40,20 +41,28 @@ export class ServiceProvider {
     return await this._connectionPool.getClient();
   }
   async getGroupService() {
-    const client = await this.getPoolClint();
-    return new GroupService(client);
+    return await this.retryConnect(async () => {
+      const client = await this.getPoolClint();
+      return new GroupService(client);
+    });
   }
   async getUserService() {
-    const client = await this.getPoolClint();
-    return new UserService(client);
+    return await this.retryConnect(async () => {
+      const client = await this.getPoolClint();
+      return new UserService(client);
+    });
   }
   async getRulesService() {
-    const client = await this.getPoolClint();
-    return new GroupRuleService(client);
+    return await this.retryConnect(async () => {
+      const client = await this.getPoolClint();
+      return new GroupRuleService(client);
+    });
   }
   async getWarnsService() {
-    const clint = await this.getPoolClint();
-    return new WarningDatabaseService(clint);
+    return await this.retryConnect(async () => {
+      const clint = await this.getPoolClint();
+      return new WarningDatabaseService(clint);
+    });
   }
   async healthCheck(): Promise<boolean> {
     try {
@@ -66,5 +75,18 @@ export class ServiceProvider {
       console.error('Database health check failed:', err.message);
       return false;
     }
+  }
+  private async retryConnect(fn: Function, retries = 3, delay = 5000) {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        return await fn();
+      } catch (error: any) {
+        logger.error(`Database Retry Attempt ${attempt + 1}: ${error.message}`, 'Database');
+        if (attempt < retries - 1) {
+          await new Promise((res) => setTimeout(res, delay));
+        }
+      }
+    }
+    throw new Error('Failed to connect to the database after retries');
   }
 }

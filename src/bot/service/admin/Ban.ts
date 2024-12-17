@@ -19,8 +19,8 @@ export class BanService {
       // Remove the user from the group's approved_users and members arrays
       const updatedGroup = {
         ...group,
-        approved_users: group.approved_users.filter((id) => Number(id) !== userId),
-        members: group.members.filter((id) => Number(id) !== userId),
+        approved_users: group.approved_users.filter((id: number) => Number(id) !== userId),
+        members: group.members.filter((id: number) => Number(id) !== userId),
       };
       await groupService.update(updatedGroup);
       await userService.delete(userId);

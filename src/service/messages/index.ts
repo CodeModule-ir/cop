@@ -90,7 +90,7 @@ export class MessagesService {
       return;
     }
     const blacklist = group.black_list;
-    const isForbidden = blacklist.some((word) => {
+    const isForbidden = blacklist.some((word: string) => {
       const regex = new RegExp(`(^|\\s)${word}($|\\s|[.,!?;])`, 'i'); // \b is a word boundary, 'i' is for case-insensitive matching
       return regex.test(messageText);
     });
