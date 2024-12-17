@@ -140,8 +140,6 @@ export class WarnService {
         });
       }
     }
-    console.log('usersWithWarnings', JSON.stringify(usersWithWarnings, null, 2));
-
     // Generate structured output
     let output = `**Group Warning Report**\n`;
     output += `Group ID: ${groupId}\n\n`;
