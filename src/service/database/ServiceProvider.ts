@@ -58,6 +58,7 @@ export class ServiceProvider {
   async healthCheck(): Promise<boolean> {
     try {
       const client = await this.getPoolClint();
+      await client.query('SELECT NOW()');
       client.release();
       console.log('Database is healthy.');
       return true;

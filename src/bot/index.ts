@@ -62,8 +62,19 @@ export class CopBot {
           }
         });
         app.get('/health', async (_, res) => {
-          const isHealthy = await ServiceProvider.getInstance().healthCheck();
-          res.status(isHealthy ? 200 : 500).send(isHealthy ? 'OK' : 'Database not reachable');
+          try {
+            const isHealthy = await ServiceProvider.getInstance().healthCheck();
+            if (isHealthy) {
+              res.status(200).send('Database is healthy');
+              logger.info('Database connection is healthy.');
+            } else {
+              res.status(500).send('Database not reachable');
+              logger.error('Database not reachable.');
+            }
+          } catch (error: any) {
+            res.status(500).send('Database connection error');
+            logger.error(`Database health check failed: ${error.message}`);
+          }
         });
         const port = process.env.PORT || 3000;
         app.listen(port, async () => {

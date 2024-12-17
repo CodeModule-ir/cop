@@ -3,7 +3,7 @@ import { User } from '../../types/database/TablesTypes';
 import { DatabaseService } from '../service/Database';
 export class UserService {
   private _db: DatabaseService;
-  constructor(private _client: PoolClient) {
+  constructor(_client: PoolClient) {
     this._db = new DatabaseService(_client);
   }
   async create(user: Omit<User, 'id'>): Promise<User> {
