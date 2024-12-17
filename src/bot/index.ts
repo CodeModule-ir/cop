@@ -52,7 +52,6 @@ export class CopBot {
         const app = express();
         app.use(express.json());
         app.post(webhookPath, async (req, res) => {
-          res.sendStatus(200);
           setImmediate(async () => {
             try {
               await webhookCallback(this._bot, 'express')(req, res);
@@ -74,7 +73,7 @@ export class CopBot {
             try {
               if (!webhookInfo.url) {
                 logger.warn('Webhook is not set. Trying to set the webhook...');
-                await this._bot.api.setWebhook(webhookURL);
+                await this._bot.api.setWebhook(webhookURL, { max_connections: 100 });
                 webhookInfo = await this._bot.api.getWebhookInfo();
                 logger.info(`Webhook set: ${webhookInfo.url}`);
               } else {
@@ -114,7 +113,10 @@ export class CopBot {
     new GenerateCommand(this._bot).generate();
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
-    this._bot.catch((error: BotError<Context>) => {
+    this._bot.catch(async (error: BotError<Context>) => {
+      if (error.message.includes('timeout')) {
+        await error.ctx.reply('The request took too long to process. Please try again later.');
+      }
       logger.error(`Bot error occurred: ${error.error}`);
     });
     this._bot.use(
