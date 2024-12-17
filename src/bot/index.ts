@@ -57,6 +57,7 @@ export class CopBot {
               await webhookCallback(this._bot, 'express')(req, res);
             } catch (error: any) {
               logger.error(`Error processing update:${error}`);
+              return;
             }
           });
         });
