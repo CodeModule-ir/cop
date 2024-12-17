@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 import { ConnectionPool } from './ConnectionPool';
 import { TablesService } from './service/Tables';
 export class Client {
@@ -8,13 +9,13 @@ export class Client {
   async initialize() {
     await this._connectionPool.connect();
     const tablesService = new TablesService(this._connectionPool);
-    console.log('Setting up initial tables...');
+    logger.info('Setting up initial tables...');
     await tablesService.initialTables();
-    console.log('Initial Tables Setup Completed.');
+    logger.info('Initial Tables Setup Completed.');
 
-    console.log('Seeding tables...');
+    logger.info('Seeding tables...');
     await tablesService.seedTables();
-    console.log('Tables seeded successfully.');
+    logger.info('Tables seeded successfully.');
   }
   getConnectionPool(): ConnectionPool {
     return this._connectionPool;
