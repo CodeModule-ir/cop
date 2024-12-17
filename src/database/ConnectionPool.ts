@@ -7,10 +7,7 @@ export class ConnectionPool {
   constructor() {
     const connectionString = this.getConnectionString();
     this._isProduction = Config.environment;
-    this._pool = new Pool({
-      connectionString,
-      ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
-    });
+    this._pool = this.initializePool(connectionString);
   }
   @Catch({
     message: 'Failed to connect to the database. Please check your credentials or network connection.',
@@ -20,7 +17,7 @@ export class ConnectionPool {
   async connect(): Promise<void> {
     try {
       const client = await this._pool.connect();
-      client.release(); // Verify and release immediately
+      client.release(); // Connection successful
     } catch (error: any) {
       console.error('Database connection error:', error.message);
       if (error.code === '3D000') {
@@ -28,12 +25,11 @@ export class ConnectionPool {
         await this.createDatabase();
         await this._pool.end(); // End the current pool connection
         const newConnectionString = this.getConnectionString();
-        this._pool = new Pool({
-          connectionString: newConnectionString,
-          ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
-        });
+        this._pool = this.initializePool(newConnectionString);
         console.log('Retrying connection after creating the database...');
         await this._pool.connect();
+      } else {
+        console.error('Unexpected error connecting to the database:', error);
       }
     }
   }
@@ -54,6 +50,9 @@ export class ConnectionPool {
     try {
       await client.query(`CREATE DATABASE "${databaseName}"`);
       console.log(`Database "${databaseName}" created successfully.`);
+    } catch (error: any) {
+      console.error('Failed to create database:', error.message);
+      throw error; // Re-throw the error for better logging and troubleshooting
     } finally {
       await client.end();
     }
@@ -68,5 +67,11 @@ export class ConnectionPool {
 
   async close(): Promise<void> {
     await this._pool.end();
+  }
+  private initializePool(connectionString: string): Pool {
+    return new Pool({
+      connectionString,
+      ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
+    });
   }
 }

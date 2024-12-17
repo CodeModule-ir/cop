@@ -8,6 +8,7 @@ import * as express from 'express';
 import { BotReply } from '../utils/chat/BotReply';
 import logger from '../utils/logger';
 import { limit } from '@grammyjs/ratelimiter';
+import { ServiceProvider } from '../service/database/ServiceProvider';
 export class CopBot {
   private static instance: CopBot;
   private _bot: Bot<Context>;
@@ -52,16 +53,18 @@ export class CopBot {
         const app = express();
         app.use(express.json());
         app.post(webhookPath, async (req, res) => {
-          setImmediate(async () => {
-            try {
-              await webhookCallback(this._bot, 'express')(req, res);
-            } catch (error: any) {
-              logger.error(`Error processing update:${error}`);
-              return;
-            }
-          });
+          res.sendStatus(200);
+          try {
+            await webhookCallback(this._bot, 'express')(req, res);
+          } catch (error: any) {
+            logger.error(`Error processing update : ${error.message}`);
+            return;
+          }
         });
-
+        app.get('/health', async (_, res) => {
+          const isHealthy = await ServiceProvider.getInstance().healthCheck();
+          res.status(isHealthy ? 200 : 500).send(isHealthy ? 'OK' : 'Database not reachable');
+        });
         const port = process.env.PORT || 3000;
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
@@ -74,7 +77,7 @@ export class CopBot {
             try {
               if (!webhookInfo.url) {
                 logger.warn('Webhook is not set. Trying to set the webhook...');
-                await this._bot.api.setWebhook(webhookURL, { max_connections: 100 });
+                await this._bot.api.setWebhook(webhookURL, { drop_pending_updates: true });
                 webhookInfo = await this._bot.api.getWebhookInfo();
                 logger.info(`Webhook set: ${webhookInfo.url}`);
               } else {
@@ -96,6 +99,7 @@ export class CopBot {
           };
 
           await trySetWebhook();
+          await startBot(mode);
         });
       } catch (err: any) {
         console.error('Error setting up webhook:', err);
@@ -112,6 +116,11 @@ export class CopBot {
   }
   async initial(): Promise<void> {
     new GenerateCommand(this._bot).generate();
+    this._bot.use(
+      limit({
+        onLimitExceeded: (ctx) => ctx.reply('Too many requests! Please slow down.'),
+      })
+    );
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
     this._bot.on('message', (ctx) => this.handleMessage(ctx));
     this._bot.catch(async (error: BotError<Context>) => {
@@ -120,11 +129,6 @@ export class CopBot {
       }
       logger.error(`Bot error occurred: ${error.error}`);
     });
-    this._bot.use(
-      limit({
-        onLimitExceeded: (ctx) => ctx.reply('Too many requests! Please slow down.'),
-      })
-    );
     await this.start();
     logger.info('Bot is running');
   }
