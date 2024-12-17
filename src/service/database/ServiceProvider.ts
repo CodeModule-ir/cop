@@ -47,12 +47,23 @@ export class ServiceProvider {
     const client = await this.getPoolClint();
     return new UserService(client);
   }
-  async getRulesService(){
-    const client = await this.getPoolClint()
-    return new GroupRuleService(client)
+  async getRulesService() {
+    const client = await this.getPoolClint();
+    return new GroupRuleService(client);
   }
-  async getWarnsService(){
-    const clint = await this.getPoolClint()
-    return new WarningDatabaseService(clint)
+  async getWarnsService() {
+    const clint = await this.getPoolClint();
+    return new WarningDatabaseService(clint);
+  }
+  async healthCheck(): Promise<boolean> {
+    try {
+      const client = await this.getPoolClint();
+      client.release();
+      console.log('Database is healthy.');
+      return true;
+    } catch (err: any) {
+      console.error('Database health check failed:', err.message);
+      return false;
+    }
   }
 }
