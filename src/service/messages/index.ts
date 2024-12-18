@@ -13,7 +13,6 @@ export class MessagesService {
   }
   private isText(): boolean {
     if (!this._ctx.message?.text) {
-      logger.warn('Message text is undefined');
       return false;
     }
     return true;
