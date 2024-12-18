@@ -15,7 +15,7 @@ export class ServiceProvider {
     this._clientInstance = new Client();
   }
 
-  static async initialize(): Promise<ServiceProvider|null> {
+  static async initialize(): Promise<ServiceProvider | null> {
     if (!ServiceProvider.instance) {
       const instance = new ServiceProvider();
       const isInitialized = await instance._clientInstance.initialize();
@@ -85,21 +85,18 @@ export class ServiceProvider {
 
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        logger.warn(`Database connection attempt ${attempt + 1}...`, 'Database');
-        return await fn(); // Try executing the provided function
+        return await fn();
       } catch (error: any) {
         lastError = error;
         logger.warn(`Retry Attempt ${attempt + 1} failed with error: ${error.message || error}.`, 'Database');
-
         if (attempt < retries - 1) {
-          const backoffTime = delay * Math.pow(2, attempt); // Exponential backoff
+          const backoffTime = delay * Math.pow(2, attempt);
           logger.warn(`Retrying in ${backoffTime}ms...`, 'Database');
           await new Promise((res) => setTimeout(res, backoffTime));
         }
       }
     }
-
     logger.error(`All ${retries} retry attempts failed. Last error: ${lastError?.message || lastError}`, 'Database');
-    return null; // Return null if all retries fail
+    return null;
   }
 }
