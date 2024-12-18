@@ -2,13 +2,14 @@ import { Context } from 'grammy';
 import { AdminValidationService } from './validation';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
 import { MuteService } from './Mute';
+import logger from '../../../utils/logger';
 
 export class WarnService {
   static async warnUser(ctx: Context): Promise<{
     warningApplied: boolean;
     isWarningLimitReached: boolean;
     warnings: number;
-  }> {
+  } | null> {
     const validationResult = await AdminValidationService.validateContext(ctx);
     if (!validationResult) {
       return {
@@ -22,6 +23,10 @@ export class WarnService {
     const input = ctx.message?.text!.split(/\s+/).slice(1);
     const reason = input!.join(' ')?.toLowerCase() || 'reason is not set for warning';
     const [groupService, userService, warnService] = await Promise.all([services.getGroupService(), services.getUserService(), services.getWarnsService()]);
+    if (!groupService || !userService || !warnService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     let group = (await groupService.getByGroupId(groupId))!;
     let user = (await userService.getByTelegramId(userId))!;
     let warn = await warnService.getByGroupId(groupId);
@@ -72,7 +77,7 @@ export class WarnService {
       warnings: updatedUser.warnings,
     };
   }
-  static async removeWarn(ctx: Context): Promise<{ warningRemoved: boolean; warnings: number }> {
+  static async removeWarn(ctx: Context): Promise<{ warningRemoved: boolean; warnings: number } | null> {
     const validationResult = await AdminValidationService.validateContext(ctx);
     if (!validationResult) {
       return { warningRemoved: false, warnings: 0 };
@@ -81,6 +86,10 @@ export class WarnService {
     const { userId } = validationResult;
     const services = ServiceProvider.getInstance();
     const userService = await services.getUserService();
+    if (!userService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     let user = (await userService.getByTelegramId(userId))!;
     const updatedUser = {
       ...user,
@@ -92,9 +101,13 @@ export class WarnService {
       warnings: updatedUser.warnings,
     };
   }
-  static async getUserWarnById(ctx: Context, userId: number): Promise<{ warnings: number }> {
+  static async getUserWarnById(ctx: Context, userId: number): Promise<{ warnings: number } | null> {
     const services = ServiceProvider.getInstance();
     const userService = await services.getUserService();
+    if (!userService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     let user = await userService.getByTelegramId(userId);
     let replyMessage = ctx.message?.reply_to_message?.from;
     const userData = { first_name: replyMessage?.first_name!, id: userId, username: replyMessage?.username! };
@@ -103,7 +116,7 @@ export class WarnService {
     }
     return { warnings: user.warnings };
   }
-  static async getAllWarns(ctx: Context): Promise<string> {
+  static async getAllWarns(ctx: Context): Promise<string | null> {
     const replyMessage = ctx.from;
     // Ensure the user ID of the replied message is valid
     const userId = replyMessage!.id!;
@@ -113,6 +126,10 @@ export class WarnService {
     // Initialize services
     const services = ServiceProvider.getInstance();
     const [groupService, userService, warnService] = await Promise.all([services.getGroupService(), services.getUserService(), services.getWarnsService()]);
+    if (!userService || !groupService || !warnService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     let group = await groupService.getByGroupId(groupId);
     let user = await userService.getByTelegramId(userId);
     const userData = { first_name: ctx!.message?.reply_to_message?.from?.first_name!, id: userId, username: ctx.message?.reply_to_message?.from?.username! };

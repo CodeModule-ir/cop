@@ -3,7 +3,12 @@
   "version": "4.1.0",
   "description": "A Telegram bot for managing Telegram groups efficiently.",
   "main": "/src/app.js",
-  "files": ["dist", "src", "package.json", "README.md"],
+  "files": [
+    "dist",
+    "src",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "docker:stop": "docker-compose stop",
     "docker:down": "docker-compose down --volumes --remove-orphans",
@@ -24,7 +29,13 @@
     "type": "git",
     "url": "git+https://github.com/CodeModule-ir/cop.git"
   },
-  "keywords": ["code-module", "telegram-bot", "telegram-group-management", "bot", "typescript"],
+  "keywords": [
+    "code-module",
+    "telegram-bot",
+    "telegram-group-management",
+    "bot",
+    "typescript"
+  ],
   "author": "Mahdi",
   "license": "MIT",
   "bugs": {

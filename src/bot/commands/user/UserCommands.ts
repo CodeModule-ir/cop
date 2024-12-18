@@ -10,6 +10,7 @@ import { RequireReply, RestrictToGroupChats } from '../../../decorators/Context'
 import { EnsureUserAndGroup } from '../../../decorators/Database';
 import { escapeMarkdownV2 } from '../../../utils';
 import { ReplyToBot } from '../../../decorators/Bot';
+import logger from '../../../utils/logger';
 export class UserCommands {
   /**
    * Sends the rules of the group.
@@ -25,13 +26,19 @@ export class UserCommands {
     const chatinfo = new ChatInfo(ctx);
     const services = ServiceProvider.getInstance();
     const groupRulesService = await services.getRulesService();
-
+    if (!groupRulesService) {
+      logger.warn('Group service unavailable. Skipping command execution.');
+      return;
+    }
     const input = ctx.message?.text!.split(/\s+/).slice(1);
     const action = input![0]?.toLowerCase();
     const ruleContent = input!.join(' ');
     if (!action) {
       // Default behavior: Display all rules
       const rulesMessage = await groupRulesService.getRulesByGroupId(ctx.chat?.id!);
+      if (!rulesMessage) {
+        return;
+      }
       if (rulesMessage.length === 0) {
         await reply.markdownReply('No rules have been set for this group.');
       } else {
@@ -55,8 +62,11 @@ export class UserCommands {
       }
     } else if (action === 'r') {
       // Clear all rules
-      await groupRulesService.clearAllRulesForGroup(ctx);
-      await reply.markdownReply('All rules have been deleted.');
+      if (await groupRulesService.clearAllRulesForGroup(ctx)) {
+        await reply.markdownReply('All rules have been deleted.');
+      } else {
+        await reply.markdownReply('Something went wrong. Please try again in a few minutes.');
+      }
     } else {
       // Add a new rule
       if (!ruleContent) {

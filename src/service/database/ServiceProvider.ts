@@ -76,19 +76,23 @@ export class ServiceProvider {
       return false;
     }
   }
-  private async retryConnect(fn: Function, retries = 3, delay = 5000) {
+  private async retryConnect<T>(fn: () => Promise<T>, retries = 3, delay = 5000): Promise<T | null> {
+    let lastError: any;
+
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         return await fn();
       } catch (error: any) {
-        logger.error(`Database Retry Attempt ${attempt + 1}: ${error.message}`, 'Database');
+        lastError = error;
         if (attempt < retries - 1) {
           const backoffTime = delay * Math.pow(2, attempt);
-          logger.info(`Retrying in ${backoffTime}ms...`);
+          logger.warn(`[Database] Retry Attempt ${attempt + 1} failed. Retrying in ${backoffTime}ms...`, 'Database');
           await new Promise((res) => setTimeout(res, backoffTime));
         }
       }
     }
-    throw new Error('Failed to connect to the database after retries');
+
+    logger.error(`[Database] All ${retries} retry attempts failed. Error: ${lastError?.message}`);
+    return null;
   }
 }

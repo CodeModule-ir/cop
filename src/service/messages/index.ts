@@ -35,6 +35,9 @@ export class MessagesService {
       const chat = this._ctx.chat;
       const service = ServiceProvider.getInstance();
       const groupService = await service.getGroupService();
+      if (!groupService) {
+        return;
+      }
       let group = await groupService.getByGroupId(chat!.id);
       if (!group) {
         group = await groupService.save(this._ctx);
@@ -79,6 +82,9 @@ export class MessagesService {
     }
     const service = ServiceProvider.getInstance();
     const [groupService] = await Promise.all([service.getGroupService()]);
+    if (!groupService) {
+      return;
+    }
     let group = await groupService.getByGroupId(groupId);
     if (!group) {
       group = await groupService.save(this._ctx);

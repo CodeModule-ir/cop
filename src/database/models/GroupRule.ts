@@ -25,9 +25,12 @@ export class GroupRuleService {
   /**
    * Fetches all rules for a specific group, sorted by added date (most recent first).
    */
-  async getRulesByGroupId(groupId: number): Promise<GroupRule[]> {
+  async getRulesByGroupId(groupId: number): Promise<GroupRule[] | null> {
     const services = ServiceProvider.getInstance();
     const groupService = await services.getGroupService();
+    if (!groupService) {
+      return null;
+    }
     let group = await groupService.getByGroupId(groupId);
     const result = await this._db.query<GroupRule>('SELECT id, group_id, rule_text, added_at, added_by FROM "GroupRule" WHERE group_id = $1 ORDER BY added_at DESC;', [group?.id!]);
     return result.rows;
@@ -35,13 +38,16 @@ export class GroupRuleService {
   /**
    * Adds a new rule to a group.
    */
-  async addGroupRule(ctx: Context, ruleText: string): Promise<GroupRule> {
+  async addGroupRule(ctx: Context, ruleText: string): Promise<GroupRule | null> {
     const chat = ctx.chat!;
     const groupId = chat.id;
     const userId = ctx.from?.id!;
 
     const services = ServiceProvider.getInstance();
     const [groupService, userService] = await Promise.all([services.getGroupService(), services.getUserService()]);
+    if (!groupService || !userService) {
+      return null;
+    }
     // Ensure the group exists in the database
     let group = await groupService.getByGroupId(groupId);
     if (!group) {
@@ -55,6 +61,9 @@ export class GroupRuleService {
     }
     // Check if there's an existing rule for this group
     const groupRules = await this.getRulesByGroupId(groupId);
+    if (!groupRules) {
+      return null;
+    }
     if (groupRules.length > 0) {
       // Update the existing rule's text array by appending the new rule
       const existingRule = groupRules[0]; // Assuming only one entry per group
@@ -79,6 +88,9 @@ export class GroupRuleService {
     const chat = ctx.chat!;
     const groupId = chat.id;
     const groupRules = await this.getRulesByGroupId(groupId);
+    if (!groupRules) {
+      return null;
+    }
     if (groupRules.length === 0) {
       // No rules to delete
       return null;
@@ -98,15 +110,19 @@ export class GroupRuleService {
   /**
    * Deletes all rules for a specific group.
    */
-  async clearAllRulesForGroup(ctx: Context): Promise<void> {
+  async clearAllRulesForGroup(ctx: Context): Promise<boolean> {
     const chat = ctx.chat!;
     const groupId = chat.id;
 
     const groupRules = await this.getRulesByGroupId(groupId);
+    if (!groupRules) {
+      return false;
+    }
     if (groupRules.length === 0) {
       console.log(`No rules found for group ID: ${groupId}.`);
-      return;
+      return true;
     }
     await this._db.delete<GroupRule>('GroupRule', { group_id: groupRules[0].group_id });
+    return true;
   }
 }

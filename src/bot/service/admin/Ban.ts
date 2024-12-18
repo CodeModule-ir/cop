@@ -1,6 +1,7 @@
 import { Context } from 'grammy';
 import { AdminValidationService } from './validation';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
+import logger from '../../../utils/logger';
 
 export class BanService {
   static async ban(ctx: Context): Promise<boolean> {
@@ -12,6 +13,10 @@ export class BanService {
     const { groupId, userId } = validationResult;
     const services = ServiceProvider.getInstance();
     const [groupService, userService] = await Promise.all([services.getGroupService(), services.getUserService()]);
+    if (!groupService || !userService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return false;
+    }
     let group = await groupService.getByGroupId(groupId);
     let user = await userService.getByTelegramId(userId);
     // If the user is part of the group, proceed with the removal

@@ -1,11 +1,15 @@
 import { Context } from 'grammy';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
+import logger from '../../../utils/logger';
 
 export class BlackListService {
   static async getAll(ctx: Context, groupId: number): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
-
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return [];
+    }
     // Fetch group by group ID
     let group = await groupService.getByGroupId(groupId);
 
@@ -19,6 +23,10 @@ export class BlackListService {
   static async add(groupId: number, word: string, ctx: Context): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return [];
+    }
     let group = await groupService.getByGroupId(groupId);
     if (!group) {
       group = await groupService.save(ctx);
@@ -41,7 +49,10 @@ export class BlackListService {
   static async remove(groupId: number, ctx: Context, word?: string): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
-
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return [];
+    }
     // Fetch group by group ID
     let group = await groupService.getByGroupId(groupId);
     if (!group) {
@@ -53,7 +64,7 @@ export class BlackListService {
       }
     } else {
       // Remove the specified word
-      group.black_list = group.black_list.filter((item:string) => item !== word);
+      group.black_list = group.black_list.filter((item: string) => item !== word);
     }
     await groupService.update({
       ...group,
@@ -65,6 +76,10 @@ export class BlackListService {
   static async clear(groupId: number, ctx: Context): Promise<string[]> {
     const service = ServiceProvider.getInstance();
     const groupService = await service.getGroupService();
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return [];
+    }
     let group = await groupService.getByGroupId(groupId);
     if (!group) {
       group = await groupService.save(ctx);
