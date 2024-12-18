@@ -137,15 +137,7 @@ export class CopBot {
   }
   @MessageValidator()
   @SaveUserData()
-  async handleMessage(ctx: Context) {
-    try {
-      const client = await ServiceProvider.getInstance().getConnectionPool().getClient();
-      client.release();
-    } catch (err: any) {
-      logger.error(`Database error in handleMessage: ${err.message}`);
-      await ctx.reply('Error processing your request. Please try again later.');
-    }
-  }
+  async handleMessage(ctx: Context) {}
   @SaveUserData()
   async handleJoinNewChat(ctx: Context) {
     if (!ctx.message?.text) {
