@@ -211,7 +211,6 @@ We appreciate your understanding and cooperation in keeping the community welcom
       }
     } else {
       logger.warn(`No handler found for command: ${command}`);
-      await this._reply.textReply(`Unknown command: ${command}`);
     }
   }
   private checkIfCommand(): boolean {
