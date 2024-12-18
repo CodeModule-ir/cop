@@ -209,3 +209,51 @@
 
 - Removed middleware in favor of `Catch` decorators for cleaner code structure.
 - Refined error handling for webhook creation and bot start methods.
+## [4.1.0] - 2024-12-18  
+
+### Breaking Changes  
+
+- **Database Schema Updates:**  
+  - Updated database connection retry mechanism for improved fault tolerance.  
+  - Modified database schema to include new fields for enhanced bot functionality.  
+
+- **Major Refactoring:**  
+  - Transitioned `CopBot` class to use instance properties, reducing duplicated logic.  
+  - Overhauled the `database` and `bot` modules to improve maintainability and scalability.  
+
+### Added  
+
+- **New Features:**  
+  - Integrated enhanced error-handling mechanisms with structured logs using the `logger` utility instead of `console`.  
+  - Introduced retry mechanisms for database and webhook connections to improve reliability in production.  
+  - Added improved command validation for bot commands, enhancing security and reducing execution errors.  
+
+- **Utilities and Scripts:**  
+  - Introduced new utility functions for bot operation, such as dynamic webhook retry logic and streamlined command execution flow.  
+  - Enhanced logging capabilities for debugging database health checks and bot processes.  
+
+### Fixed  
+
+- **Bug Fixes:**  
+  - Resolved issues with database connection failures by implementing a retry mechanism on failed attempts.  
+  - Fixed bugs in command execution flow, ensuring accurate and reliable responses to user commands.  
+  - Addressed errors in health check logic, ensuring consistent status reporting for the database.  
+
+### Enhancements  
+
+- **Codebase Improvements:**  
+  - Refactored the `CopBot` class to improve reliability, maintainability, and readability.  
+  - Consolidated and optimized bot logging to use the `logger` utility across all modules.  
+  - Improved the database health check process, adding robust logging and error reporting.  
+
+- **Performance and Scalability:**  
+  - Enhanced webhook processing logic for faster and more reliable updates.  
+  - Reduced redundancy in bot command handling by centralizing common operations.  
+
+### Removed  
+
+- Deprecated legacy code, including unused utility functions and outdated logging statements.  
+
+### Known Issues  
+
+- Additional enhancements for webhook retries under high-load scenarios will be addressed in a future release.  

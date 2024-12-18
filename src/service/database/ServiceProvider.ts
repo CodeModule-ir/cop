@@ -83,7 +83,9 @@ export class ServiceProvider {
       } catch (error: any) {
         logger.error(`Database Retry Attempt ${attempt + 1}: ${error.message}`, 'Database');
         if (attempt < retries - 1) {
-          await new Promise((res) => setTimeout(res, delay));
+          const backoffTime = delay * Math.pow(2, attempt);
+          logger.info(`Retrying in ${backoffTime}ms...`);
+          await new Promise((res) => setTimeout(res, backoffTime));
         }
       }
     }
