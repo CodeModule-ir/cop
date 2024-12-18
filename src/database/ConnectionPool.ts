@@ -67,8 +67,8 @@ export class ConnectionPool {
       connectionString,
       ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
       max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 30000,
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
       keepAlive: true,
     });
   }
