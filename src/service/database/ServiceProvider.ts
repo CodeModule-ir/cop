@@ -81,18 +81,21 @@ export class ServiceProvider {
 
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        return await fn();
+        logger.info(`Database connection attempt ${attempt + 1}...`, 'Database');
+        return await fn(); // Try executing the provided function
       } catch (error: any) {
         lastError = error;
+        logger.warn(`Retry Attempt ${attempt + 1} failed with error: ${error.message || error}.`, 'Database');
+
         if (attempt < retries - 1) {
-          const backoffTime = delay * Math.pow(2, attempt);
-          logger.warn(`[Database] Retry Attempt ${attempt + 1} failed. Retrying in ${backoffTime}ms...`, 'Database');
+          const backoffTime = delay * Math.pow(2, attempt); // Exponential backoff
+          logger.info(`Retrying in ${backoffTime}ms...`, 'Database');
           await new Promise((res) => setTimeout(res, backoffTime));
         }
       }
     }
 
-    logger.error(`[Database] All ${retries} retry attempts failed. Error: ${lastError?.message}`);
-    return null;
+    logger.error(`All ${retries} retry attempts failed. Last error: ${lastError?.message || lastError}`, 'Database');
+    return null; // Return null if all retries fail
   }
 }
