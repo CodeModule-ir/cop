@@ -45,6 +45,7 @@ export function EnsureUserAndGroup(userSource: 'from' | 'reply' = 'reply') {
       await Promise.all([
         service.getUserService().then((userService) => {
           if (!userService) {
+            console.error('UserService is unavailable.');
             close();
             return;
           }

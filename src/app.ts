@@ -6,7 +6,11 @@ async function main() {
   const botInstance = CopBot.getInstance();
 
   try {
-    await ServiceProvider.initialize();
+    const isInitialDatabase = await ServiceProvider.initialize();
+    if (!isInitialDatabase) {
+      logger.error('Failed to initialize the database after several attempts.');
+      process.exit(1);
+    }
     logger.info('Database initialized.');
 
     await botInstance.initial();
@@ -27,8 +31,9 @@ async function main() {
     await shutdown(botInstance);
   });
 
-  process.on('unhandledRejection', (reason) => {
+  process.on('unhandledRejection', async (reason) => {
     logger.error(`${reason}:`, 'Unhandled Rejection');
+    await shutdown(botInstance);
   });
 
   process.on('uncaughtException', async (err: any) => {

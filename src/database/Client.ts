@@ -6,16 +6,27 @@ export class Client {
   constructor() {
     this._connectionPool = new ConnectionPool();
   }
-  async initialize() {
-    await this._connectionPool.connect();
-    const tablesService = new TablesService(this._connectionPool);
-    logger.info('Setting up initial tables...');
-    await tablesService.initialTables();
-    logger.info('Initial Tables Setup Completed.');
+  async initialize(): Promise<boolean> {
+    try {
+      const isConnected = await this._connectionPool.connect();
+      if (!isConnected) {
+        logger.error('Database connection failed.');
+        return false;
+      }
+      const tablesService = new TablesService(this._connectionPool);
+      logger.info('Setting up initial tables...');
+      await tablesService.initialTables();
+      logger.info('Initial Tables Setup Completed.');
 
-    logger.info('Seeding tables...');
-    await tablesService.seedTables();
-    logger.info('Tables seeded successfully.');
+      logger.info('Seeding tables...');
+      await tablesService.seedTables();
+      logger.info('Tables seeded successfully.');
+      return true;
+    } catch (error: any) {
+      // Log any error that occurs during the initialization process
+      logger.error(`Error during database initialization: ${error.message}`);
+      return false;
+    }
   }
   getConnectionPool(): ConnectionPool {
     return this._connectionPool;
