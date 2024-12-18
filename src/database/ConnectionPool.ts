@@ -1,5 +1,6 @@
 import { Pool, PoolClient } from 'pg';
 import Config from '../config';
+import logger from '../utils/logger';
 export class ConnectionPool {
   private _pool: Pool;
   private _isProduction: 'development' | 'production';
@@ -8,19 +9,30 @@ export class ConnectionPool {
     this._isProduction = Config.environment;
     this._pool = this.initializePool(connectionString);
   }
-  async connect(): Promise<void> {
+  async connect(): Promise<boolean> {
     try {
       const client = await this._pool.connect();
-      client.release(); // Connection successful
+      client.release();
+      logger.info('Database connection successful');
+      return true;
     } catch (error: any) {
       console.error('Database connection error:', error.message);
       if (error.code === '3D000') {
         console.log(`Database does not exist. Creating database ${Config.database.databaseName}...`);
         await this.createDatabase();
         await this.reinitializePool();
-        await this._pool.connect();
+        try {
+          const client = await this._pool.connect();
+          client.release();
+          logger.info('Database connection successful after reinitialization');
+          return true;
+        } catch (reconnectError: any) {
+          console.error('Reconnection failed:', reconnectError.message);
+          return false;
+        }
       } else {
         console.error('Unexpected error connecting to the database:', error);
+        return false;
       }
     }
   }
@@ -56,8 +68,8 @@ export class ConnectionPool {
       connectionString,
       ssl: this._isProduction === 'production' ? { rejectUnauthorized: false } : false,
       max: 20,
-      idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 30000, // Increase idle timeout
+      connectionTimeoutMillis: 10000, // Increase connection timeout
       keepAlive: true,
     });
   }

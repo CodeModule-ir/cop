@@ -15,10 +15,14 @@ export class ServiceProvider {
     this._clientInstance = new Client();
   }
 
-  static async initialize(): Promise<ServiceProvider> {
+  static async initialize(): Promise<ServiceProvider|null> {
     if (!ServiceProvider.instance) {
       const instance = new ServiceProvider();
-      await instance._clientInstance.initialize();
+      const isInitialized = await instance._clientInstance.initialize();
+      if (!isInitialized) {
+        logger.error('Failed to initialize client instance. Returning null.');
+        return null; // Return null if initialization fails
+      }
       instance._connectionPool = instance._clientInstance.getConnectionPool();
       ServiceProvider.instance = instance;
     }
@@ -81,7 +85,7 @@ export class ServiceProvider {
 
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        logger.info(`Database connection attempt ${attempt + 1}...`, 'Database');
+        logger.warn(`Database connection attempt ${attempt + 1}...`, 'Database');
         return await fn(); // Try executing the provided function
       } catch (error: any) {
         lastError = error;
@@ -89,7 +93,7 @@ export class ServiceProvider {
 
         if (attempt < retries - 1) {
           const backoffTime = delay * Math.pow(2, attempt); // Exponential backoff
-          logger.info(`Retrying in ${backoffTime}ms...`, 'Database');
+          logger.warn(`Retrying in ${backoffTime}ms...`, 'Database');
           await new Promise((res) => setTimeout(res, backoffTime));
         }
       }
