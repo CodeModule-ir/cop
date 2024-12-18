@@ -1,6 +1,5 @@
 import { Pool, PoolClient } from 'pg';
 import Config from '../config';
-import { Catch } from '../decorators/Catch';
 export class ConnectionPool {
   private _pool: Pool;
   private _isProduction: 'development' | 'production';
@@ -9,11 +8,6 @@ export class ConnectionPool {
     this._isProduction = Config.environment;
     this._pool = this.initializePool(connectionString);
   }
-  @Catch({
-    message: 'Failed to connect to the database. Please check your credentials or network connection.',
-    statusCode: 500,
-    category: 'ConnectionPool',
-  })
   async connect(): Promise<void> {
     try {
       const client = await this._pool.connect();
@@ -30,11 +24,6 @@ export class ConnectionPool {
       }
     }
   }
-  @Catch({
-    message: 'Failed to create the database. Please check the connection or permissions.',
-    statusCode: 500,
-    category: 'ConnectionPool',
-  })
   private async createDatabase(): Promise<void> {
     const { user, host, password, port, databaseName } = Config.database;
     const client = new Pool({
