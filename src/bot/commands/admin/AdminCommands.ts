@@ -83,6 +83,9 @@ export class AdminCommands {
     const reply = new BotReply(ctx);
     const groupId = ctx.chat!.id;
     const approvedUsers = await ApprovedService.getApprovedUsers(groupId);
+    if (!approvedUsers) {
+      return;
+    }
     if (!approvedUsers.length) {
       await reply.textReply('There are currently no approved users in this group.');
       return;
@@ -136,7 +139,11 @@ export class AdminCommands {
   static async warn(ctx: Context) {
     const reply = new BotReply(ctx);
     const user = ctx.message?.reply_to_message?.from!;
-    const { isWarningLimitReached, warningApplied, warnings } = await WarnService.warnUser(ctx);
+    const warnService = await WarnService.warnUser(ctx);
+    if (!warnService) {
+      return;
+    }
+    const { isWarningLimitReached, warningApplied, warnings } = warnService;
     if (isWarningLimitReached && warningApplied) {
       await reply.textReply(`User ${user.first_name} has been muted for 1 day due to excessive warnings.`);
       return;
@@ -155,8 +162,11 @@ export class AdminCommands {
   static async rmwarn(ctx: Context) {
     const reply = new BotReply(ctx);
     const user = ctx.message?.reply_to_message?.from!;
-    const { warningRemoved, warnings } = await WarnService.removeWarn(ctx);
-
+    const warnService = await WarnService.removeWarn(ctx);
+    if (!warnService) {
+      return;
+    }
+    const { warningRemoved, warnings } = warnService;
     if (warningRemoved) {
       return await reply.textReply(`User ${user.first_name} now has ${warnings} warnings after the removal.`);
     } else {
@@ -174,7 +184,11 @@ export class AdminCommands {
     if (!replyMessage) {
       user = ctx.from!;
     }
-    const { warnings } = await WarnService.getUserWarnById(ctx, user.id);
+    const warnService = await WarnService.getUserWarnById(ctx, user.id);
+    if (!warnService) {
+      return;
+    }
+    const { warnings } = warnService;
     if (warnings >= 0) {
       return await reply.textReply(`User ${user.first_name} currently has ${warnings} warnings.`);
     } else {

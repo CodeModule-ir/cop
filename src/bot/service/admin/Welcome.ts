@@ -1,9 +1,14 @@
 import { Context } from 'grammy';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
 import { Group } from '../../../types/database/TablesTypes';
+import logger from '../../../utils/logger';
 export class GroupSettingsService {
-  static async getWelcomeMessage(ctx: Context, welcomeContent: string): Promise<Group['welcome_message']> {
+  static async getWelcomeMessage(ctx: Context, welcomeContent: string): Promise<Group['welcome_message'] | null> {
     const { groupService } = await GroupSettingsService.getServices();
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     const groupId = ctx.chat?.id!;
     let group = await groupService.getByGroupId(groupId);
     if (!group) {
@@ -11,8 +16,12 @@ export class GroupSettingsService {
     }
     return group.welcome_message;
   }
-  static async removeWelcomeMessage(ctx: Context): Promise<string> {
+  static async removeWelcomeMessage(ctx: Context): Promise<string | null> {
     const { groupService } = await GroupSettingsService.getServices();
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     const groupId = ctx.chat?.id!;
 
     // Get the group by its ID
@@ -30,8 +39,12 @@ export class GroupSettingsService {
 
     return updatedGroup.welcome_message ? updatedGroup.welcome_message : 'The welcome message has been removed.';
   }
-  static async setWelcomeMessage(ctx: Context, welcomeContent: string): Promise<string> {
+  static async setWelcomeMessage(ctx: Context, welcomeContent: string): Promise<string | null> {
     const { groupService } = await GroupSettingsService.getServices();
+    if (!groupService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     const groupId = ctx.chat?.id!;
     // Get the group by its ID
     let group = await groupService.getByGroupId(groupId);

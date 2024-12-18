@@ -3,10 +3,13 @@ import { createDecorator } from '.';
 import { Context } from 'grammy';
 
 export function SaveUserData() {
-  return createDecorator(async (ctx, next) => {
+  return createDecorator(async (ctx, next, close) => {
     const databaseService = ServiceProvider.getInstance();
     const [userService, groupService] = await Promise.all([databaseService.getUserService(), databaseService.getGroupService()]);
-
+    if (!userService || !groupService) {
+      close();
+      return;
+    }
     const userData = {
       first_name: ctx.from?.first_name!,
       id: ctx.from?.id!,
@@ -39,7 +42,22 @@ export function EnsureUserAndGroup(userSource: 'from' | 'reply' = 'reply') {
         id: userId,
         username: userContext!.username!,
       };
-      await Promise.all([service.getUserService().then((userService) => userService.save(userData)), service.getGroupService().then((groupService) => groupService.save(ctx))]);
+      await Promise.all([
+        service.getUserService().then((userService) => {
+          if (!userService) {
+            close();
+            return;
+          }
+          userService.save(userData);
+        }),
+        service.getGroupService().then((groupService) => {
+          if (!groupService) {
+            close();
+            return;
+          }
+          groupService.save(ctx);
+        }),
+      ]);
       await next();
     } catch (error) {
       console.error('Error in EnsureUserAndGroup decorator:', error);

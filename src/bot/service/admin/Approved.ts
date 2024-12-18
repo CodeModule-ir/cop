@@ -1,8 +1,13 @@
 import { Context } from 'grammy';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
+import logger from '../../../utils/logger';
 export class ApprovedService {
   static async updateApproved(groupId: number, userId: number) {
     const { groupService, userService } = await ApprovedService.getServices();
+    if (!groupService || !userService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     let user = await userService.getByTelegramId(userId);
     let group = await groupService.getByGroupId(groupId);
     const approvedUsers = group!.approved_users ? [...group!.approved_users.map(Number)] : [];
@@ -29,6 +34,10 @@ export class ApprovedService {
   }
   static async updateDisapproved(groupId: number, userId: number) {
     const { groupService, userService } = await ApprovedService.getServices();
+    if (!groupService || !userService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     // Fetch user and group data
     let user = await userService.getByTelegramId(userId);
     let group = await groupService.getByGroupId(groupId);
@@ -59,6 +68,10 @@ export class ApprovedService {
   }
   static async getApprovedUsers(groupId: number) {
     const { groupService, userService } = await ApprovedService.getServices();
+    if (!groupService || !userService) {
+      logger.warn('services unavailable. Skipping command execution.');
+      return null;
+    }
     let group = (await groupService.getByGroupId(groupId))!;
     const approvedUserIds = group.approved_users ? group.approved_users.map(Number) : [];
     const approvedUsers = [];
