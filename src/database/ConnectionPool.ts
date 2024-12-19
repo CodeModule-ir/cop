@@ -4,9 +4,6 @@ import logger from '../utils/logger';
 export class ConnectionPool {
   private _pool: Pool;
   private _isProduction: 'development' | 'production';
-  private _isClosed: boolean = false;
-  private _isReinitializing: boolean = false;
-
   constructor() {
     const connectionString = this.getConnectionString();
     this._isProduction = Config.environment;
@@ -62,14 +59,7 @@ export class ConnectionPool {
   }
 
   async close(): Promise<void> {
-    if (this._isClosed) return;
-    this._isClosed = true;
-    try {
-      await this._pool.end();
-      logger.info('Connection pool closed successfully.');
-    } catch (err: any) {
-      logger.error('Error while closing the connection pool:', err.message);
-    }
+    await this._pool.end();
   }
   private initializePool(connectionString: string): Pool {
     return new Pool({
@@ -82,32 +72,11 @@ export class ConnectionPool {
     });
   }
   async reinitializePool() {
-    if (this._isClosed) {
-      throw new Error('Cannot reinitialize a closed pool.');
+    if (this._pool && !this._pool.ended) {
+      await this._pool.end();
     }
-    if (this._isReinitializing) {
-      logger.warn('Reinitialization already in progress. Waiting...');
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      return;
-    }
-
-    this._isReinitializing = true;
-    try {
-      if (this._pool && !this._pool.ended) {
-        logger.warn('Ending the current pool before reinitialization...');
-        await this._pool.end();
-      }
-
-      const newConnectionString = this.getConnectionString();
-      this._pool = this.initializePool(newConnectionString);
-      const testClient = await this._pool.connect();
-      testClient.release();
-      logger.info('Connection pool reinitialized successfully.');
-    } catch (err: any) {
-      logger.error('Failed to reinitialize connection pool:', err.message);
-      throw err; // Let the caller handle this failure
-    } finally {
-      this._isReinitializing = false;
-    }
+    const newConnectionString = this.getConnectionString();
+    this._pool = this.initializePool(newConnectionString);
+    console.warn('Connection pool reinitialized.');
   }
 }
