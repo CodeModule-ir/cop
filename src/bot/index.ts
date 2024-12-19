@@ -82,7 +82,6 @@ export class CopBot {
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
           await this.setupWebhook(this.webhookURL);
-          await startBot(this.mode);
         });
       } catch (err: any) {
         console.error('Error setting up webhook:', err);

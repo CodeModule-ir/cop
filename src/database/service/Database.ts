@@ -18,8 +18,6 @@ export class DatabaseService {
     } catch (error: any) {
       console.error(`Error executing query: ${sql}`, error);
       throw new Error(`Database query failed: ${error.message}`);
-    } finally {
-      this._client.release();
     }
   }
   /**
