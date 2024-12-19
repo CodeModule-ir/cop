@@ -3,7 +3,6 @@ import { Group } from '../../types/database/TablesTypes';
 import { Context } from 'grammy';
 import { MembersService } from '../service/Members';
 import { DatabaseService } from '../service/Database';
-import { Catch } from '../../decorators/Catch';
 export class GroupService {
   private _db: DatabaseService;
   constructor(private _client: PoolClient) {

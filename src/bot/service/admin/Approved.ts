@@ -1,4 +1,3 @@
-import { Context } from 'grammy';
 import { ServiceProvider } from '../../../service/database/ServiceProvider';
 import logger from '../../../utils/logger';
 export class ApprovedService {

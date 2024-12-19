@@ -14,14 +14,13 @@ export class ServiceProvider {
   private constructor() {
     this._clientInstance = new Client();
   }
-
   static async initialize(): Promise<ServiceProvider | null> {
     if (!ServiceProvider.instance) {
       const instance = new ServiceProvider();
       const isInitialized = await instance._clientInstance.initialize();
       if (!isInitialized) {
         logger.error('Failed to initialize client instance. Returning null.');
-        return null; // Return null if initialization fails
+        return null;
       }
       instance._connectionPool = instance._clientInstance.getConnectionPool();
       ServiceProvider.instance = instance;
@@ -42,35 +41,32 @@ export class ServiceProvider {
     await this._connectionPool.close();
   }
   async getPoolClint(): Promise<PoolClient> {
-    return await this._connectionPool.getClient();
+    const client = await this._connectionPool.getClient();
+    client.on('error', (err: any) => {
+      logger.error('Unexpected client error:', err);
+      client.release();
+    });
+    return client;
   }
   async getGroupService() {
-    return await this.retryConnect(async () => {
-      const client = await this.getPoolClint();
-      return new GroupService(client);
-    });
+    const client = await this.getPoolClint();
+    return new GroupService(client);
   }
   async getUserService() {
-    return await this.retryConnect(async () => {
-      const client = await this.getPoolClint();
-      return new UserService(client);
-    });
+    const client = await this.getPoolClint();
+    return new UserService(client);
   }
   async getRulesService() {
-    return await this.retryConnect(async () => {
-      const client = await this.getPoolClint();
-      return new GroupRuleService(client);
-    });
+    const client = await this.getPoolClint();
+    return new GroupRuleService(client);
   }
   async getWarnsService() {
-    return await this.retryConnect(async () => {
-      const clint = await this.getPoolClint();
-      return new WarningDatabaseService(clint);
-    });
+    const clint = await this.getPoolClint();
+    return new WarningDatabaseService(clint);
   }
   async healthCheck(): Promise<boolean> {
+    const client = await this.getPoolClint();
     try {
-      const client = await this.getPoolClint();
       await client.query('SELECT NOW()');
       client.release();
       logger.info('Database is healthy.');
@@ -78,25 +74,8 @@ export class ServiceProvider {
     } catch (err: any) {
       logger.error('Database health check failed:', err.message);
       return false;
+    } finally {
+      client.release();
     }
-  }
-  private async retryConnect<T>(fn: () => Promise<T>, retries = 3, delay = 5000): Promise<T | null> {
-    let lastError: any;
-
-    for (let attempt = 0; attempt < retries; attempt++) {
-      try {
-        return await fn();
-      } catch (error: any) {
-        lastError = error;
-        logger.warn(`Retry Attempt ${attempt + 1} failed with error: ${error.message || error}.`, 'Database');
-        if (attempt < retries - 1) {
-          const backoffTime = delay * Math.pow(2, attempt);
-          logger.warn(`Retrying in ${backoffTime}ms...`, 'Database');
-          await new Promise((res) => setTimeout(res, backoffTime));
-        }
-      }
-    }
-    logger.error(`All ${retries} retry attempts failed. Last error: ${lastError?.message || lastError}`, 'Database');
-    return null;
   }
 }

@@ -1,14 +1,25 @@
 import { PoolClient, QueryResult, QueryResultRow } from 'pg';
 export class DatabaseService {
-  constructor(private _client: PoolClient) {}
+  private _client: PoolClient;
+
+  constructor(client: PoolClient) {
+    if (!client) {
+      throw new Error('Database client must be provided.');
+    }
+    this._client = client;
+  }
 
   /**
    * Runs a query with parameters and returns the result.
    */
   async query<T extends QueryResultRow>(sql: string, params: any[] = []): Promise<QueryResult<T>> {
-    return await this._client.query<T>(sql, params);
+    try {
+      return await this._client.query<T>(sql, params);
+    } catch (error: any) {
+      console.error(`Error executing query: ${sql}`, error);
+      throw new Error(`Database query failed: ${error.message}`);
+    }
   }
-
   /**
    * Inserts a new record and returns the inserted row.
    */

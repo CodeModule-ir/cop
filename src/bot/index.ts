@@ -137,7 +137,9 @@ export class CopBot {
   }
   @MessageValidator()
   @SaveUserData()
-  async handleMessage(ctx: Context) {}
+  async handleMessage(ctx: Context) {
+    return;
+  }
   @SaveUserData()
   async handleJoinNewChat(ctx: Context) {
     if (!ctx.message?.text) {
