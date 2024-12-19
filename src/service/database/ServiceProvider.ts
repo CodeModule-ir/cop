@@ -6,11 +6,15 @@ import { UserService } from '../../database/models/User';
 import { GroupRuleService } from '../../database/models/GroupRule';
 import { WarningDatabaseService } from '../../database/models/Warning';
 import logger from '../../utils/logger';
+import { CopBot } from '../../bot';
 
 export class ServiceProvider {
   private static instance: ServiceProvider;
   private _clientInstance: Client;
   private _connectionPool!: ConnectionPool;
+
+  private lastRequestTime: number | null = null; // Track the last request time
+  private readonly requestInterval: number = 5000;
   private constructor() {
     this._clientInstance = new Client();
   }
@@ -27,6 +31,28 @@ export class ServiceProvider {
     }
     return ServiceProvider.instance;
   }
+  private async enforceRateLimit(): Promise<void> {
+    const ctx = CopBot.getContext();
+    const now = Date.now();
+    if (this.lastRequestTime) {
+      const elapsed = now - this.lastRequestTime;
+      if (elapsed < this.requestInterval) {
+        const waitTime = this.requestInterval - elapsed;
+
+        if (ctx) {
+          try {
+            await ctx.reply(`⚠️ Rate limit exceeded. Please wait for ${waitTime} ms before making another request.`);
+          } catch (error: any) {
+            logger.error(`Failed to notify user about rate limit: ${error.message}`);
+          }
+        } else {
+          logger.warn('No active context to send a rate limit message.');
+        }
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+    }
+    this.lastRequestTime = Date.now();
+  }
   static getInstance() {
     return ServiceProvider.instance;
   }
@@ -41,6 +67,7 @@ export class ServiceProvider {
     await this._connectionPool.close();
   }
   async getPoolClint(): Promise<PoolClient> {
+    await this.enforceRateLimit();
     try {
       const client = await this._connectionPool.getClient();
       client.on('error', (err: any) => {

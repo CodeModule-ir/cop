@@ -8,21 +8,16 @@ export class DatabaseService {
     }
     this._client = client;
   }
-
-  /**
-   * Runs a query with parameters and returns the result.
-   */
   async query<T extends QueryResultRow>(sql: string, params: any[] = []): Promise<QueryResult<T>> {
     try {
       return await this._client.query<T>(sql, params);
     } catch (error: any) {
       console.error(`Error executing query: ${sql}`, error);
       throw new Error(`Database query failed: ${error.message}`);
+    } finally {
+      this._client.release();
     }
   }
-  /**
-   * Inserts a new record and returns the inserted row.
-   */
   async insert<T extends QueryResultRow>(tableName: string, data: Record<string, any>, returning: string[] = ['*']): Promise<T> {
     const columns = Object.keys(data).join(', ');
     const values = Object.values(data);
@@ -32,10 +27,6 @@ export class DatabaseService {
     const result = await this.query<T>(sql, values);
     return result.rows[0];
   }
-
-  /**
-   * Updates a record and returns the updated row.
-   */
   async update<T extends QueryResultRow>(tableName: string, data: Record<string, any>, condition: Record<string, any>, returning: string[] = ['*']): Promise<T> {
     const setClauses = Object.keys(data)
       .map((key, i) => `"${key}" = $${i + 1}`)
@@ -49,10 +40,6 @@ export class DatabaseService {
     const result = await this.query<T>(sql, values);
     return result.rows[0];
   }
-
-  /**
-   * Deletes records and optionally returns the deleted rows.
-   */
   async delete<T extends QueryResultRow>(tableName: string, condition: Record<string, any>, returning: string[] = ['*']): Promise<T[]> {
     const whereClauses = Object.keys(condition)
       .map((key, i) => `"${key}" = $${i + 1}`)

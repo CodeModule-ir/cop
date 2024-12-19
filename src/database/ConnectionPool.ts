@@ -10,27 +10,36 @@ export class ConnectionPool {
     this._pool = this.initializePool(connectionString);
   }
   async connect(): Promise<boolean> {
+    let client;
     try {
-      await this._pool.connect();
+      client = await this._pool.connect();
       logger.info('Database connection successful');
       return true;
     } catch (error: any) {
       console.error('Database connection error:', error.message);
+
+      // Handle missing database error (PostgreSQL code: 3D000)
       if (error.code === '3D000') {
         console.log(`Database does not exist. Creating database ${Config.database.databaseName}...`);
-        await this.createDatabase();
-        await this.reinitializePool();
+
         try {
-          const client = await this._pool.connect();
+          await this.createDatabase();
+          await this.reinitializePool();
+          client = await this._pool.connect(); // Retry connection
           logger.info('Database connection successful after reinitialization');
           return true;
         } catch (reconnectError: any) {
-          console.error('Reconnection failed:', reconnectError.message);
+          console.error('Reconnection failed after reinitialization:', reconnectError.message);
           return false;
         }
       } else {
         console.error('Unexpected error connecting to the database:', error);
         return false;
+      }
+    } finally {
+      // Release client only if it was successfully acquired
+      if (client) {
+        client.release();
       }
     }
   }
@@ -68,7 +77,9 @@ export class ConnectionPool {
     });
   }
   async reinitializePool() {
-    await this._pool.end(); // Close old connections
+    if (this._pool) {
+      await this._pool.end();
+    }
     const newConnectionString = this.getConnectionString();
     this._pool = this.initializePool(newConnectionString);
     console.warn('Connection pool reinitialized.');
