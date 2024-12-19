@@ -60,9 +60,14 @@ export class ConnectionPool {
   }
 
   async close(): Promise<void> {
-    if (this._isClosed) return; // Prevent closing the pool more than once
+    if (this._isClosed) return;
     this._isClosed = true;
-    await this._pool.end();
+    try {
+      await this._pool.end();
+      logger.info('Connection pool closed successfully.');
+    } catch (err: any) {
+      logger.error('Error while closing the connection pool:', err.message);
+    }
   }
   private initializePool(connectionString: string): Pool {
     return new Pool({
@@ -80,10 +85,20 @@ export class ConnectionPool {
     }
 
     if (this._pool && !this._pool.ended) {
+      logger.warn('Ending the current pool before reinitialization...');
       await this._pool.end();
     }
+
     const newConnectionString = this.getConnectionString();
     this._pool = this.initializePool(newConnectionString);
-    console.warn('Connection pool reinitialized.');
+
+    try {
+      const testClient = await this._pool.connect();
+      testClient.release(); // Ensure the new pool is functional
+      logger.info('Connection pool reinitialized successfully.');
+    } catch (err: any) {
+      logger.error('Failed to reinitialize connection pool:', err.message);
+      throw err; // Let the caller handle this failure
+    }
   }
 }

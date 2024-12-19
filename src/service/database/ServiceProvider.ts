@@ -41,17 +41,25 @@ export class ServiceProvider {
     await this._connectionPool.close();
   }
   async getPoolClint(): Promise<PoolClient> {
-    try {
-      const client = await this._connectionPool.getClient();
-      client.on('error', (err: any) => {
-        logger.error('Unexpected client error:', err);
-      });
-      return client;
-    } catch (err: any) {
-      logger.error('Error getting client from pool:', err);
-      await this._connectionPool.reinitializePool();
-      return this.getPoolClint();
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const client = await this._connectionPool.getClient();
+        client.on('error', (err: any) => {
+          logger.error('Unexpected client error:', err);
+        });
+        return client;
+      } catch (err: any) {
+        logger.error('Error getting client from pool:', err.message);
+        if (retries === 1) {
+          logger.error('Maximum retries reached. Reinitializing the pool.');
+          await this._connectionPool.reinitializePool();
+        }
+        retries -= 1;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
+    throw new Error('Failed to get a database client after multiple retries.');
   }
   async getGroupService() {
     const client = await this.getPoolClint();
