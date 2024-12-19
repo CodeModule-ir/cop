@@ -16,8 +16,6 @@ export class TablesService {
       logger.info('Initial tables have been set up successfully.');
     } catch (error) {
       throw error;
-    } finally {
-      client.release(); // Release connection
     }
   }
   async seedTables() {
@@ -36,8 +34,6 @@ export class TablesService {
       logger.info('All tables have been seeded successfully.');
     } catch (error) {
       throw error;
-    } finally {
-      client.release();
     }
   }
 }

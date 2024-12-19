@@ -41,12 +41,17 @@ export class ServiceProvider {
     await this._connectionPool.close();
   }
   async getPoolClint(): Promise<PoolClient> {
-    const client = await this._connectionPool.getClient();
-    client.on('error', (err: any) => {
-      logger.error('Unexpected client error:', err);
-      client.release();
-    });
-    return client;
+    try {
+      const client = await this._connectionPool.getClient();
+      client.on('error', (err: any) => {
+        logger.error('Unexpected client error:', err);
+      });
+      return client;
+    } catch (err: any) {
+      logger.error('Error getting client from pool:', err);
+      await this._connectionPool.reinitializePool();
+      return this.getPoolClint();
+    }
   }
   async getGroupService() {
     const client = await this.getPoolClint();
@@ -74,8 +79,6 @@ export class ServiceProvider {
     } catch (err: any) {
       logger.error('Database health check failed:', err.message);
       return false;
-    } finally {
-      client.release();
     }
   }
 }

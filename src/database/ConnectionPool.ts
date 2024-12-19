@@ -11,8 +11,7 @@ export class ConnectionPool {
   }
   async connect(): Promise<boolean> {
     try {
-      const client = await this._pool.connect();
-      client.release();
+      await this._pool.connect();
       logger.info('Database connection successful');
       return true;
     } catch (error: any) {
@@ -23,7 +22,6 @@ export class ConnectionPool {
         await this.reinitializePool();
         try {
           const client = await this._pool.connect();
-          client.release();
           logger.info('Database connection successful after reinitialization');
           return true;
         } catch (reconnectError: any) {
@@ -45,12 +43,8 @@ export class ConnectionPool {
       port,
       database: 'postgres',
     });
-    try {
-      await client.query(`CREATE DATABASE "${databaseName}"`);
-      console.log(`Database "${databaseName}" created successfully.`);
-    } finally {
-      await client.end();
-    }
+    await client.query(`CREATE DATABASE "${databaseName}"`);
+    console.log(`Database "${databaseName}" created successfully.`);
   }
   private getConnectionString(): string {
     const { user, host, databaseName, password, port, url } = Config.database;
@@ -73,7 +67,7 @@ export class ConnectionPool {
       keepAlive: true,
     });
   }
-  private async reinitializePool() {
+  async reinitializePool() {
     await this._pool.end(); // Close old connections
     const newConnectionString = this.getConnectionString();
     this._pool = this.initializePool(newConnectionString);
