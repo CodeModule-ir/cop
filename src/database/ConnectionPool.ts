@@ -4,6 +4,7 @@ import logger from '../utils/logger';
 export class ConnectionPool {
   private _pool: Pool;
   private _isProduction: 'development' | 'production';
+  private _isClosed: boolean = false;
   constructor() {
     const connectionString = this.getConnectionString();
     this._isProduction = Config.environment;
@@ -59,6 +60,8 @@ export class ConnectionPool {
   }
 
   async close(): Promise<void> {
+    if (this._isClosed) return; // Prevent closing the pool more than once
+    this._isClosed = true;
     await this._pool.end();
   }
   private initializePool(connectionString: string): Pool {
@@ -72,6 +75,10 @@ export class ConnectionPool {
     });
   }
   async reinitializePool() {
+    if (this._isClosed) {
+      throw new Error('Cannot reinitialize a closed pool.');
+    }
+
     if (this._pool && !this._pool.ended) {
       await this._pool.end();
     }
