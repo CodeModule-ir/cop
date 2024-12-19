@@ -10,7 +10,7 @@ export class ConnectionPool {
     this._pool = this.initializePool(connectionString);
   }
   async connect(): Promise<boolean> {
-    let client;
+    let client: PoolClient | null = null;
     try {
       client = await this._pool.connect();
       logger.info('Database connection successful');
@@ -37,7 +37,6 @@ export class ConnectionPool {
         return false;
       }
     } finally {
-      // Release client only if it was successfully acquired
       if (client) {
         client.release();
       }
@@ -77,7 +76,7 @@ export class ConnectionPool {
     });
   }
   async reinitializePool() {
-    if (this._pool) {
+    if (this._pool && !this._pool.ended) {
       await this._pool.end();
     }
     const newConnectionString = this.getConnectionString();
