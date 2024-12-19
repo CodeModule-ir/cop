@@ -32,22 +32,12 @@ export class ServiceProvider {
     return ServiceProvider.instance;
   }
   private async enforceRateLimit(): Promise<void> {
-    const ctx = CopBot.getContext();
     const now = Date.now();
     if (this.lastRequestTime) {
       const elapsed = now - this.lastRequestTime;
       if (elapsed < this.requestInterval) {
         const waitTime = this.requestInterval - elapsed;
-
-        if (ctx) {
-          try {
-            await ctx.reply(`⚠️ Rate limit exceeded. Please wait for ${waitTime} ms before making another request.`);
-          } catch (error: any) {
-            logger.error(`Failed to notify user about rate limit: ${error.message}`);
-          }
-        } else {
-          logger.warn('No active context to send a rate limit message.');
-        }
+        logger.error(`⚠️ Rate limit exceeded. Please wait for ${waitTime} ms before making another request.`);
         await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
