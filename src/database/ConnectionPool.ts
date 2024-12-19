@@ -5,6 +5,8 @@ export class ConnectionPool {
   private _pool: Pool;
   private _isProduction: 'development' | 'production';
   private _isClosed: boolean = false;
+  private _isReinitializing: boolean = false;
+
   constructor() {
     const connectionString = this.getConnectionString();
     this._isProduction = Config.environment;
@@ -83,22 +85,29 @@ export class ConnectionPool {
     if (this._isClosed) {
       throw new Error('Cannot reinitialize a closed pool.');
     }
-
-    if (this._pool && !this._pool.ended) {
-      logger.warn('Ending the current pool before reinitialization...');
-      await this._pool.end();
+    if (this._isReinitializing) {
+      logger.warn('Reinitialization already in progress. Waiting...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return;
     }
 
-    const newConnectionString = this.getConnectionString();
-    this._pool = this.initializePool(newConnectionString);
-
+    this._isReinitializing = true;
     try {
+      if (this._pool && !this._pool.ended) {
+        logger.warn('Ending the current pool before reinitialization...');
+        await this._pool.end();
+      }
+
+      const newConnectionString = this.getConnectionString();
+      this._pool = this.initializePool(newConnectionString);
       const testClient = await this._pool.connect();
-      testClient.release(); // Ensure the new pool is functional
+      testClient.release();
       logger.info('Connection pool reinitialized successfully.');
     } catch (err: any) {
       logger.error('Failed to reinitialize connection pool:', err.message);
       throw err; // Let the caller handle this failure
+    } finally {
+      this._isReinitializing = false;
     }
   }
 }
