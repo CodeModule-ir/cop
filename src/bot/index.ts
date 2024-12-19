@@ -17,6 +17,7 @@ export class CopBot {
   private webhookPath = `/bot/${Config.token}`;
   private webhookURL = `${Config.web_hook}${this.webhookPath}`;
   private mode = this.isProduction ? 'webhook' : 'long-polling';
+  private static latestContext: Context | null = null;
   private constructor() {
     this._bot = new Bot<Context>(Config.token);
   }
@@ -26,6 +27,19 @@ export class CopBot {
       CopBot.instance = new CopBot();
     }
     return CopBot.instance;
+  }
+  public static setContext(ctx: Context): void {
+    logger.info(`Setting new context: at ${new Date().toISOString()}`);
+    this.latestContext = ctx;
+  }
+
+  public static getContext(): Context | null {
+    if (this.latestContext) {
+      logger.info(`Retrieved latest context: at ${new Date().toISOString()}`);
+    } else {
+      logger.warn('Attempted to retrieve context, but no context is set.');
+    }
+    return this.latestContext;
   }
   // Stop the bot
   async stop(): Promise<void> {
@@ -82,6 +96,7 @@ export class CopBot {
         app.listen(port, async () => {
           logger.info(`Webhook server running on port ${port}`);
           await this.setupWebhook(this.webhookURL);
+          logger.info(`Bot started in ${this.mode} mode!`);
         });
       } catch (err: any) {
         console.error('Error setting up webhook:', err);
@@ -100,11 +115,26 @@ export class CopBot {
     new GenerateCommand(this._bot).generate();
     this._bot.use(
       limit({
-        onLimitExceeded: (ctx) => ctx.reply('Too many requests! Please slow down.'),
+        onLimitExceeded: async (ctx: Context, next: () => Promise<void>) => {
+          const waitTime = '1000';
+          const message = `⚠️ Rate limit exceeded. Please wait for ${waitTime} ms before trying again.`;
+
+          try {
+            await ctx.reply(message);
+          } catch (error: any) {
+            logger.error(`Failed to send rate limit message: ${error.message}`);
+          }
+          if (next) {
+            await next();
+          }
+        },
       })
     );
     this._bot.on('my_chat_member', (ctx) => this.handleJoinNewChat(ctx));
-    this._bot.on('message', (ctx) => this.handleMessage(ctx));
+    this._bot.on('message', (ctx) => {
+      CopBot.setContext(ctx);
+      this.handleMessage(ctx);
+    });
     this._bot.catch(async (error: BotError<Context>) => {
       if (error.message.includes('timeout')) {
         await error.ctx.reply('The request took too long to process. Please try again later.');
