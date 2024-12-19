@@ -36,10 +36,6 @@ export class ConnectionPool {
         console.error('Unexpected error connecting to the database:', error);
         return false;
       }
-    } finally {
-      if (client) {
-        client.release();
-      }
     }
   }
   private async createDatabase(): Promise<void> {
