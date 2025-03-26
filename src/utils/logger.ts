@@ -1,4 +1,4 @@
-import { Logger } from '@medishn/logger';
+import { Logger } from '@medishn/toolkit';
 
 class Log {
   private logger: Logger;
@@ -6,28 +6,29 @@ class Log {
   constructor() {
     // Initialize the logger with the specified configuration
     this.logger = new Logger({
-      transports: ['console'],
+      context: 'console',
+      logLevels: ['warn', 'error', 'info', 'debug'],
     });
   }
 
   // Warn method to log warnings
   warn(message: string, category?: string) {
-    this.logger.log({ message, category, level: 'warn' });
+    this.logger.warn({ message, category });
   }
 
   // Error method to log errors
   error(message: string, category?: string) {
-    this.logger.log({ message, category, level: 'error' });
+    this.logger.error({ message, category });
   }
 
   // Info method to log informational messages
   info(message: string, category?: string) {
-    this.logger.log({ message, category, level: 'info' });
+    this.logger.info({ message, category });
   }
 
   // Debug method to log debugging messages
   debug(message: string, category?: string) {
-    this.logger.log({ message, category, level: 'debug' });
+    this.logger.debug({ message, category });
   }
 }
 
